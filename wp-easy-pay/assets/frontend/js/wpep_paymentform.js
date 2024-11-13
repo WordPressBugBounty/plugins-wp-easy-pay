@@ -89,15 +89,15 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 					let ach;
 					card = await initializeCard(payments, current_form_id);
-					jQuery('.wpep-single-form-submit-btn').click(async function (event) {
+					jQuery(`.wpep-single-form-submit-btn[data-form_id="${current_form_id}"]`).click(async function (event) {
 						event.preventDefault();
 						var current_form_id = jQuery( this ).parents( 'form' ).data( 'id' );
 						console.log(document.getElementsByClassName('sq-hidden-background-text')[0]);
 						paymentButtonClicked(event, card, current_form_id, currency);
-						
+
 					});
 
-					jQuery('.wpep-wizard-form-submit-btn').click(async function (event) {
+					jQuery(`.wpep-wizard-form-submit-btn[data-form_id="${current_form_id}"]`).click(async function (event) {
 						event.preventDefault();
 						var current_form_id = jQuery( this ).parents( 'form' ).data( 'id' );
 						paymentButtonClicked(event, card, current_form_id, currency);
@@ -1686,37 +1686,40 @@ var amount = amountText.replace(/[A-Za-z$]/g, '');
 }
 
 jQuery('.otherpayment').click( function (event) {
-let timeoutId;
-	jQuery('.otherPayment').on('input', function() {
-		jQuery('#cashapp-amount').hide();
-		if(jQuery('#cash_app_pay_v1_element').is(':visible')){
-			if(jQuery( '#cash_app_pay_v1_element' ).html().length > 1){
+	if(wpep_local_vars.cashapp == 'on'){
+		let timeoutId;
+		jQuery('.otherPayment').on('input', function() {
+			jQuery('#cashapp-amount').hide();
+			if(jQuery('#cash_app_pay_v1_element').is(':visible')){
+				if(jQuery( '#cash_app_pay_v1_element' ).html().length > 1){
 					cashAppPay.destroy();
 					afterpay.destroy();
-			} 
-		}
-		   
-	clearTimeout(timeoutId);
-    timeoutId = setTimeout(function() {
-		let cashAppPay;
-		  try {
-			 	
-			// Check if Cash App Pay is already attached before reinitializing
-			if (typeof cashAppPay === 'undefined') {
-				var current_form_id = jQuery(  'form.wpep_payment_form'  ).data( 'id' );
-				var currency        = jQuery(  'form.wpep_payment_form'  ).data( 'currency' );
-			  cashAppPay =  initializeCashApp(payments,current_form_id, currency);
-				jQuery('.loader').hide();	
+				} 
 			}
-			
-		  } catch (e) {
-			console.error('Initializing Cash App Pay failed', e);
-		  }
-		
-    }, 1000); 
-  });
+
+			clearTimeout(timeoutId);
+			timeoutId = setTimeout(function() {
+				let cashAppPay;
+				try {
+
+					// Check if Cash App Pay is already attached before reinitializing
+					if (typeof cashAppPay === 'undefined') {
+						var current_form_id = jQuery(  'form.wpep_payment_form'  ).data( 'id' );
+						var currency        = jQuery(  'form.wpep_payment_form'  ).data( 'currency' );
+						cashAppPay =  initializeCashApp(payments,current_form_id, currency);
+						jQuery('.loader').hide();	
+					}
+
+				} catch (e) {
+					console.error('Initializing Cash App Pay failed', e);
+				}
+
+			}, 1000); 
+		});
+	}
 })
 jQuery('.paynow').click( function (event) {
+	if(wpep_local_vars.cashapp == 'on'){
 let timeoutId;
 		jQuery('#cashapp-amount').hide();
 		if (jQuery('#cash_app_pay_v1_element').is(":visible") && jQuery('#cash_app_pay_v1_element').html().length > 1) {	
@@ -1741,6 +1744,7 @@ let timeoutId;
 		  }
 		
     }, 1000); 
+		}
 })
 async function displayCashApp(payments, current_form_id, currency) {
 	if('$' == currency) {

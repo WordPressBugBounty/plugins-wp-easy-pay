@@ -236,6 +236,7 @@
 				echo 'wpep-single-form-submit-btn';
 	endif;
 			?>
+						   " data-form_id = "<?php echo esc_attr( $wpep_current_form_id ); ?>"
 			<?php
 			if ( ! isset( $show_default_amount ) ) :
 				echo 'wpep-disabled';

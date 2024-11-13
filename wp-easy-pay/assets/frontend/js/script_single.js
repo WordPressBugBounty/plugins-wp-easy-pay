@@ -61,37 +61,56 @@ jQuery( document ).ready(
 
 		}
 
-		jQuery( 'body' ).on(
-			'DOMSubtreeModified',
-			'.paynowDrop',
-			function(){
+		
+		// Select the target node (in this case, .paynowDrop)
+		var targetNode = document.querySelector('.paynowDrop');
+		// Options for the observer (which mutations to observe)
+		var config = { childList: true, subtree: true };
 
-				$selected_value = jQuery( '.selection' ).data( 'value' );
-				var form_id     = jQuery( this ).parents( 'form' ).data( 'id' );
+		// Callback function to execute when mutations are observed
+		var callback = function(mutationsList, observer) {
+			for (var mutation of mutationsList) {
+				if (mutation.type === 'childList') {
+					// The code you want to execute when DOM changes occur
+					
+					$selected_value = jQuery( '.selection' ).data( 'value' );
+					var form_id     = jQuery( this ).parents( 'form' ).data( 'id' );
 
-				if ( jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).length > 0 ) { 
-					jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).remove();
+					if ( jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).length > 0 ) { 
+						jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).remove();
+					}
+
+					if ( jQuery(`#theForm-${form_id} .wpep-alert-coupon`).length > 0 ) {
+						jQuery(`#theForm-${form_id} .wpep-alert-coupon`).remove();
+					}
+
+					jQuery( 'form[data-id="' + form_id + '"] .display' ).text( $selected_value );
+					jQuery( 'form[data-id="' + form_id + '"] .display' ).next().next( 'input[name="one_unit_cost"]' ).val( $selected_value ).trigger('change');
+					jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( $selected_value ).trigger('change');
+					jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-submit-btn' ).removeClass( 'wpep-disabled' );
+					jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-submit-btn' ).removeClass( 'wpep-disabled' );
+
+					if (jQuery( '.paynowDrop option:selected' ).text() == "Other") {
+						jQuery( 'form[data-id="' + form_id + '"] .showPayment' ).addClass( 'shcusIn' );
+						jQuery( 'form[data-id="' + form_id + '"] .showPayment input' ).val( '' );
+					} else {
+						jQuery( 'form[data-id="' + form_id + '"] .showPayment' ).removeClass( 'shcusIn' );
+						jQuery( 'form[data-id="' + form_id + '"] .showPayment input' ).val( '' );
+					}
 				}
-			
-				if ( jQuery(`#theForm-${form_id} .wpep-alert-coupon`).length > 0 ) {
-					jQuery(`#theForm-${form_id} .wpep-alert-coupon`).remove();
-				}
-				jQuery( 'form[data-id="' + form_id + '"] .display' ).text( $selected_value );
-				jQuery( 'form[data-id="' + form_id + '"] .display' ).next().next( 'input[name="one_unit_cost"]' ).val( $selected_value ).trigger('change');
-				jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( $selected_value ).trigger('change');
-				jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-submit-btn' ).removeClass( 'wpep-disabled' );
-				jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-submit-btn' ).removeClass( 'wpep-disabled' );
-
-				if (jQuery( '.paynowDrop option:selected' ).text() == "Other") {
-					jQuery( 'form[data-id="' + form_id + '"] .showPayment' ).addClass( 'shcusIn' );
-					jQuery( 'form[data-id="' + form_id + '"] .showPayment input' ).val( '' );
-				} else {
-					jQuery( 'form[data-id="' + form_id + '"] .showPayment' ).removeClass( 'shcusIn' );
-					jQuery( 'form[data-id="' + form_id + '"] .showPayment input' ).val( '' );
-				}
-
 			}
-		);	
+		};
+
+		// Create an observer instance linked to the callback function
+		var observer = new MutationObserver(callback);
+
+		// Start observing the target node for configured mutations
+		if (targetNode) {
+			observer.observe(targetNode, config);
+		}
+
+		// To stop observing at some point, call observer.disconnect()
+		// observer.disconnect();
 
 
 
@@ -111,16 +130,16 @@ jQuery( document ).ready(
 				if ( jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).length > 0 ) { 
 					jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).remove();
 				}
-			
+
 				if ( jQuery(`#theForm-${form_id} .wpep-alert-coupon`).length > 0 ) {
 					jQuery(`#theForm-${form_id} .wpep-alert-coupon`).remove();
 				}
 
-	
+
 				if (val != '' && val >= min && val <= max) {
 
 					currency = prepare_display_amount(currencyType, currency, val);
-				
+
 					jQuery( this ).val( val );
 					jQuery( 'form[data-id="' + form_id + '"] .display' ).text( currency );
 					jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( jQuery( this ).val() ).trigger('change');
@@ -130,7 +149,7 @@ jQuery( document ).ready(
 				} else {
 
 					currency = prepare_display_amount(currencyType, currency);
-					
+
 					jQuery( this ).val( '' );
 					jQuery( 'form[data-id="' + form_id + '"] .display' ).text( '' );
 					jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( '' ).trigger('change');

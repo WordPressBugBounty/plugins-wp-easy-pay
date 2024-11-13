@@ -3,7 +3,7 @@
  * Plugin Name:       WP EASY PAY
  * Plugin URI:        https://wpeasypay.com/demo/
  * Description:       Easily collect payments for Simple Payment or donations online without coding it yourself or hiring a developer. Skip setting up a complex shopping cart system.
- * Version:           4.2.5
+ * Version:           4.2.6
  * Requires at least: 4.5.0
  * Requires PHP:      7.0
  * Author:            WP Easy Pay

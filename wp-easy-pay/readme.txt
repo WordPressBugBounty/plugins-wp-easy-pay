@@ -1,202 +1,279 @@
-=== WP EasyPay - Square for WordPress ===
+===  WP EasyPay - Create Your Payment Forms to Pay with Square - Square for WordPress Plugin: Integrate Square with WordPress to Collect Payments  ===
 Contributors: wpexpertsio
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=pay@objects.ws&item_name=DonationForPlugin
-Tags: square, cash app, payment, form, donation
-Requires at least: 4.5.0
+Tags: square, cash app, payment form, donation, square payments
+Requires at least: 5.2
 Tested up to: 6.6
-Stable tag: 4.2.5
+Stable tag: 4.2.6
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-In a few simple steps you can start accepting credit card payments with Square Checkout on your WordPress site.
+Integrate Square with WordPress easily, quickly, and securely. The #1 Square for WordPress plugin to create payment forms to collect Square payments on WordPress.
 
 == Description ==
 
-WP EasyPay is a fast, and secure WordPress plugin designed to simplify the way your website accepts Square payments. With this plugin, you can start accepting online credit card payments instantly while skipping the complex procedures of setting up a shopping cart system.
+### WP EasyPay - Square for WordPress Plugin: Integrate Square with WordPress to Collect Payments
 
-**Accepts simple and donation payments within minutes** - Frictionless payment process that allows your business to initiate transfers at virtually any time. 
+**Create your custom payment form in WordPress with ease!**
 
-**Square transaction fee**: Pay 2.75% (2.65% for CA, 1.9% for AU, 1.75% for UK, and 3.25% for JP) per in-person transaction and 2.9% + $.30 (2.9% + $.30 for CA, 2.2% for AU, 2.5% for UK, and 3.6% for JP) for online transactions.
+https://youtu.be/3VVbSl8pnr0?si=TSZNns99l5qTI43u
 
-Square card payment API support is currently only available for the U.S., Canada, Australia, Japan, and the UK.
+Are you searching for a quick and reliable way to accept Square payments on your WordPress website? WP EasyPay is the perfect solution.
 
-== PlUGIN FEATURES ==
+####[Download✨WP EasyPay✨NOW](https://wpeasypay.com/pricing/) to accept Square Payments!
 
-* Charge simple payments through the click of a button.
-* Collect donation payments easily where the customer can enter their desired amount.
-* Easily set and collect fixed amount payments for services or single products.
-* Collect custom payment amounts from your customers by allowing them to enter a custom amount(s) at the time of payment.
-* Define the min & max amount range for a custom amount.
-* Sandbox support with the latest version of **SQUARE V2 API** available for developer testing.
-* Add payment form on your website page or post using shortcode. 
-* Notification Email will be sent to the admin after every successful transaction.
-* Display selected fields in Square Transaction Note using tags (60 characters Only).
-* Add default Mail Tags into the message body like Transaction ID, Payment Amount, etc.
-* Redirect your customers to the thank you page on every successful payment.
-* Display payment forms using Gutenberg block support.
-* Display the form in a modal box - form appears in a pop-up window.
-* Form styling options for popup/modal forms - Theme Color, Form Shadow, change Currency Symbol, Button Label, Show Image.
-* Strong Customer Authentication (SCA) helps reduce fraud and make your online payments more secure.
-* Redirect users to any given URL after their payment is successful and verified.
+Having received a lot of 4 out of 5-star reviews, this plugin, ranked as the top Square for WordPress integration tool, allows website owners to accept **credit card payments**, digital wallets like **[Google Pay](https://wpeasypay.com/blog/set-up-google-pay-in-wordpress/), [Apple Pay](https://wpeasypay.com/blog/set-up-apple-pay-in-wordpress/), [Cash App](https://wpeasypay.com/blog/set-up-cash-app-in-wordpress/), [Afterpay](https://wpeasypay.com/blog/set-up-afterpay-in-wordpress/), [ACH Payments](https://wpeasypay.com/blog/ach-payments-wordpress/),  Square Gift Card (Coming Soon)** and more. 💳💸
 
-[Read the technical documentation on how to download, install and activate the WP EasyPay plugin on your website.](https://wpeasypay.com/documentation/#wp-easy-pay-free-version-2)
+The best part is that with WP EasyPay, you can set up secure, user-friendly payment forms without writing a single line of code.
 
-== What's new in WP EasyPay version 6.3 - Premium features & Design Options ==
+Wait, there is more to it! 😃👇
 
-In the latest version of WP EasyPay, we have introduced phenomenal new features that make your website payment process easier, faster, and safer. You can now change the entire outlook of your form with just a click of a button. 
+This recurring payment plugin for WordPress has thousands of active installs, which demonstrates its effectiveness and popularity in helping businesses simplify digital payment solutions.
 
-**No coding required** - The clean user interface of the form layout combined with a couple of new features like drag and drop functionality, pre-defined important fields, and form validation options make v3.0 superior to every other. 
+If you're looking to collect donations, process product sales, or manage subscriptions, WP EasyPay provides a complete [Square payment gateway](https://wpeasypay.com/blog/square-payment-gateway/) integration with WordPress.
 
-**Enjoy premium features like subscription run and pause functionality and wizard form layout options in the latest version of WP EasyPay.**
+###What is WordPress Payment Form, and Why Do You Need it?
 
-Add unlimited fields to your form and fetch information through "upload" fields that allow your users to upload data for further processing. Further, the addition of date and time fields gives your users the ease of input data using an integrated calendar.
+A Payment Form in WordPress is an online form embedded on a WordPress website, specifically designed to securely process payments from users. By integrating with PCI-compliant payment gateways like Square, PayPal, or Stripe, these forms enable businesses to collect payments directly through their website without redirecting customers to external sites.
 
-Create and add multiple tabs on your payment form featuring products that you would like to sell online. Each tab comes with various options like Product Picture, Product Price, Set Label, and Set Quantity. You can also export and download transaction reports with an additional ability to select fields as per your requirement.
+With payment forms, you can offer one-time purchases, recurring subscriptions, donations, event registrations, and more. Additionally, add custom fields, designs, and payment options that align with your brand to enhance the user experience.
 
-WP EasyPay's integration with **'ProductStash'** gives you the ability to collect reviews, comments, and ideas from your valued customers.
+###⚡ Benefits of Having a Payment Form on Your Website
 
-[Click here to upgrade to WP EasyPay version 6.3.](https://wpeasypay.com/pricing/)
+Adding a custom payment form to your website has numerous advantages. Here are some of the key benefits your business can take advantage of:
+
+✅ **Increased Conversion Rates:** Streamlining the payment process reduces cart abandonment and helps customers complete their transactions quickly and easily, which ultimately boosts conversion rates.
+
+✅ **Improved User Experience:** Having an intuitive and easy-to-use payment form minimizes the number of steps required to check out, which creates a smooth user experience and encourages repeat transactions.
+
+✅ **Flexible Payment Options:** WP EasyPay allows you to offer custom payments, fixed amounts, and recurring subscriptions, which gives customers the flexibility to choose how they pay.
+
+✅ **Secure Online Transactions:** With features like PCI compliance payment gateway, SCA (Strong Customer Authentication), and CAPTCHA, WP EasyPay enables secure online transactions, reducing the risk of fraudulent payments.
+
+✅ **Improved Business Credibility:** A branded and professional-looking payment form builds trust with customers, ultimately benefiting your business’s reputation and credibility.
+
+✅ **Real-time Payment Processing:** Payments are processed instantly, providing quick confirmation for both you and the customer, ensuring a fast and efficient experience.
+
+###⚡ Key Features That Our Users 💜 About WP EasyPay
+
+WP EasyPay offers tons of features that are designed for all kinds of online payments. Here’s a breakdown of the features that make this Square WordPress plugin an essential tool for any WordPress site:
+
+✅ **Custom Payment Amounts:** Allow users to enter a custom amount, making this feature ideal for donation forms, tipping, or custom service payments.
+
+✅ **Fixed Payments:** Set up fixed prices for specific products or services that help businesses standardize payments without confusion.
+
+✅ **Recurring Payments:** This recurring payment plugin for WordPress enables subscription-based transactions, which are perfect for membership sites, regular donations, or any service with repeat billing.
+
+✅ **Multi-Step Payment Form:** WP EasyPay’s multi-step payment form for WordPress guides users through each part of the payment process step-by-step, reducing confusion and improving completion rates.
+
+✅ **Secure Sandbox Testing:** Test all aspects of your payment forms using Square’s V2 API in a safe and secure sandbox environment before going live.
+
+✅ **Digital Wallet Support:** Accept popular digital payment options like Google Pay, Apple Pay, Cash App, and Afterpay to provide convenience for users who prefer mobile transactions.
+
+✅ **Subscription Management:** This feature allows you to view, manage, and adjust your customer's subscriptions easily with a detailed subscription report, which adds flexibility and control for recurring payments.
+
+✅ **Gutenberg Shortcode Block:** Easily embed WP EasyPay forms on any page or post using Gutenberg blocks that make the setup process simple and straightforward.
+
+✅ **CAPTCHA Security:** Protect your payment forms from spam and bots by enabling CAPTCHA v2 and v3 to ensure only legitimate users interact with your forms.
+
+✅ **Customizable Thank You Page:** Add a personal touch to the transaction process by redirecting customers to a personalized “thank you” page after successful payments.
+
+✅ **SCA and PCI Compliance:** WP EasyPay adheres to Strong Customer Authentication (SCA) requirements and PCI compliance protocol via Square, which adds an additional layer of security for payments.
+
+✅ **Date and Time Fields:** Easily integrate the calendar into your payment form, which makes it easy to accept payments for bookings or scheduled services.
+
+✅ **Upload Field Support:** Allow users to upload necessary documents or files as part of their payment submission, which is ideal for service-based industries.
+
+✅ **Detailed Transaction Receipts:** Automatically send transaction receipts to both admins and customers, which provides transparency and confirmation for each payment.
+
+✅ **OAuth Square Connection:** Easily connect your Square account to WP EasyPay through a secure OAuth process that ensures a simple and safe integration.
+
+✅ **Redirect on Success:** After payment, redirect customers to any URL of your choice, perfect for upsell pages, additional resources, or thank-you messages.
+
+✅ **Customizable Form Layouts:** Choose from various form layouts to best suit your website’s style, including dropdowns, radio buttons, and modal pop-ups.
+
+✅ **Flexible Currency Settings:** This multi-currency feature lets you cater to international customers, adapting WP EasyPay to global markets.
+
+####[Download✨WP EasyPay✨NOW](https://wpeasypay.com/pricing/) to accept Square Payments!
+
+### Use WordPress Payment Form the Way You Want! 😃
+
+Following are a few popular use cases for WP EasyPay payment forms that show how versatile this plugin can be:
+
+###Use Case #1: E-commerce Product Sales 
+
+✔️ Sell single products with fixed prices.
+
+✔️ Set up custom or variable prices for personalized orders.
+
+✔️ Offer one-time or recurring billing options.
+
+###Use Case #2: Service Bookings and Appointments
+
+✔️ Accept payments for deposits or service charges.
+
+✔️ Include a date and time selector for booking confirmations.
+
+✔️ Use upload fields to collect necessary documents.
+
+###Use Case #3: Fundraising and Donations
+
+✔️ Enable custom donation amounts or set suggested amounts.
+
+✔️ Display a progress bar to show donation goals.
+
+✔️ Redirect donors to a thank-you page after successful contributions.
+
+###Use Case #4: Membership or Subscription Services
+
+✔️ Offer recurring billing for memberships or subscriptions.
+
+✔️ Provide subscription management for users.
+
+✔️ Track all recurring payments within your WP EasyPay dashboard.
+
+###Use Case #5: Educational Courses and Events
+
+✔️ Sell event tickets or course registrations.
+
+✔️ Allow participants to choose custom payment plans.
+
+✔️ Use form customization for participant information collection.
+
+####[Download✨WP EasyPay✨NOW](https://wpeasypay.com/pricing/) to accept Square Payments!
+
+###Why Should You Install WP EasyPay? —06 Key Reasons
+
+**Reason #1: Seamless Square Integration**
+
+☑️ Connects directly with Square, providing a reliable and secure payment gateway for WordPress.
+
+☑️ Supports Square’s Sandbox mode, allowing you to test payment forms without affecting live transactions.
+
+☑️ Includes OAuth integration for an easy and secure setup with your Square account.
+
+**Reason #2: Effortless Form Customization**
+
+☑️ Customizable form builder with drag-and-drop functionality, making it easy for anyone to create and edit forms.
+
+☑️ Pre-designed templates and amount layout options to help you create aesthetically pleasing forms.
+
+☑️ Multi-step form layouts guide users through complex transactions step-by-step, reducing drop-offs.
+
+☑️ Allows you to add custom fields and upload options, enabling you to gather any required customer information.
+
+**Reason #3: Comprehensive Subscription Management**
+
+☑️ Enables recurring billing with flexible options like weekly, monthly, or yearly payments.
+
+☑️ Offers the ability to pause and resume subscriptions, giving you added flexibility.
+
+☑️ Subscription reporting lets you track parent and child transactions, ensuring all payments are accounted for.
+
+☑️ Easily manage and review individual subscription details, including customer data and transaction history.
+
+**Reason #4: Enhanced User Experience**
+
+☑️ Multi-step forms organize information in a logical flow, reducing complexity for users.
+
+☑️ The option to add date and time fields with calendar support—ideal for booking appointments.
+
+☑️ Dynamic product quantity adjustment allows users to see real-time price changes based on quantity selection.
+
+☑️ Intuitive design and pre-validated fields ensure forms are error-free and easy to complete.
+
+**Reason #5: Advanced Reporting and Data Exporting**
+
+☑️ Access detailed transaction reports for better insights into your sales and customer activity.
+
+☑️ Export transaction data with customizable fields, perfect for accounting and record-keeping.
+
+☑️ Filter reports by transaction type, date, or customer, making it easy to find specific data quickly.
+
+☑️ Email notifications with transaction IDs ensure you and your customers receive real-time updates on payments.
+
+**Reason #6: Better Security and Spam Prevention**
+
+☑️ Built-in Google ReCaptcha integration helps prevent spam and ensures only genuine transactions.
+
+☑️ PCI-compliant payment processing meets industry standards for handling sensitive data securely.
+
+☑️ Enforce SSL-encrypted transactions, adding an additional layer of security for your customers.
+
+☑️ Provides role-based access controls, ensuring that only authorized team members can view payment details.
+
+####[Download✨WP EasyPay✨NOW](https://wpeasypay.com/pricing/) to accept Square Payments!
+
+###🚨 Requirements for Installing WP EasyPay 
+
+Before installing [WP EasyPay](https://wpeasypay.com/), make sure your setup meets these requirements:
+
+* **WordPress Version:** 4.5.0 or higher
+
+* **PHP Version:** 7.0 or higher
+
+* **Square Account:** An active Square account is required for integration.
+
+* **SSL Certificate:** An SSL certificate is mandatory to ensure secure payment processing.
+
+**NOTE:** Remember that Square is only available for businesses located in the U.S., Canada, U.K., Australia, Japan, Ireland, France and Spain.
+
+###🚨 Need Help? Get Expert Assistance on Demand!!!
+
+Have questions or need help? Reach out to our [dedicated support team](https://objectsws.atlassian.net/servicedesk/customer/portal/2/group/2/create/9) for any assistance. WP EasyPay offers reliable support through a dedicated team that is ready to assist with any setup, configuration, or troubleshooting needs. 🙂🎉
+
+Our customer support ensures you have the guidance necessary to maximize the plugin’s potential, including integration with other WordPress tools or custom adjustments to fit your payment form's design. 
+
+####[Download✨WP EasyPay✨NOW](https://wpeasypay.com/pricing/) to accept Square Payments!
+
+###💡 Privacy Policy
+
+We are committed to upholding high standards of data privacy and security, aligning with Square’s PCI compliance protocols. All payment details are handled directly through Square's secure APIs, ensuring that sensitive payment information is never stored on your website, reducing the risk of data breaches.
+
+WP EasyPay also adheres to GDPR compliance, assuring that user data is handled in line with the latest regulations. For further details, please refer to our full privacy policy here.
+
+== FAQ ==
+
+##Frequently Asked Questions
+
+**What is WP EasyPay?**
+
+WP EasyPay is a WordPress plugin that enables seamless integration with Square, allowing users to create customized payment forms and accept payments directly on their websites. It’s ideal for one-time and recurring payments.
+
+**Can Square be used on WordPress?**
+
+Yes, you can integrate Square with WordPress using plugins like WP EasyPay. This integration lets you accept secure Square payments using a custom payment form.
+
+**How do I add Square to my Website?**
+
+Install and activate WP EasyPay on your WordPress site, connect your Square account, and configure the settings. Then, create a payment form and use the shortcode or Gutenberg block to display it on your website.
+
+**What Payment Methods Does WP EasyPay Support?**
+
+WP EasyPay supports [credit card payments](https://wpeasypay.com/blog/accept-credit-card-payments-on-wordpress/) through Square, along with digital wallet options such as Google Pay, Apple Pay, and Afterpay making it convenient for users who prefer mobile and wallet-based transactions.
+
+**Is WP EasyPay Compatible with All WordPress Themes?**
+
+Yes, WP EasyPay is designed to work seamlessly with most modern WordPress themes. If you encounter any display issues, our support team is available to assist you.
+
+**Can I Use WP EasyPay for Subscription Payments?**
+
+Absolutely! WP EasyPay supports recurring payments, making it ideal for businesses offering subscription-based services. On top of that, you can manage subscriptions directly from the website.
+
+**How Does WP EasyPay Ensure Payment Security?**
+
+WP EasyPay leverages Square’s SCA and PCI compliance infrastructure for secure payment processing. With features like CAPTCHA and SSL encryption enforcement, WP EasyPay provides a robust layer of protection for all transactions.
+
+**What Are the Regional Restrictions for WP EasyPay?**
+
+Currently, WP EasyPay is available for businesses in the U.S., Canada, the U.K., Australia, Japan, Ireland, France, and Spain, where Square services are supported.
+
+**Is There a Sandbox Mode for Testing?**
+
+Yes! WP EasyPay includes a sandbox mode, allowing you to test all functionalities before going live. This feature ensures that you can optimize your setup without any risk to real transactions.
 
 
-== PREMIUM FEATURES ==
-
-* **Improved single form layout** and **form builder**.
-* **Award digital coupons** to increase awareness of your business, both locally and elsewhere;
-* **Charge your customers additional fees** to help offset the cost of accepting credit card payments;
-* The **subscription dashboard** can be added to the front-end via shortcode;
-* The **subscription dashboard** will display detailed information of the transaction (transaction id, date, status, amount total, payment type);
-* View and edit subscription ID, subscription interval, remaining cycles, total cycles, next payment, subscription status, subscription type, actions, and date;
-* Accept payments through **simple payment, recurring payment, donation payment, recurring donation payment,** and **subscription payment**.
-* Easily set and collect **fixed amount payments** for services or single products.
-* Collect **custom payment amounts** from your customers by allowing them to enter a custom amount(s) at the time of payment.
-* Collect **donation payments** easily
-* Create **multiple forms and buttons,** and embed them on your pages or posts using **shortcodes**.
-* **Multi-step form layout** - A step-by-step tab interface that helps visitors type information in a well-organized manner.
-* 3 types of payment layouts - **Dropdown, radio-listing, and custom layout**.
-* Charge **recurring payments** from your customers directly and promptly.
-* **Subscription pause and run functionality** - Allows the admin to control subscriptions from the back-end.
-* The user can **pause or cancel their subscriptions** from the front-end (if allowed).
-* **MailChimp Integration** - Automate your email marketing processes by connecting your MailChimp account with WP EasyPay. 
-* **Digital Wallet Support** - WP EasyPay supports all major digital payment options including Google Pay, Apple Pay, Afterpay, ACH payments and Cash App.
-* Users can save their credit card details for future use using the **Save Card on File** functionality.
-* **Display a progress bar in the payment form** that shows the total donation count and goal. It updates in real-time with each transaction.
-* **Set, view and track the target** of your donation goal.
-* **Display a thank you message** for users who complete donation payments.
-* **Process partial refunds** for simple, donation, subscription, and donation-recurring payments.
-* Users can easily **renew their subscriptions** by clicking on the renew button. 
-* An email editor is added that allows the user to **generate a detailed transaction receipt** which is sent to the user and admin via email.
-* **Charge sign-up fees** when a user fills out a registration form. This field is only visible when a subscription or recurring donation payment type is selected.
-* **Strong Customer Authentication** (SCA) helps reduce fraud and make your online payments more secure.
-* **CAPTCHA (conditional - v3 invisible captcha)** adds another layer of protection to your forms to help thwart would-be spammers.
-* Create **parent subscription reports**, and within those, **multiple child subscription transaction reports**.
-* Get **Reports** of your transactions from the **Reports Page**.
-* **Modal/Pop-up form layout** - Refine the look and feel of your form by giving it a cleaner layout. This layout takes less space and gives your form a proportionate look.
-* Easily **customize the color theme** of your form.
-* **OAuth functionality** to connect Square application with WP Easy Pay.
-* Connect each form with individual Square account or select **Global settings**. 
-* **Sandbox support** with the latest version of **SQUARE V2 API** in order to see test transactions in the Square Dashboard.
-* Display selected fields in **Square Transaction Note** using **tags** (60 characters Only).
-* Square Web Payments SDK which is a JavaScript browser-client SDK that provides a secure payment-card entry method.
-* Easily create subscription plans and automatically charge customers on a recurring basis using Square subscription API.
-* Accept payments with AfterPay, a "buy now, pay later" service that allows customers to buy products or service with a payment installment plan.
-* Admin and User will receive **Notification Email** after every successful payment.
-* You can edit the form template by using **extra fields** (optional).
-* **First Name, Last Name, Email address** as default fields in the form editor.
-* **Predefined Mail Tags** under notification settings like **Transaction ID, Payment Amount**, etc.
-* **Terms and conditions feature** - Add Terms & Conditions in your form with their reference label and link.
-* **Customer redirection control** - Add redirection time on the thank you page (optional). 
-* **Customizable Thank you page** - Customize the success page by adding your own message and success page URL that redirects the customer to a different page. 
-* Set **Tool-tip text** for displaying helpful information to users.
-* **Add your desired logo** on the top of your popup payment form.
-* Add "Upload" fields on the form.
-* Add "Date and Time" fields with calendar integration.
-* Add Tabular products.
-* Automatic "quantity-to-price" adjustments in the form.
-* Ability to add "Transaction ID" tag in email notifications.
-* Add the Submit an idea tab to your form.
-* Export transaction reports.
-* Sandbox OAuth support.
-* Add shortcodes using Gutenberg block.
-* Follow our [Price Plan](https://wpeasypay.com/pricing/) and choose one that perfectly fits your requirement.
-
-[Read the technical documentation on how to download, install and activate the WP EasyPay plugin on your website.](https://wpeasypay.com/documentation/) (For Pro Version only)
-[Checkout our WP EasyPay Demos here.](https://wpeasypay.com/demo/) (For Pro Version only)
-
-= Requirements: =
-* [Get Square Account.](http://apiexperts.io/link/square-partners/)
-* Valid SSL certificate.
-* WordPress 4.4+
-* PHP version 5.5 or greater
-
-= Important Notes: =
-* Square card payment API support is currently available in US, Canada,UK, Australia and Japan only.
-* On your payment button page SSL certificate must be activated for Square payments credit card form.
-* This Plugin does not synchronize your products between WooCommerce and Square. If you are interested in this feature then [WooSquare Plus](https://apiexperts.io/solutions/woosquare-plus/) is the right option for you which include square payment gateway and [WooCommerce Subscription](https://woocommerce.com/products/woocommerce-subscriptions/?aff=2878) support as well.
-
-= More Square Solutions: =
-
-* [WooSquare Plus - Manage Inventory, Auto Sync & Accept Online Payments with WooCommerce Subscription.](https://apiexperts.io/solutions/woosquare-plus/)
-* [WP Easy Pay Pro - with Square](https://wpeasypay.com/pricing/)
-* [Woocommerce Square Payment Gateway.](https://goo.gl/hgLMoA)
-* [WooSquare - Try Manual Sync With Free Version.](https://wordpress.org/plugins/woosquare/)
-* [Contact Form 7 With Square Payment Gateway.](http://apiexperts.io/solutions/contact-form-7-square-payment-add/)
-* [Gravity Forms Square Payment Gateway.](http://apiexperts.io/solutions/square-for-gravity-forms/)
-* [Gravity Forms with Square Recurring Payment.](https://apiexperts.io/solutions/gravity-forms-with-square-recurring-payment/)
-* [Give Wp Donation Via Square.](https://apiexperts.io/solutions/square-for-givewp/)
-* [Order Itemization With Square.](https://apiexperts.io/solutions/woocommerce-square-order-sync-add/)
-* [Square Integration With Ninja Forms.](https://apiexperts.io/solutions/square-integration-with-ninja-forms/)
-* [Pay With Square In GiveWP.](https://apiexperts.io/solutions/square-for-givewp/)
-* [WPForms Integration with Square (payment).](https://apiexperts.io/solutions/wpforms-integration-with-square-payment/)
-* [Formidable For Square Payment Gateway.](https://apiexperts.io/solutions/formidable-for-square-payment-gateway/)
-
-= Disclaimer =
-
-WPExperts offer solutions as a third party service provider, we are NOT affiliated, associated, authorized, endorsed by, or in any way officially connected with Square, Inc. The name "Square" as well as related marks and images are registered trademarks of Square, Inc.
-
-== Installation ==
-
-1. Upload the `WP Easy Pay` folder to the `/wp-content/plugins/` directory.
-2. Activate the plugin through the 'Plugins' menu in WordPress.
-3. Create a Square account. If you don't have an account, go to https://squareup.com/signup to create one. Register your application with Square.
-4. Then go to https://connect.squareup.com/apps and sign in to your Square account. Then click New Application and enter a name for your application and Create App. The application dashboard displays your new app's credentials. One of these credentials is the personal access token. This token gives your application full access to your own Square account than copy Access token, Application id and location and paste it WP Easy Pay  settings.
-
-== Screenshots ==
-1. Dashboard WP Easy Pay WordPress
-2. WP Easy Pay Settings Square WordPress
-3. WP Easy Pay Form Square WordPress
-4. WP Easy Pay Pro Features Square WordPress
-5. WP Easy Pay Desktop View Square WordPress.
-6. WP Easy Pay Modal Popup Square WordPress.
-
-== Frequently Asked Questions ==
-
-= Do I need an SSL certificate for WP EasyPay? =
-Yes, you need a valid SSL certificate to process payment through this plugin.
-
-= Where can I find the sandbox credentials for testing? =
-Please follow the video for instruction [Video link](https://www.youtube.com/watch?v=ygbVHXmPoxI).
-
-= How can I send customer information to a Square receipt? =
-You can read the transaction note documentation [here](https://wpeasypay.com/documentation/#square-transaction-note).
-
-= Does this plugin support recurring donations? =
-Yes, this plugin supports both [simple and recurring donations](https://wpeasypay.com/documentation/#form-types).
-
-= How can I cancel a customer's subscription? =
-Navigate to the subscriptions tab and cancel any subscription you want by simply choosing the cancelÃ‚Â option under the actions drop-down menu.
-
-= Do I need WooCommerce to use this plugin? =
-No, you do not need WooCommerce to use this plugin.
-
-= Do I need the WooCommerce subscription plugin for charging automatic payments? =
-No, you can simply charge automatic payments without the WooCommerce subscription plugin.
-
-= Can I connect my Square account with multiple forms? =
-Yes, you have the access and liberty to connect each form with a separate Square account.
-
-= Can I create multiple buttons on my site? =
-Yes, you can utilize the multiple button functionality to link different payment forms.
 
 == Changelog ==
 
@@ -454,4 +531,10 @@ Improvement - add a capability check current_user_can( WordFence )
 = 4.2.5 - 04/09/2024 =
 
 Improvement - Added a notice for square sandbox authorization.
-Fixed - Live connect Square Oauth issue
+Fixed - Live connect Square Oauth issue.
+
+= 4.2.6 - 11/13/2024 =
+
+Improvement - Optimized code for better performance.
+Updated - Integrated SDK for enhanced functionality and improved update handling.
+Fixed - Resolved console error: "Listener added for a 'DOMSubtreeModified' mutation event," which was unsupported and triggered in Edge, Chrome, and Firefox.

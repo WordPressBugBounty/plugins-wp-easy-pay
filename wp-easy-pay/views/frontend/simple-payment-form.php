@@ -237,7 +237,7 @@ $enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true 
 				echo esc_html( 'wpep-single-form-submit-btn' );
 	endif;
 			?>
-			"
+						   " data-form_id = "<?php echo esc_attr( $wpep_current_form_id ); ?>"
 			<?php
 			if ( ! isset( $show_default_amount ) ) :
 				echo 'wpep-disabled';
