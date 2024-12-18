@@ -3,8 +3,8 @@ Contributors: wpexpertsio
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=pay@objects.ws&item_name=DonationForPlugin
 Tags: square, cash app, payment form, donation, square payments
 Requires at least: 5.2
-Tested up to: 6.6
-Stable tag: 4.2.6
+Tested up to: 6.7
+Stable tag: 4.2.7
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -538,3 +538,7 @@ Fixed - Live connect Square Oauth issue.
 Improvement - Optimized code for better performance.
 Updated - Integrated SDK for enhanced functionality and improved update handling.
 Fixed - Resolved console error: "Listener added for a 'DOMSubtreeModified' mutation event," which was unsupported and triggered in Edge, Chrome, and Firefox.
+
+= 4.2.7 - 12/18/2024 =
+
+Fixed - Resolved console error: "OnTokenization" ACH payment 

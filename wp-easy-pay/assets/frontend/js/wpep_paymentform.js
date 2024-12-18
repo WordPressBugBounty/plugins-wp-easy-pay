@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 				async function initializeACH(payments) {
 					let redirectURI   = 'https://development-cloud.local/421-2/';
-					let transactionId = '';
+					let transactionId = 'wpeasypay-01';
 					const ach = await payments.ach({ redirectURI, transactionId });
 					return ach;
 				}		   
@@ -108,9 +108,23 @@ document.addEventListener('DOMContentLoaded', async function () {
 						ach = await initializeACH(payments);
 						const achButton = document.getElementById('ach-button');
 						achButton.addEventListener('click', async function (event) {
-							event.preventDefault();
+							var res = paymentButtonClicked(event, card, current_form_id, currency);
 							const paymentForm = document.getElementById('theForm-' + current_form_id);
 							const achOptions = getACHOptions(paymentForm, current_form_id);
+							event.preventDefault();
+							card = '';
+							ach.addEventListener(
+								`ontokenization`, function (event) {
+									console.log(event)
+									const { tokenResult, error } = event.detail;
+									if (error) {
+										// add code here to handle errors
+									}
+									else if (tokenResult.status === `OK`) {
+										handlePaymentMethodSubmission(event, ach, current_form_id, currency, tokenResult.token, 'ach', achOptions);
+									}
+								}
+							);
 							await handlePaymentMethodSubmission(event, ach, current_form_id, currency, false, 'ach', achOptions);
 							// ACH with the `accountHolderName` as an option.
 						});
@@ -137,13 +151,33 @@ document.addEventListener('DOMContentLoaded', async function () {
 	  }
 	 
 	  function getACHOptions(form, current_form_id) {
-		const billingContact = getBillingContact(form, current_form_id);
-		const accountHolderName = `${billingContact.givenName} ${billingContact.familyName}`;
-		return { accountHolderName };
+		  var amount           = jQuery( '#amount_display_' + current_form_id ).text();
+		  if(wpep_local_vars.currencySymbolType == 'code'){
+			  amount               = amount.trim();
+			  amount               = amount.split(' ');
+			  amount               = amount[0];
+			  amount 				 = amount.replace(wpep_local_vars.wpep_square_currency_new+"", "");
+		  }else{
+			  amount               = amount.trim();
+			  amount               = amount.split(' ');
+			  amount               = amount[0];
+			  amount 				 = amount.replace(wpep_local_vars.wpep_currency_symbol, "");
+		  }
+		  amount = parseFloat(amount.replace(",", ""));
+		  const billingContact = getBillingContact(form, current_form_id);
+		  const accountHolderName = `${billingContact.givenName} ${billingContact.familyName}`;
+		  return { 
+			  accountHolderName,
+			  intent: 'CHARGE',
+			  total: {
+				  amount: amount*100,
+				  currencyCode: wpep_local_vars.wpep_square_currency_new
+			  },
+		  };
 	  }
-	 
 
-	  function send_payment_request(data, current_form_id) {
+
+	function send_payment_request(data, current_form_id) {
 
 		jQuery.post(
 			wpep_local_vars.ajax_url,
@@ -676,7 +710,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 			}
 
 			if ( ! token ) {
-				
 				if ( method === 'ach' && jQuery('#ach-button').is(":visible") ) {
 					tokenize(paymentMethod, achOptions).then(token => {
 						createPayment(token, current_form_id, currency, false, false);
@@ -1729,42 +1762,42 @@ let timeoutId;
 	clearTimeout(timeoutId);
     timeoutId = setTimeout(function() {
 		let cashAppPay;
-		  try {
-			 	
+		try {
+
 			// Check if Cash App Pay is already attached before reinitializing
 			if (typeof cashAppPay === 'undefined') {
 				var current_form_id = jQuery(  'form.wpep_payment_form'  ).data( 'id' );
 				var currency        = jQuery(  'form.wpep_payment_form'  ).data( 'currency' );
-			  cashAppPay =  initializeCashApp(payments,current_form_id, currency);
+				cashAppPay =  initializeCashApp(payments,current_form_id, currency);
 				jQuery('.loader').hide();	
 			}
-			
-		  } catch (e) {
+
+		} catch (e) {
 			console.error('Initializing Cash App Pay failed', e);
-		  }
-		
-    }, 1000); 
 		}
+
+	}, 1000); 
+	}
 })
 async function displayCashApp(payments, current_form_id, currency) {
 	if('$' == currency) {
 		currency = 'USD';
 	}
-var amountElement = document.getElementById('amount_display_' + current_form_id);
-var amountText = amountElement.textContent.trim();
-var amount = amountText.replace(/[A-Za-z$]/g, '');
-	
+	var amountElement = document.getElementById('amount_display_' + current_form_id);
+	var amountText = amountElement.textContent.trim();
+	var amount = amountText.replace(/[A-Za-z$]/g, '');
+
 	if(currency !== amount){
 		let cashAppPay;
 		try {
-		  cashAppPay = await initializeCashApp(payments,current_form_id, currency);
+			cashAppPay = await initializeCashApp(payments,current_form_id, currency);
 		} catch (e) {
-		  console.error('Initializing Cash App Pay failed', e);
+			console.error('Initializing Cash App Pay failed', e);
 		}
 	} else {
 		jQuery('#cashapp-amount').show();
 	}
-	
-		
+
+
 	return cashAppPay;		
 }
