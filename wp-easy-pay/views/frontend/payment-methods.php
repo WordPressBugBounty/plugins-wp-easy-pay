@@ -161,20 +161,20 @@ if ( $ach_debit == 'on' ) {
 				</div>
 			</div>
 		</div>
-		<?php if ( $afterpay_available ) { ?>
+		<?php if ( isset( $afterpay_available ) && $afterpay_available ) { ?>
 		<div id="afterpay" class="tab-content">	
 			<div id="afterpay-amount" style="display:none"><p style="    display: flex;justify-content: center;">Please define in range Amount</p></div>
 			<div id="afterpay-button" style="text-align: center;"></div>
 			<div class="loader"></div>
 		</div>
 		<?php } 
-		if ( $ach_debit_available ) {
+		if ( isset( $ach_debit_available ) && $ach_debit_available ) {
 		?>
 		<div id="achdebit" class="tab-content">	
 			<button id="ach-button"> <img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/frontend/img/plaid.png' ); ?>" alt="Avatar" class="doneorder" alt="Plaid"> Pay with Bank Account</button>
 		</div>	
 		<?php } 
-		if ( $cashapp_available ) {
+		if ( isset( $cashapp_available ) && $cashapp_available ) {
 		?>
 		<div id="cashapp" style="text-align: center;" class="tab-content ">
 			<div id="cash-app-pay"></div>

@@ -36,7 +36,7 @@ function wpep_render_payment_form( $atts ) {
 				}
 
 				$square_token = wpep_get_square_token( $wpep_current_form_id );
-
+				
 				if ( ! isset( $square_token ) || empty( $square_token ) ) {
 
 					ob_start();
@@ -100,14 +100,14 @@ function wpep_get_square_token( $wpep_current_form_id ) {
 		if ( 'on' === $global_payment_mode ) {
 
 			/* If Global Form Live Mode */
-			$access_token = get_option( 'wpep_live_token_upgraded', true );
+			$access_token = get_option( 'wpep_live_token_upgraded' );
 
 		}
 
 		if ( 'on' !== $global_payment_mode ) {
 
 			/* If Global Form Test Mode */
-			$access_token = get_option( 'wpep_square_test_token_global', true );
+			$access_token = get_option( 'wpep_square_test_token_global' );
 
 		}
 	}
@@ -155,6 +155,7 @@ function is_available( $method, $currency ) {
 	return $is_available;
 }
 function wpep_currency_symbol( $currency ) {
+	$symbol = '';
 	if( 'USD' === $currency ) {
 		$symbol = '$';
 	} elseif( 'EUR' === $currency ) {

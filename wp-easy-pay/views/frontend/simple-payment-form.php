@@ -105,7 +105,6 @@ $enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true 
 
 	<h5 class="noSingle">Payment Information</h5>
 	<?php
-
 	if ( 'payment_drop' === $wpep_amount_layout_type ) {
 		require WPEP_ROOT_PATH . 'views/frontend/amount_layouts/amount-in-dropdown.php';
 

@@ -3,7 +3,7 @@
  * Plugin Name:       WP EASY PAY
  * Plugin URI:        https://wpeasypay.com/demo/
  * Description:       Easily collect payments for Simple Payment or donations online without coding it yourself or hiring a developer. Skip setting up a complex shopping cart system.
- * Version:           4.2.9
+ * Version:           4.2.10
  * Requires at least: 4.5.0
  * Requires PHP:      7.0
  * Author:            WP Easy Pay
@@ -122,6 +122,8 @@ if ( 'true' === $switch_to_new ) {
 			update_post_meta( $post_ID, 'wpep_square_payment_box_3', '300' );
 			update_post_meta( $post_ID, 'wpep_square_payment_box_4', '400' );
 			update_post_meta( $post_ID, 'wpep_square_payment_type', 'simple' );
+			update_post_meta( $post_ID, 'wpep_square_amount_type', 'payment_custom' );
+			update_post_meta( $post_ID, 'wpep_form_theme_color', '5d97ff' );
 			update_post_meta( $post_ID, 'wpep_square_form_builder_fields', '[ { "type": "text", "required": true, "label": "First Name", "className": "form-control", "name": "wpep-first-name-field", "subtype": "text", "hideLabel": "yes" }, { "type": "text", "required": true, "label": "Last Name", "className": "form-control", "name": "wpep-last-name-field", "subtype": "text", "hideLabel": "yes" }, { "type": "text", "subtype": "email", "required": true, "label": "Email", "className": "form-control", "name": "wpep-email-field", "hideLabel": "yes" } ]' );
 			update_post_meta( $post_ID, 'wpep_payment_success_msg', 'The example payment form has been submitted successfully' );
 		}

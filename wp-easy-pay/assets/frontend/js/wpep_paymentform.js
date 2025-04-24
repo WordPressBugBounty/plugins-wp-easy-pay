@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 				var current_form_id = jQuery( this ).data( 'id' );
 				var currency        = jQuery( this ).data( 'currency' );
 				let card;
-
 				calculate( current_form_id, currency );
 
 				jQuery('.qty').keyup(function(){
@@ -115,7 +114,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 							card = '';
 							ach.addEventListener(
 								`ontokenization`, function (event) {
-									console.log(event)
 									const { tokenResult, error } = event.detail;
 									if (error) {
 										// add code here to handle errors
@@ -664,20 +662,57 @@ document.addEventListener('DOMContentLoaded', async function () {
 	// which is due to buyer error (such as an expired card). It is up to the
 	// developer to handle the error and provide the buyer the chance to fix
 	// their mistakes.
-	async function tokenize(paymentMethod, options = false) {
-		const tokenResult = await paymentMethod.tokenize(options);
+	async function tokenize(paymentMethod, current_form_id, method, options = false) {
+		var amount = jQuery('input[name="wpep-selected-amount"]').val();
+		if (isNaN(amount)) {
+			amount = amount.replace(wpep_local_vars.wpep_currency_symbol, "");
+		}
+
+		var first_name = jQuery("#theForm-" + current_form_id + " input[name='wpep-first-name-field']").val();
+		var last_name = jQuery("#theForm-" + current_form_id + " input[name='wpep-last-name-field']").val();
+		var email = jQuery("#theForm-" + current_form_id + " input[name='wpep-email-field']").val();
+		var payment_type = jQuery('#wpep_payment_form_type_' + current_form_id).val();
+		var save_card_later = jQuery('#saveCardLater').is(':checked');
+
+		var intent = (payment_type == 'subscription' || save_card_later === true) ? 'STORE' : 'CHARGE';
+
+		var amountText = jQuery('small.display').text();
+		var amountValue = amountText.match(/[\d,.]+/)[0];
+
+		const verificationDetails = {
+			billingContact: {
+				familyName: last_name,
+				givenName: first_name,
+				email: email,
+			},
+			intent: intent,
+			customerInitiated: true,
+			sellerKeyedIn: false,
+		};
+
+		if (intent === 'CHARGE') {
+			verificationDetails.amount = amountValue.replace(/,/g, "");
+			verificationDetails.currencyCode = wpep_local_vars.wpep_square_currency_new;
+		}
+
+		let tokenResult;
+		if (method === 'ach') {
+			tokenResult = await paymentMethod.tokenize(options);
+		} else {
+			tokenResult = await paymentMethod.tokenize(verificationDetails);
+		}
+
 		if (tokenResult.status === 'OK') {
 			return tokenResult.token;
 		} else {
-		let errorMessage = `Tokenization failed-status: ${tokenResult.status}`;
-		if (tokenResult.errors) {
-			errorMessage += ` and errors: ${JSON.stringify(
-			tokenResult.errors
-			)}`;
+			let errorMessage = `Tokenization failed-status: ${tokenResult.status}`;
+			if (tokenResult.errors) {
+				errorMessage += ` and errors: ${JSON.stringify(tokenResult.errors)}`;
+			}
+			jQuery('.wpepLoader').remove();
+			throw new Error(errorMessage);
 		}
-		jQuery( '.wpepLoader' ).remove();
-		throw new Error(errorMessage);
-		}
+		
 	}
 
 	async function handlePaymentMethodSubmission(event, paymentMethod, current_form_id, currency, token = false, method = null, achOptions = null) {
@@ -711,11 +746,11 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 			if ( ! token ) {
 				if ( method === 'ach' && jQuery('#ach-button').is(":visible") ) {
-					tokenize(paymentMethod, achOptions).then(token => {
+					tokenize(paymentMethod, current_form_id, method, achOptions).then(token => {
 						createPayment(token, current_form_id, currency, false, false);
 					});
 				} else {
-					tokenize(paymentMethod).then(token => {
+					tokenize(paymentMethod, current_form_id, method).then(token => {
 						verifyBuyer(payments, token, amount, currency, intent, first_name, last_name, email).then(verifyToken => {
 							createPayment(token, current_form_id, currency, false, verifyToken);
 						});

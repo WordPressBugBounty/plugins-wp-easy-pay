@@ -98,12 +98,6 @@ $wpep_btn_label        = get_post_meta( get_the_ID(), 'wpep_payment_btn_label', 
 	<div class="form-group">
 
 		<label class="lbltitle">Pay Button Label</label>
-		<label><input type="text" name="wpep_payment_btn_label" placeholder="Pay Now" value="
-		<?php
-		if ( isset( $wpep_btn_label ) && ! empty( $wpep_btn_label ) ) {
-			echo esc_html( trim( $wpep_btn_label ) );
-		}
-		?>
-		" id="formType2"/></label>
+		<label><input type="text" name="wpep_payment_btn_label" placeholder="Pay Now" value="<?php echo ! empty( $wpep_btn_label ) ? $wpep_btn_label : '' ?>" id="formType2"/></label>
 	</div>
 </div>

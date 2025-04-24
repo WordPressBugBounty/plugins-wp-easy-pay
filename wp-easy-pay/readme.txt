@@ -3,8 +3,8 @@ Contributors: wpexpertsio
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=pay@objects.ws&item_name=DonationForPlugin
 Tags: square, cash app, payment form, donation, square payments
 Requires at least: 5.2
-Tested up to: 6.7
-Stable tag: 4.2.9
+Tested up to: 6.8
+Stable tag: 4.2.10
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -543,6 +543,12 @@ Fixed - Resolved console error: "Listener added for a 'DOMSubtreeModified' mutat
 
 Fixed - Resolved console error: "OnTokenization" ACH payment 
 
-= 4.2.9 - 01/27/2025 =
+= 4.2.9 - 01/27/2025 
 
 Improvement - Updated Freemius SDK to the latest version.
+
+= 4.2.10 - 04/24/2025 =
+
+Update - Payment OnTokenization Square Update.
+Fixed - Pay button not showing on form issue fixed.
+Improvement - Optimized code for better performance.

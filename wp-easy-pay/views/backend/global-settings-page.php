@@ -124,15 +124,15 @@ $wpep_create_connect_sandbox_url = wpep_create_connect_sandbox_url( 'global' );
 
 
 $live_token   = get_option( 'wpep_live_token_upgraded' );
-$wpep_sandbox = false;
+if( isset( $live_token ) && ! empty( $live_token ) ){
+	$wpep_sandbox = false;
 
-$info = array(
+	$info = array(
 
-	'access_token' => $live_token,
-	'client_id'    => WPEP_SQUARE_APP_ID,
+		'access_token' => $live_token,
+		'client_id'    => WPEP_SQUARE_APP_ID,
 
-);
-
+	);
 	$revoked = 'false';
 
 	
@@ -166,7 +166,7 @@ $info = array(
 	if ( $response['response']['code'] != 200 || 'ACCESS_TOKEN_REVOKED' === @$response_body->errors[0]->code || 'UNAUTHORIZED' === @$response_body->errors[0]->code ) {
 		$revoked = 'true';
 	}
-
+}
 
 ?>
 
@@ -336,16 +336,14 @@ endif;
 								}
 							}
 
-									$saved_location_id = get_option( 'wpep_square_test_location_id_global', false );
+							$saved_location_id = get_option( 'wpep_square_test_location_id_global', false );
+							$selected = '';
 							if ( false !== $saved_location_id ) {
 
 								if ( $saved_location_id === $location_id ) {
 
 											$selected = 'selected';
 
-								} else {
-
-											$selected = '';
 								}
 							}
 										echo "<option value='" . esc_attr( $location_id ) . "'" . esc_html( $selected ) . '>' . esc_html( $location_name ) . '</option>';
