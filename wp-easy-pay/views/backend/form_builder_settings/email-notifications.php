@@ -32,6 +32,11 @@ $wpep_square_user_email_content_field            = get_post_meta( get_the_ID(), 
 $wpep_square_user_email_exclude_blank_tags_lines = get_post_meta( get_the_ID(), 'wpep_square_user_email_exclude_blank_tags_lines', true );
 $wpep_square_user_email_content_type_html        = get_post_meta( get_the_ID(), 'wpep_square_user_email_content_type_html', true );
 
+$wpep_enable_payment_summary_report        = get_post_meta( get_the_ID(), 'wpep_enable_payment_summary_report', true );
+$wpep_square_summary_email_to_field        = get_post_meta( get_the_ID(), 'wpep_square_summary_email_to_field', true );
+$wpep_square_summary_email_from_field      = get_post_meta( get_the_ID(), 'wpep_square_summary_email_from_field', true );
+$wpep_square_summary_email_subject_field   = get_post_meta( get_the_ID(), 'wpep_square_summary_email_subject_field', true );
+$wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_square_summary_email_frequency_field', true );
 ?>
 
 <main>
@@ -60,6 +65,9 @@ $wpep_square_user_email_content_type_html        = get_post_meta( get_the_ID(), 
 				</span>
 				<span>
 					Amount:
+				<span>
+					<small class="wpep_tags"> [line_items] </small>
+				</span>
 					<small class="wpep_tags"> [total_amount] </small>
 				</span>
 			</p>
@@ -81,20 +89,20 @@ $wpep_square_user_email_content_type_html        = get_post_meta( get_the_ID(), 
 				<div class="inner">
 					<div class="form-group">
 						<label>To:</label>
-						<input type="text" class="form-control" value="<?php echo esc_attr( $wpep_square_admin_email_to_field ); ?>"
+						<input type="email" class="form-control" value="<?php echo esc_attr( $wpep_square_admin_email_to_field ); ?>"
 								name="wpep_square_admin_email_to_field" placeholder="examaple@mail.com"/>
 					</div>
 
 					<div class="form-group">
 						<label>CC:</label>
-						<input type="text" class="form-control" value="<?php echo esc_attr( $wpep_square_admin_email_cc_field ); ?>"
+						<input type="email" class="form-control" value="<?php echo esc_attr( $wpep_square_admin_email_cc_field ); ?>"
 								name="wpep_square_admin_email_cc_field" placeholder="examaple@mail.com"/>
 
 					</div>
 
 					<div class="form-group">
 						<label>BCC:</label>
-						<input type="text" class="form-control"
+						<input type="email" class="form-control"
 								value="<?php echo esc_attr( $wpep_square_admin_email_bcc_field ); ?>"
 								name="wpep_square_admin_email_bcc_field" placeholder="examaple@mail.com"/>
 
@@ -102,7 +110,7 @@ $wpep_square_user_email_content_type_html        = get_post_meta( get_the_ID(), 
 
 					<div class="form-group">
 						<label>From:</label>
-						<input type="text" class="form-control"
+						<input type="email" class="form-control"
 								value="<?php echo esc_attr( $wpep_square_admin_email_from_field ); ?>"
 								name="wpep_square_admin_email_from_field" placeholder="example@mail.com"/>
 
@@ -119,8 +127,8 @@ $wpep_square_user_email_content_type_html        = get_post_meta( get_the_ID(), 
 					<div class="form-group">
 						<label>Message Body:</label>
 						<textarea id="admin_email" type="text" class="form-control form-control-longtext"
-									placeholder="Please Enter subject" name="wpep_square_admin_email_content_field"
-									<style="line-height:1.5"><?php echo '<pre>' . esc_html( $wpep_square_admin_email_content_field ) . '</pre>'; ?></textarea>
+									placeholder="Please Enter Message" name="wpep_square_admin_email_content_field"
+									style="line-height:1.5"><?php echo '<pre>' . esc_html( $wpep_square_admin_email_content_field ) . '</pre>'; ?></textarea>
 
 					</div>
 
@@ -159,7 +167,7 @@ $wpep_square_user_email_content_type_html        = get_post_meta( get_the_ID(), 
 				<div class="inner">
 					<div class="form-group">
 						<label>From:</label>
-						<input type="text" class="form-control"
+						<input type="email" class="form-control"
 								value="<?php echo esc_attr( $wpep_square_user_email_from_field ); ?>"
 								name="wpep_square_user_email_from_field" placeholder="example@mail.com"/>
 
@@ -176,8 +184,8 @@ $wpep_square_user_email_content_type_html        = get_post_meta( get_the_ID(), 
 					<div class="form-group">
 						<label>Message Body:</label>
 						<textarea id="user_email" type="text" class="form-control form-control-longtext"
-									placeholder="Please Enter subject" name="wpep_square_user_email_content_field"
-									<style="line-height:1.5"><?php echo '<pre>' . esc_html( $wpep_square_user_email_content_field ) . '</pre>'; ?></textarea>
+									placeholder="Please Enter Message" name="wpep_square_user_email_content_field"
+									style="line-height:1.5"> <?php echo '<pre>' . esc_html( $wpep_square_user_email_content_field ) . '</pre>'; ?> </textarea>
 
 					</div>
 
@@ -208,6 +216,66 @@ $wpep_square_user_email_content_type_html        = get_post_meta( get_the_ID(), 
 					</div>
 				</div>
 			</li>
+			<?php $statement = false; ?>
+			<?php if ( $statement ) { ?>
+				<li>
+					<a class="toggle" href="#">Email Summary Report for Admin
+						<i class="fa fa-chevron-right" aria-hidden="true"></i></a>
+					<div class="inner">
+						<div class="form-group">
+							<label for="exclude"> Enable
+								<input type="checkbox" name="wpep_enable_payment_summary_report"
+										id="exclude" 
+										<?php
+										if ( 'on' === $wpep_enable_payment_summary_report ) {
+											echo 'checked';
+										}
+										?>
+								>
+								Get a Payment Summary Report for Your Website
+							</label>
+						</div>
+
+						<div class="form-group">
+							<label>Email To:</label>
+							<input type="email" class="form-control" value="<?php echo esc_attr( $wpep_square_summary_email_to_field ); ?>"
+									name="wpep_square_summary_email_to_field" placeholder="examaple@mail.com"/>
+						</div>
+
+						<div class="form-group">
+							<label>Email From:</label>
+							<input type="email" class="form-control"
+									value="<?php echo esc_attr( $wpep_square_summary_email_from_field ); ?>"
+									name="wpep_square_summary_email_from_field" placeholder="example@mail.com"/>
+
+						</div>
+
+						<div class="form-group">
+							<label>Email Subject:</label>
+							<input type="text" class="form-control"
+									value="<?php echo esc_attr( $wpep_square_summary_email_subject_field ); ?>"
+									name="wpep_square_summary_email_subject_field" placeholder="Please Enter subject"/>
+
+						</div>
+						<div class="form-group">
+							<label>Choose the Frequency:</label>
+							<div>
+							<input type="radio" id="wpep_weekly_frequency" name="wpep_square_summary_email_frequency_field" value="weekly" 
+							<?php echo 'weekly' === $wpep_square_summary_email_frequency_field ? 'checked' : ''; ?>
+							/>
+							<label for="wpep_weekly_frequency">Weekly</label>
+							</div>
+							<div>
+							<input type="radio" id="wpep_monthly_frequency" name="wpep_square_summary_email_frequency_field" value="monthly"
+							<?php echo 'monthly' === $wpep_square_summary_email_frequency_field ? 'checked' : ''; ?>
+							/>
+							<label for="wpep_monthly_frequency">Monthly</label>
+							</div>
+						</div>
+
+					</div>
+				</li>
+			<?php } ?>
 		</ul>
 	</div>
 </main>

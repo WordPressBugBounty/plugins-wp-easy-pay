@@ -8,7 +8,7 @@
 
 $selected_transaction_notes = get_post_meta( get_the_ID(), 'wpep_transaction_notes_box', true );
 $form_fields                = json_decode( get_post_meta( get_the_ID(), 'wpep_square_form_builder_fields', true ) );
-$fees_data                  = get_post_meta( get_the_ID(), 'fees_data' );
+$fees_data                  = get_post_meta( get_the_ID(), 'fees_data', true );
 ?>
 
 <main>

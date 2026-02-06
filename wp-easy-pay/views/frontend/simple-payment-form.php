@@ -1,21 +1,31 @@
 <?php
 /**
- * Filename: simple-payment-form.php
- * Description: simple payment form into frontend.
+ * WP Easy Pay Payment Form Renderer
  *
- * @package WP_Easy_Pay
+ * This file handles rendering and processing of the WP Easy Pay payment form,
+ * including dynamic fields for personal and payment information,
+ * and managing quantity and payment options based on selected configurations.
+ *
+ * @package    WP_Easy_Pay
+ * @subpackage Payments
+ * @version    1.0.0
+ * @license    GPL-2.0-or-later
  */
 
-$enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true );
+$enable_quantity      = get_post_meta( $wpep_current_form_id, 'enableQuantity', true );
+$want_redirection     = ! empty( get_post_meta( $wpep_current_form_id, 'wantRedirection', true ) ) ? get_post_meta( $wpep_current_form_id, 'wantRedirection', true ) : 'No';
+$redirection_delay    = ! empty( get_post_meta( $wpep_current_form_id, 'redirectionDelay', true ) ) ? get_post_meta( $wpep_current_form_id, 'redirectionDelay', true ) : 0;
+$square_currency      = wpep_get_form_currency( $wpep_current_form_id );
+$currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currencySymbolType', true ) ) ? get_post_meta( $wpep_current_form_id, 'currencySymbolType', true ) : 'code';
 ?>
 <fieldset class="wizard-fieldset show">
-	<input type="hidden" class="g-recaptcha-response" name="g-recaptcha-response" value=""/>
+	<input type="hidden" class="g-recaptcha-response" name="g-recaptcha-response"/>
 	<div class="s_ft noMulti">
 		<h2>Basic Info</h2>
 	</div>
 
 	<h5 class="noSingle">Personal Information</h5>
-	<div id="wpep_personal_information" class="fieldMainWrapper <?= basename(__FILE__, '.p') ?>">
+	<div id="wpep_personal_information" class="fieldMainWrapper">
 		<?php
 		foreach ( $open_form_json as $value ) {
 
@@ -47,11 +57,10 @@ $enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true 
 				if ( isset( $value->subtype ) ) {
 					$type_custom = $value->subtype;
 				}
-				$class_name = 'className';
-				$hide_label = 'hideLabel';
-				echo "<div class='" . esc_attr( $type_custom ) . '-field form-group ' . ( isset( $value->required ) ? 'wpep-required' : '' ) . "'>";
-				echo "<label class='wizard-form-text-label' data-label-show='" . esc_attr( $value->$hide_label ) . "'> " . esc_html( ( isset( $value->label ) ) ? $value->label : '' ) . wp_kses( $if_required, array( 'span' => array( 'class' => array() ) ) ) . ' </label>';
-				echo "<input type='" . esc_attr( $type_custom ) . "' maxlength='" . esc_attr( isset( $value->maxlength ) ? $value->maxlength : '' ) . "' min='" . esc_attr( isset( $value->min ) ? $value->min : '' ) . "' max='" . esc_attr( isset( $value->max ) ? $value->max : '' ) . "' step='" . esc_attr( isset( $value->step ) ? $value->step : '' ) . "' class='" . esc_attr( ( isset( $value->$class_name ) ) ? $value->$class_name : '' ) . "' data-label='" . esc_attr( ( isset( $value->label ) ) ? $value->label : '' ) . "' name='" . esc_attr( $value->name ) . "' required='" . esc_attr( ( isset( $value->required ) ) ? 'true' : 'false' ) . "' />";
+
+				echo "<div class='" . esc_attr( $type_custom ) . '-field form-group ' . ( ( isset( $value->required ) ) ? 'wpep-required' : '' ) . "'>";
+				echo "<label class='wizard-form-text-label' data-label-show='" . esc_attr( $value->hideLabel ) . "'> " . esc_html( ( isset( $value->label ) ) ? $value->label : '' ) . wp_kses( $if_required, array( 'span' => array( 'class' => array() ) ) ) . ' </label>'; // phpcs:ignore
+				echo "<input type='" . esc_attr( $type_custom ) . "' onwheel='this.blur()' maxlength='" . esc_attr( isset( $value->maxlength ) ? $value->maxlength : '' ) . "' min='" . esc_attr( isset( $value->min ) ? $value->min : '' ) . "' max='" . esc_attr( isset( $value->max ) ? $value->max : '' ) . "' step='" . esc_attr( isset( $value->step ) ? $value->step : '' ) . "' class='" . esc_attr( ( isset( $value->className ) ) ? $value->className : '' ) . "' data-label='" . esc_attr( ( isset( $value->label ) ) ? $value->label : '' ) . "' name='" . esc_attr( $value->name ) . "' required='" . esc_attr( ( isset( $value->required ) ) ? 'true' : 'false' ) . "' />"; // phpcs:ignore
 				if ( isset( $value->description ) && '' !== $value->description ) {
 					echo "<span class='wpep-help-text'>" . esc_html( $value->description ) . '</span>';
 				}
@@ -64,19 +73,15 @@ $enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true 
 		<input type="hidden" id="wpep_payment_form_type_<?php echo esc_attr( $wpep_current_form_id ); ?>" value="single"/>
 		<input type="hidden" name="wpep_file_upload_url" id="wpep_file_upload_url" value="no_upload">
 		<?php
-		if ( 'on' === $enable_quantity && 'payment_tabular' !== $wpep_amount_layout_type ) {
+		if ( 'on' === $enable_quantity && 'payment_custom' !== $wpep_amount_layout_type && 'payment_tabular' !== $wpep_amount_layout_type ) {
 			?>
 			<div class="qtyWrapper">
 				<label class="qtylabel" for="">Quantity</label>
 				<div class="inpuQty form-group">
-					<div class="value-button" id="decrease"
-						onclick="wpep_decreaseValue(<?php echo esc_attr( $wpep_current_form_id ); ?>)" value="Decrease Value">-
-					</div>
-					<input type="number" class="form-control" id="wpep_quantity_<?php echo esc_attr( $wpep_current_form_id ); ?>"
-							name="wpep_quantity" value="1"/>
-					<div class="value-button" id="increase"
-						onclick="wpep_increaseValue(<?php echo esc_attr( $wpep_current_form_id ); ?>)" value="Increase Value">+
-					</div>
+					<div class="value-button wpep_decreaseValue" id="decrease" value="Decrease Value">-</div>
+					<input type="number" class="form-control" min="1" id="wpep_quantity_<?php echo esc_attr( $wpep_current_form_id ); ?>"
+							name="wpep_quantity" value="1" step="1"/>
+					<div class="value-button wpep_increaseValue" id="increase" value="Increase Value">+</div>
 				</div>
 			</div>
 
@@ -105,16 +110,6 @@ $enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true 
 
 	<h5 class="noSingle">Payment Information</h5>
 	<?php
-	if ( 'payment_drop' === $wpep_amount_layout_type ) {
-		require WPEP_ROOT_PATH . 'views/frontend/amount_layouts/amount-in-dropdown.php';
-
-		if ( 'symbol' === $currency_symbol_type ) {
-			$show_default_amount = $square_currency . $wpep_dropdown_amounts[ $price_selected - 1 ]['amount'];
-		} else {
-			$show_default_amount = $wpep_dropdown_amounts[ $price_selected - 1 ]['amount'] . ' ' . $square_currency;
-		}
-	}
-
 	if ( 'payment_custom' === $wpep_amount_layout_type ) {
 
 		require WPEP_ROOT_PATH . 'views/frontend/amount_layouts/amount-custom.php';
@@ -122,50 +117,80 @@ $enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true 
 		if ( 'dollar1' === $default_price_selected || '' === $default_price_selected ) {
 			if ( 'symbol' === $currency_symbol_type ) {
 				$show_default_amount = $square_currency . $wpep_square_payment_box_1;
-			} else {
+			} elseif ( 'code' === $currency_symbol_type ) {
 				$show_default_amount = $wpep_square_payment_box_1 . ' ' . $square_currency;
+			} else {
+				$show_default_amount = $wpep_square_payment_box_1;
 			}
 		}
 
 		if ( 'dollar2' === $default_price_selected ) {
 			if ( 'symbol' === $currency_symbol_type ) {
 				$show_default_amount = $square_currency . $wpep_square_payment_box_2;
-			} else {
+			} elseif ( 'code' === $currency_symbol_type ) {
 				$show_default_amount = $wpep_square_payment_box_2 . ' ' . $square_currency;
+			} else {
+				$show_default_amount = $wpep_square_payment_box_2;
 			}
 		}
 
 		if ( 'dollar3' === $default_price_selected ) {
 			if ( 'symbol' === $currency_symbol_type ) {
 				$show_default_amount = $square_currency . $wpep_square_payment_box_3;
-			} else {
+			} elseif ( 'code' === $currency_symbol_type ) {
 				$show_default_amount = $wpep_square_payment_box_3 . ' ' . $square_currency;
+			} else {
+				$show_default_amount = $wpep_square_payment_box_3;
 			}
 		}
 
 		if ( 'dollar4' === $default_price_selected ) {
 			if ( 'symbol' === $currency_symbol_type ) {
 				$show_default_amount = $square_currency . $wpep_square_payment_box_4;
-			} else {
+			} elseif ( 'code' === $currency_symbol_type ) {
 				$show_default_amount = $wpep_square_payment_box_4 . ' ' . $square_currency;
+			} else {
+				$show_default_amount = $wpep_square_payment_box_4;
 			}
 		}
 	}
 
-	if ( 'payment_radio' === $wpep_amount_layout_type ) {
-		require WPEP_ROOT_PATH . 'views/frontend/amount_layouts/amount-in-radio.php';
+	if ( wepp_fs()->is__premium_only() ) {
+		if ( 'payment_drop' === $wpep_amount_layout_type ) {
+			require WPEP_ROOT_PATH . 'views/frontend/amount_layouts/amount-in-dropdown.php';
 
-		if ( 'symbol' === $currency_symbol_type ) {
-			$show_default_amount = $square_currency . $wpep_radio_amounts[ $price_selected - 1 ]['amount'];
-		} else {
-			$show_default_amount = $wpep_radio_amounts[ $price_selected - 1 ]['amount'] . ' ' . $square_currency;
+			if ( 'symbol' === $currency_symbol_type ) {
+				$show_default_amount = $square_currency . $wpep_dropdown_amounts[ $price_selected - 1 ]['amount'];
+			} elseif ( 'code' === $currency_symbol_type ) {
+				$show_default_amount = $wpep_dropdown_amounts[ $price_selected - 1 ]['amount'] . ' ' . $square_currency;
+			} else {
+				$show_default_amount = $wpep_dropdown_amounts[ $price_selected - 1 ]['amount'];
+			}
+		}
+
+
+		if ( 'payment_radio' === $wpep_amount_layout_type ) {
+			require WPEP_ROOT_PATH . 'views/frontend/amount_layouts/amount-in-radio.php';
+
+			if ( 'symbol' === $currency_symbol_type ) {
+				$show_default_amount = $square_currency . $wpep_radio_amounts[ $price_selected - 1 ]['amount'];
+			} elseif ( 'code' === $currency_symbol_type ) {
+				$show_default_amount = $wpep_radio_amounts[ $price_selected - 1 ]['amount'] . ' ' . $square_currency;
+			} else {
+				$show_default_amount = $wpep_radio_amounts[ $price_selected - 1 ]['amount'];
+			}
+		}
+
+		if ( 'payment_tabular' === $wpep_amount_layout_type ) {
+			require WPEP_ROOT_PATH . 'views/frontend/amount_layouts/amount-in-tabular.php';
+		}
+		if ( wepp_fs()->is__premium_only() ) {
+			if ( 'tabular_layout_for_square' === $wpep_amount_layout_type ) {
+				require WPEP_ROOT_PATH . 'views/frontend/amount_layouts/amount-in-square-tabular.php';
+			}
 		}
 	}
-
-	if ( 'payment_tabular' === $wpep_amount_layout_type ) {
-		require WPEP_ROOT_PATH . 'views/frontend/amount_layouts/amount-in-tabular.php';
-	}
-
+	$wpep_square_customer_cof = get_user_meta( get_current_user_id(), 'wpep_square_customer_cof', true );
 	require WPEP_ROOT_PATH . 'views/frontend/payment-methods.php';
 
 	$wpep_btn_label = get_post_meta( $wpep_current_form_id, 'wpep_payment_btn_label', true );
@@ -186,7 +211,7 @@ $enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true 
 			$sub_total_amount = isset( $show_default_amount ) ? floatval( str_replace( $square_currency, '', $show_default_amount ) ) : 0.00;
 			$total_amount     = $sub_total_amount;
 			$currency         = isset( $square_currency ) ? $square_currency : '$';
-			$fees_data        = get_post_meta( $wpep_current_form_id, 'fees_data' );
+			$fees_data        = get_post_meta( $wpep_current_form_id, 'fees_data', false );
 
 			if ( ! empty( $fees_data[0]['check'] ) && in_array( 'yes', $fees_data[0]['check'], true ) ) :
 				?>
@@ -196,23 +221,35 @@ $enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true 
 					<ul>
 						<li class="wpep-fee-subtotal">
 							<span class="fee_name"><?php echo esc_html__( 'Subtotal', 'wp_easy_pay' ); ?></span>
-							<span class="fee_value"><?php echo esc_attr( number_format( $sub_total_amount, 2 ) ) . ' ' . esc_attr( $currency ); ?></span>
+							<?php if ( 'symbol' === $currency_symbol_type ) { ?>
+								<span class="fee_value"><?php echo esc_attr( $square_currency ) . esc_attr( number_format( $sub_total_amount, 2 ) ); ?></span>
+							<?php } elseif ( 'code' === $currency_symbol_type ) { ?>
+								<span class="fee_value"><?php echo esc_attr( number_format( $sub_total_amount, 2 ) ) . ' ' . esc_attr( $square_currency ); ?></span>
+							<?php } else { ?>
+								<span class="fee_value"><?php echo esc_attr( number_format( $sub_total_amount, 2 ) ); ?></span>
+							<?php } ?>
 						</li>
 						<?php
 						foreach ( $fees_data[0]['check'] as $key => $fees ) :
 							if ( 'yes' === $fees ) :
 
 								if ( 'percentage' === $fees_data[0]['type'][ $key ] ) {
-									$tax_fee = $sub_total_amount * ( $fees_data[0]['value'][ $key ] / 100 );
+									$wpep_tax = $sub_total_amount * ( $fees_data[0]['value'][ $key ] / 100 );
 								} else {
-									$tax_fee = $fees_data[0]['value'][ $key ];
+									$wpep_tax = $fees_data[0]['value'][ $key ];
 								}
 
-								$total_amount = $total_amount + $tax_fee;
+								$total_amount = $total_amount + $wpep_tax;
 								?>
 								<li>
 									<span class="fee_name"><?php echo esc_html( $fees_data[0]['name'][ $key ] ); ?></span>
-									<span class="fee_value"><?php echo esc_attr( number_format( $tax_fee, 2 ) ) . ' ' . esc_attr( $currency ); ?></span>
+									<?php if ( 'symbol' === $currency_symbol_type ) { ?>
+										<span class="fee_value"><?php echo esc_attr( $square_currency ) . esc_attr( number_format( $wpep_tax, 2 ) ); ?></span>
+									<?php } elseif ( 'code' === $currency_symbol_type ) { ?>
+										<span class="fee_value"><?php echo esc_attr( number_format( $wpep_tax, 2 ) ) . ' ' . esc_attr( $square_currency ); ?></span>
+									<?php } else { ?>
+										<span class="fee_value"><?php echo esc_attr( number_format( $wpep_tax, 2 ) ); ?></span>
+									<?php } ?>
 								</li>
 								<?php
 							endif;
@@ -220,7 +257,13 @@ $enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true 
 						?>
 						<li class="wpep-fee-total">
 							<span class="fee_name"><?php echo esc_html__( 'Total', 'wp_easy_pay' ); ?></span>
-							<span class="fee_value"><?php echo esc_attr( number_format( $total_amount, 2 ) ) . ' ' . esc_attr( $currency ); ?></span>
+							<?php if ( 'symbol' === $currency_symbol_type ) { ?>
+								<span class="fee_value"><?php echo esc_attr( $square_currency ) . esc_attr( number_format( $total_amount, 2 ) ); ?></span>
+							<?php } elseif ( 'code' === $currency_symbol_type ) { ?>
+								<span class="fee_value"><?php echo esc_attr( number_format( $total_amount, 2 ) ) . ' ' . esc_attr( $square_currency ); ?></span>
+							<?php } else { ?>
+								<span class="fee_value"><?php echo esc_attr( number_format( $total_amount, 2 ) ); ?></span>
+							<?php } ?>
 						</li>
 					</ul>
 					</div>
@@ -231,12 +274,12 @@ $enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true 
 			<button class="
 			<?php
 			if ( 'on' === $wpep_show_wizard ) :
-				echo esc_html( 'wpep-wizard-form-submit-btn' );
+				echo esc_html( "wpep-wizard-form-submit-btn wpep-wizard-form-$wpep_current_form_id" );
 			else :
-				echo esc_html( 'wpep-single-form-submit-btn' );
+				echo esc_html( "wpep-single-form-submit-btn wpep-single-form-$wpep_current_form_id" );
 	endif;
 			?>
-						   " data-form_id = "<?php echo esc_attr( $wpep_current_form_id ); ?>"
+			"
 			<?php
 			if ( ! isset( $show_default_amount ) ) :
 				echo 'wpep-disabled';
@@ -248,19 +291,25 @@ $enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true 
 																	class="display">
 																	<?php
 																	if ( ! empty( $fees_data[0]['check'] ) && in_array( 'yes', $fees_data[0]['check'], true ) && isset( $total_amount ) ) :
-																		echo esc_html( number_format( $total_amount, 2 ) );
-																		elseif ( isset( $show_default_amount ) ) :
+																		if ( 'symbol' === $currency_symbol_type ) {
+																			echo esc_html( $square_currency ) . esc_html( number_format( $total_amount, 2 ) );
+																		} elseif ( 'code' === $currency_symbol_type ) {
+																			echo esc_html( number_format( $total_amount, 2 ) ) . ' ' . esc_html( $square_currency );
+																		} else {
 																			echo esc_html( number_format( $total_amount, 2 ) );
-																		endif;
-																		?>
-																		</small>
-					<input type="hidden" name="wpep-selected-amount"
+																		}
+																	elseif ( isset( $show_default_amount ) ) :
+																		echo esc_html( $show_default_amount );
+																	endif;
+																	?>
+																	</small>
+					<input type="hidden" id="wpep-selected-amount-<?php echo esc_attr( $wpep_current_form_id ); ?>" name="wpep-selected-amount"
 						value="
 						<?php
 						if ( ! empty( $fees_data[0]['check'] ) && in_array( 'yes', $fees_data[0]['check'], true ) && isset( $total_amount ) ) :
 							echo esc_html( number_format( $total_amount, 2 ) );
 							elseif ( isset( $show_default_amount ) ) :
-								echo esc_html( $show_default_amount );
+								echo esc_html( number_format( $total_amount, 2 ) );
 							endif;
 							?>
 							">
@@ -272,7 +321,7 @@ $enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true 
 							endif;
 						?>
 							"/>
-				</span>
+					</span>
 			</button>
 			<?php
 			if ( ! empty( $fees_data[0]['check'] ) && in_array( 'yes', $fees_data[0]['check'], true ) && isset( $total_amount ) ) :
@@ -283,7 +332,7 @@ $enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true 
 				$gross_total = $show_default_amount;
 			endif;
 			?>
-			<input type="hidden" name="gross_total" value="<?php echo isset( $gross_total ) ? esc_html( $gross_total ) : ''; ?>">
+			<input type="hidden" id="gross_total-<?php echo esc_attr( $wpep_current_form_id ); ?>" name="gross_total" value="<?php echo isset( $gross_total ) ? esc_html( $gross_total ) : 0; ?>">
 		</div>
 	</div>
 
@@ -294,8 +343,8 @@ $enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true 
 <fieldset class="wizard-fieldset orderCompleted blockIfSingle">
 	<div class="confIfSingleTop">
 		<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/frontend/img/order-done.svg' ); ?>" alt="Avatar"
-		width="70"
-		class="doneorder">
+			width="70"
+			class="doneorder">
 		<h2>Payment Successful</h2>
 	</div>
 
@@ -309,9 +358,9 @@ $enable_quantity = get_post_meta( $wpep_current_form_id, 'enableQuantity', true 
 		<a href="<?php echo esc_url( $wpep_payment_success_url ); ?>"
 			class="form-wizard-submit float-right"><?php echo esc_html( $wpep_payment_success_label ); ?></a><br><br>
 	<?php } ?>
-
-	<small class="counterText">Page will be redirected in <span id="counter-<?php echo esc_attr( $wpep_current_form_id ); ?>">5</span>
-		seconds.
-	</small>
-
+	<?php if ( 'Yes' === $want_redirection && $redirection_delay >= 0 ) { ?>
+		<small class="counterText">Page will be redirected in <span id="counter-<?php echo esc_attr( $wpep_current_form_id ); ?>">5</span>
+			seconds.
+		</small>
+	<?php } ?>
 </fieldset>

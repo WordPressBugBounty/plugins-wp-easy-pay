@@ -6,9 +6,6 @@
  * @package WP_Easy_Pay
  */
 
-?>
-<?php
-
 $wpep_square_payment_box_1 = get_post_meta( $wpep_current_form_id, 'wpep_square_payment_box_1', true );
 $wpep_square_payment_box_2 = get_post_meta( $wpep_current_form_id, 'wpep_square_payment_box_2', true );
 $wpep_square_payment_box_3 = get_post_meta( $wpep_current_form_id, 'wpep_square_payment_box_3', true );
@@ -18,89 +15,8 @@ $default_price_selected    = ! empty( get_post_meta( $wpep_current_form_id, 'def
 $wpep_square_user_defined_amount = get_post_meta( $wpep_current_form_id, 'wpep_square_user_defined_amount', true );
 $wpep_square_payment_min         = get_post_meta( $wpep_current_form_id, 'wpep_square_payment_min', true );
 $wpep_square_payment_max         = get_post_meta( $wpep_current_form_id, 'wpep_square_payment_max', true );
-
-
-$form_payment_global = get_post_meta( $wpep_current_form_id, 'wpep_individual_form_global', true );
-
-if ( 'on' === $form_payment_global ) {
-
-	$global_payment_mode = get_option( 'wpep_square_payment_mode_global', true );
-
-	if ( 'on' === $global_payment_mode ) {
-
-		/* If Global Form Live Mode */
-
-
-		$wpep_square_currency = get_option( 'wpep_square_currency_new' );
-
-	}
-
-	if ( 'on' !== $global_payment_mode ) {
-
-		/* If Global Form Test Mode */
-
-
-		$wpep_square_currency = get_option( 'wpep_square_currency_test' );
-
-	}
-}
-
-if ( 'on' !== $form_payment_global ) {
-
-
-	$individual_payment_mode = get_post_meta( $wpep_current_form_id, 'wpep_payment_mode', true );
-
-	if ( 'on' === $individual_payment_mode ) {
-
-		/* If Individual Form Live Mode */
-
-
-		$square_currency = get_post_meta( $wpep_current_form_id, 'wpep_post_square_currency_new', true );
-
-	}
-
-	if ( 'on' !== $individual_payment_mode ) {
-
-
-		/* If Individual Form Test Mode */
-
-
-		$square_currency = get_post_meta( $wpep_current_form_id, 'wpep_post_square_currency_test', true );
-
-
-	}
-}
-
-
-$currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currencySymbolType', true ) ) ? get_post_meta( $wpep_current_form_id, 'currencySymbolType', true ) : 'code';
-
-if ( 'symbol' === $currency_symbol_type ) {
-
-	if ( 'USD' === $square_currency ) :
-		$square_currency = '$';
-	endif;
-
-	if ( 'CAD' === $square_currency ) :
-		$square_currency = 'C$';
-	endif;
-
-	if ( 'AUD' === $square_currency ) :
-		$square_currency = 'A$';
-	endif;
-
-	if ( 'JPY' === $square_currency ) :
-		$square_currency = '¥';
-	endif;
-
-	if ( 'GBP' === $square_currency ) :
-		$square_currency = '£';
-	endif;
-
-	if ( 'EUR' === $square_currency ) :
-		$square_currency = '€';
-	endif;
-
-}
+$square_currency                 = wpep_get_form_currency( $wpep_current_form_id );
+$currency_symbol_type            = ! empty( get_post_meta( $wpep_current_form_id, 'currencySymbolType', true ) ) ? get_post_meta( $wpep_current_form_id, 'currencySymbolType', true ) : 'code';
 
 ?>
 
@@ -108,7 +24,9 @@ if ( 'symbol' === $currency_symbol_type ) {
 
 	<?php
 
+	$show_other = false;
 	if ( 'on' !== $wpep_square_user_defined_amount && '' === $wpep_square_payment_box_1 && '' === $wpep_square_payment_box_2 && '' === $wpep_square_payment_box_3 && '' === $wpep_square_payment_box_4 ) {
+		$show_other = true;
 
 		if ( '' === $wpep_square_payment_min && '' === $wpep_square_payment_min ) {
 
@@ -116,14 +34,15 @@ if ( 'symbol' === $currency_symbol_type ) {
 			$wpep_square_payment_max = 50000;
 
 		}
-	} elseif ( '' !== $wpep_square_payment_box_1 || '' !== $wpep_square_payment_box_2 || '' !== $wpep_square_payment_box_3 || '' !== $wpep_square_payment_box_4 ) {
+	} else {
+
 		echo '<label class="selectAmount">*Select Amount</label>';
 	}
 
 	?>
 
 
-	<div class="paymentSelect" style="<?php echo ( '' === $wpep_square_payment_box_1 && '' === $wpep_square_payment_box_2 && '' === $wpep_square_payment_box_3 && '' === $wpep_square_payment_box_4 ) ? 'display: none;' : ''; ?>">
+	<div class="paymentSelect">
 		<?php if ( '' !== $wpep_square_payment_box_1 ) { ?>
 			<div class="selection">
 				<input id="doller1_<?php echo esc_attr( $wpep_current_form_id ); ?>" name="doller"
@@ -134,12 +53,16 @@ if ( 'symbol' === $currency_symbol_type ) {
 endif;
 						?>
 						/>
-				<label for="doller1_<?php echo esc_attr( $wpep_current_form_id ); ?>" class="paynow">
-					<?php if ( 'symbol' === $currency_symbol_type ) { ?>
-						<?php echo esc_html( $square_currency . $wpep_square_payment_box_1 ); ?>
-					<?php } else { ?>
-						<?php echo esc_html( $wpep_square_payment_box_1 . ' ' . $square_currency ); ?>
-					<?php } ?>
+				<label for="doller1_<?php echo esc_attr( $wpep_current_form_id ); ?>" class="paynow payamount-<?php echo esc_attr( $wpep_current_form_id ); ?>">
+					<?php
+					if ( 'symbol' === $currency_symbol_type ) {
+							echo esc_html( $square_currency . $wpep_square_payment_box_1 );
+					} elseif ( 'code' === $currency_symbol_type ) {
+						echo esc_html( $wpep_square_payment_box_1 . ' ' . $square_currency );
+					} else {
+						echo esc_html( $wpep_square_payment_box_1 );
+					}
+					?>
 				</label>
 			</div>
 		<?php } ?>
@@ -153,12 +76,16 @@ endif;
 endif;
 						?>
 						/>
-				<label for="doller2_<?php echo esc_attr( $wpep_current_form_id ); ?>" class="paynow">
-					<?php if ( 'symbol' === $currency_symbol_type ) { ?>
-						<?php echo esc_html( $square_currency . $wpep_square_payment_box_2 ); ?>
-					<?php } else { ?>
-						<?php echo esc_html( $wpep_square_payment_box_2 . ' ' . $square_currency ); ?>
-					<?php } ?>
+				<label for="doller2_<?php echo esc_attr( $wpep_current_form_id ); ?>" class="paynow payamount-<?php echo esc_attr( $wpep_current_form_id ); ?>">
+					<?php
+					if ( 'symbol' === $currency_symbol_type ) {
+							echo esc_html( $square_currency . $wpep_square_payment_box_2 );
+					} elseif ( 'code' === $currency_symbol_type ) {
+						echo esc_html( $wpep_square_payment_box_2 . ' ' . $square_currency );
+					} else {
+						echo esc_html( $wpep_square_payment_box_2 );
+					}
+					?>
 				</label>
 			</div>
 		<?php } ?>
@@ -172,12 +99,16 @@ endif;
 endif;
 						?>
 						/>
-				<label for="doller5_<?php echo esc_attr( $wpep_current_form_id ); ?>" class="paynow">
-					<?php if ( 'symbol' === $currency_symbol_type ) { ?>
-						<?php echo esc_html( $square_currency . $wpep_square_payment_box_3 ); ?>
-					<?php } else { ?>
-						<?php echo esc_html( $wpep_square_payment_box_3 . ' ' . $square_currency ); ?>
-					<?php } ?>
+				<label for="doller5_<?php echo esc_attr( $wpep_current_form_id ); ?>" class="paynow payamount-<?php echo esc_attr( $wpep_current_form_id ); ?>">
+					<?php
+					if ( 'symbol' === $currency_symbol_type ) {
+							echo esc_html( $square_currency . $wpep_square_payment_box_3 );
+					} elseif ( 'code' === $currency_symbol_type ) {
+						echo esc_html( $wpep_square_payment_box_3 . ' ' . $square_currency );
+					} else {
+						echo esc_html( $wpep_square_payment_box_3 );
+					}
+					?>
 				</label>
 			</div>
 		<?php } ?>
@@ -191,20 +122,22 @@ endif;
 endif;
 						?>
 						/>
-				<label for="doller10_<?php echo esc_attr( $wpep_current_form_id ); ?>" class="paynow">
-					<?php if ( 'symbol' === $currency_symbol_type ) { ?>
-						<?php echo esc_html( $square_currency . $wpep_square_payment_box_4 ); ?>
-					<?php } else { ?>
-						<?php echo esc_html( $wpep_square_payment_box_4 . ' ' . $square_currency ); ?>
-					<?php } ?>
+				<label for="doller10_<?php echo esc_attr( $wpep_current_form_id ); ?>" class="paynow payamount-<?php echo esc_attr( $wpep_current_form_id ); ?>">
+					<?php
+					if ( 'symbol' === $currency_symbol_type ) {
+							echo esc_html( $square_currency . $wpep_square_payment_box_4 );
+					} elseif ( 'code' === $currency_symbol_type ) {
+						echo esc_html( $wpep_square_payment_box_4 . ' ' . $square_currency );
+					} else {
+						echo esc_html( $wpep_square_payment_box_4 );
+					}
+					?>
 				</label>
 			</div>
 		<?php } ?>
 
 		<?php
 		if ( 'on' === $wpep_square_user_defined_amount ) {
-
-
 			?>
 
 			<div class="selection">
@@ -218,24 +151,23 @@ endif;
 
 
 	</div>
-<?php
-if ( 'on' === $wpep_square_user_defined_amount ) {
 
-	?>
 	<div class="selection showPayment" 
-	<?php echo ( '' === $wpep_square_payment_box_1 && '' === $wpep_square_payment_box_2 && '' === $wpep_square_payment_box_3 && '' === $wpep_square_payment_box_4 ) ? 'style="display: block;"' : 'style="display: none;"'; ?>
+	<?php
+	if ( ! $show_other ) {
+		echo 'style="display: none;"';
+	}
+	?>
 	>
 		<div class="otherpInput">
 
-			<input class="form-control text-center customPayment otherPayment"
+			<input class="form-control text-center customPayment otherPayment other-<?php echo esc_attr( $wpep_current_form_id ); ?>"
 					Placeholder="Enter your amount <?php echo esc_attr( $wpep_square_payment_min ); ?> - <?php echo esc_attr( $wpep_square_payment_max ); ?>"
 					name="somename" min="<?php echo esc_attr( $wpep_square_payment_min ); ?>"
 					max="<?php echo esc_attr( $wpep_square_payment_max ); ?>" type="number"/>
-
+					
+			<span class="valueCheckWpep"></span>
 
 		</div>
 	</div>
-	<?php
-}
-?>
 </div>

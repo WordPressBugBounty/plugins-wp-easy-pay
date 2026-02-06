@@ -1,14 +1,15 @@
+<?php
+/**
+ * Filename: add-payment-form-custom-fields.php
+ * Description: add payment form custom fields backend.
+ *
+ * @package WP_Easy_Pay
+ */
+
+?>
+
 <div class="easypayblock">
 
-	<?php
-	/**
-	 * Filename: add-payment-form-custom-fields.php
-	 * Description: add payment form custom fields backend.
-	 *
-	 * @package WP_Easy_Pay
-	 */
-
-	?>
 
 	<?php require_once 'tabs-list-and-switches.php'; ?>
 	<!-- THE PANELS -->

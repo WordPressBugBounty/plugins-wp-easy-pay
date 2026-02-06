@@ -1,0 +1,28 @@
+.filter-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px; /* Add space below the datepicker and filter */
+}
+
+.datepicker-wrapper {
+    flex-grow: 1; /* Allow the datepicker to take more space */
+}
+
+.filter-wrapper {
+    margin-left: 20px; /* Add space between the datepicker and filter */
+}
+
+#datepicker {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%; /* Adjust width to fit the container */
+}
+
+#filter-options {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}

@@ -54,8 +54,7 @@ jQuery(document).on( 'click', '.wpep_card_delete', function (e) {
 	var data = {
 
 		'action': 'wpep_delete_user_card',
-		'card_id': card_id,
-		'nonce': nonce
+		'card_id': card_id
 	};
 	jQuery.post(
 		wpep_subscription_vars.ajax_url,
@@ -78,8 +77,7 @@ jQuery('.sub_details').on('click', function(e){
 	var data = {
 
 		'action': 'get_wpep_subscription_details',
-		'subscription_id': subscription_id,
-		'nonce': nonce,
+		'subscription_id': subscription_id
 
 	};
 	

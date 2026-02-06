@@ -1,6 +1,40 @@
 jQuery( 'document' ).ready(
 	function(){
 
+	// This below code is for Subscription, Report and Coupons custom post type search
+	// This jQuery file was calling upon backend so added this chunk here.
+	// Chunk Open.
+	var urlParams = new URLSearchParams(window.location.search);
+	if(urlParams.has('s')) {
+		var searchVal = urlParams.get('s');
+		jQuery('span.subtitle strong').text(searchVal);
+	}
+	// Chunk Closed.
+
+	let post_ids = jQuery('input[name="post[]"]').map(function() {return this.value;}).get().join();
+		var data = {
+			'action': 'wpep_status_check',
+			'post_id': post_ids,
+			'wp_global_nonce': wpep_reports_data.nonce,
+		};
+	jQuery.post(
+			wpep_reports_data.ajax_url,
+			data,
+			function(response) {
+	  
+				/* response = JSON.parse( response );
+	  
+				if ('failed' == response.status) {
+				}
+	  
+				if ('success' == response.status) {
+					location.reload();
+				} */
+	  
+			}
+		);
+
+		
 		jQuery( '.give_refund_button' ).click(
 			function(event) {
 				event.preventDefault();

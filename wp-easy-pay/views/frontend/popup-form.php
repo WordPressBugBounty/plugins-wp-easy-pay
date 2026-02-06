@@ -1,25 +1,79 @@
 <?php
 /**
- * Filename: popup-form.php
- * Description: popup form in frontend.
+ * WP Easy Pay Plugin Payment Script
  *
- * @package WP_Easy_Pay
+ * This script handles the session initialization, script enqueuing, and form rendering for the WP Easy Pay plugin.
+ * It includes functions to:
+ * - Start sessions for managing form IDs.
+ * - Enqueue the appropriate Square payment form script (sandbox or live) based on payment mode settings.
+ * - Render the payment form as a popup in the footer with various options like simple payment, donation, and subscription.
+ *
+ * @package    WP_Easy_Pay
+ * @version    1.0.0
+ * @since      1.0.0
+ * @license    GPL-2.0-or-later
  */
 
-?>
-<?php
-
-add_action( 'wp_footer', 'wpep_popup_into_footer' );
 /**
- * Outputs the necessary JavaScript and HTML for the popup into the footer.
+ * Enqueues the appropriate Square payment form script based on payment mode settings.
+ *
+ * This function determines the correct Square payment form script (sandbox or production)
+ * based on global and individual form payment mode settings. It also handles the form ID retrieval,
+ * whether embedded in the page content or stored as a transient.
+ *
+ * @since 1.0.0
+ * @return void
+ */
+function wpep_popup_enque_scripts() {
+	if ( 'checkout' === basename( get_permalink() ) ) {
+		return;
+	}
+	$form_post            = get_post();
+	$current_form_content = $form_post->post_content;
+	if ( isset( $current_form_content ) ) {
+		$shortcode_attr       = explode( 'wpep-form', $current_form_content );
+		$current_form_code    = explode( '"', $shortcode_attr[1] );
+		$current_form_code_id = $current_form_code[1];
+	}
+	if ( empty( $current_form_code_id ) ) {
+		$current_form_code_id = get_transient( 'wpep_guten_id' );
+	}
+	$global_form             = get_post_meta( $current_form_code_id, 'wpep_individual_form_global', true );
+	$global_payment_mode     = get_option( 'wpep_square_payment_mode_global', true );
+	$individual_payment_mode = get_post_meta( $current_form_code_id, 'wpep_payment_mode', true );
+	if ( 0 === $global_payment_mode || empty( $individual_payment_mode ) ) {
+		wp_enqueue_script( 'square_payment_form_external', 'https://sandbox.web.squarecdn.com/v1/square.js', array(), '1.0', true );
+	} else {
+		wp_enqueue_script( 'square_payment_form_external', 'https://web.squarecdn.com/v1/square.js', array(), '1.0', true );
+	}
+}
+if ( wepp_fs()->is__premium_only() ) {
+	add_action( 'wp_enqueue_scripts', 'wpep_popup_enque_scripts' );
+}
+add_action( 'wp_footer', 'wpep_popup_into_footer' );
+
+/**
+ * Renders the WP Easy Pay form as a popup on the footer.
+ *
+ * This function checks for the presence of session form IDs and retrieves the
+ * appropriate settings and form details for each form ID. It determines the payment
+ * mode (sandbox or live), form structure, and payment type, and renders the form as a
+ * popup with options for various payment methods, including simple payment, donation,
+ * and subscription.
+ *
+ * @since 1.0.0
+ * @return void
  */
 function wpep_popup_into_footer() {
 
+	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
+		exit;
+	}
 	if ( isset( $_SESSION['form_ids'] ) ) {
+		$form_ids = array_map( 'intval', $_SESSION['form_ids'] );
+		foreach ( array_unique( $form_ids ) as $ids ) {
 
-		foreach ( array_unique( $_SESSION['form_ids'] ) as $ids ) {
-
-			$wpep_current_form_id = $ids;
+			$wpep_current_form_id = intval( $ids );
 
 			if ( ! empty( $wpep_current_form_id ) ) {
 
@@ -32,107 +86,61 @@ function wpep_popup_into_footer() {
 				$wpep_button_title            = empty( get_post_meta( $wpep_current_form_id, 'wpep_button_title', true ) ) ? 'Pay' : get_post_meta( $wpep_current_form_id, 'wpep_button_title', true );
 				$square_application_id_in_use = null;
 				$square_location_id_in_use    = null;
-
-				$wpep_payment_success_url   = ! empty( get_post_meta( $wpep_current_form_id, 'wpep_square_payment_success_url', true ) ) ? get_post_meta( $wpep_current_form_id, 'wpep_square_payment_success_url', true ) : '';
-				$wpep_payment_success_label = ! empty( get_post_meta( $wpep_current_form_id, 'wpep_square_payment_success_label', true ) ) ? get_post_meta( $wpep_current_form_id, 'wpep_square_payment_success_label', true ) : '';
-				$wpep_payment_success_msg   = ! empty( get_post_meta( $wpep_current_form_id, 'wpep_payment_success_msg', true ) ) ? get_post_meta( $wpep_current_form_id, 'wpep_payment_success_msg', true ) : '';
-
-				$currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currencySymbolType', true ) ) ? get_post_meta( $wpep_current_form_id, 'currencySymbolType', true ) : 'code';
-
-				$want_redirection  = ! empty( get_post_meta( $wpep_current_form_id, 'wantRedirection', true ) ) ? get_post_meta( $wpep_current_form_id, 'wantRedirection', true ) : 'No';
-				$redirection_delay = ! empty( get_post_meta( $wpep_current_form_id, 'redirectionDelay', true ) ) ? get_post_meta( $wpep_current_form_id, 'redirectionDelay', true ) : '';
-
-				$enable_terms_condition = get_post_meta( $wpep_current_form_id, 'enableTermsCondition', true );
-				$terms_label            = ! empty( get_post_meta( $wpep_current_form_id, 'termsLabel', true ) ) ? get_post_meta( $wpep_current_form_id, 'termsLabel', true ) : 'no';
-				$terms_link             = ! empty( get_post_meta( $wpep_current_form_id, 'termsLink', true ) ) ? get_post_meta( $wpep_current_form_id, 'termsLink', true ) : 'no';
-
+				$wpep_payment_success_url     = ! empty( get_post_meta( $wpep_current_form_id, 'wpep_square_payment_success_url', true ) ) ? get_post_meta( $wpep_current_form_id, 'wpep_square_payment_success_url', true ) : '';
+				$wpep_payment_success_label   = ! empty( get_post_meta( $wpep_current_form_id, 'wpep_square_payment_success_label', true ) ) ? get_post_meta( $wpep_current_form_id, 'wpep_square_payment_success_label', true ) : '';
+				$wpep_payment_success_msg     = ! empty( get_post_meta( $wpep_current_form_id, 'wpep_payment_success_msg', true ) ) ? get_post_meta( $wpep_current_form_id, 'wpep_payment_success_msg', true ) : '';
+				$currency_symbol_type         = ! empty( get_post_meta( $wpep_current_form_id, 'currencySymbolType', true ) ) ? get_post_meta( $wpep_current_form_id, 'currencySymbolType', true ) : 'code';
+				$want_redirection             = ! empty( get_post_meta( $wpep_current_form_id, 'wantRedirection', true ) ) ? get_post_meta( $wpep_current_form_id, 'wantRedirection', true ) : 'No';
+				$redirection_delay            = ! empty( get_post_meta( $wpep_current_form_id, 'redirectionDelay', true ) ) ? get_post_meta( $wpep_current_form_id, 'redirectionDelay', true ) : 5;
+				$enable_terms_condition       = get_post_meta( $wpep_current_form_id, 'enableTermsCondition', true );
+				$terms_label                  = ! empty( get_post_meta( $wpep_current_form_id, 'termsLabel', true ) ) ? get_post_meta( $wpep_current_form_id, 'termsLabel', true ) : 'no';
+				$terms_link                   = ! empty( get_post_meta( $wpep_current_form_id, 'termsLink', true ) ) ? get_post_meta( $wpep_current_form_id, 'termsLink', true ) : 'no';
+				$global_form                  = get_post_meta( $wpep_current_form_id, 'wpep_individual_form_global', true );
+				$global_payment_mode          = get_option( 'wpep_square_payment_mode_global', true );
+				$individual_payment_mode      = get_post_meta( $wpep_current_form_id, 'wpep_payment_mode', true );
+				$postal_ph                    = ! empty( get_post_meta( $wpep_current_form_id, 'postalPh', true ) ) ? get_post_meta( $wpep_current_form_id, 'postalPh', true ) : 'Postal';
 				if ( is_user_logged_in() ) {
 					$current_user = wp_get_current_user();
 					$user_email   = $current_user->user_email;
 				} else {
 					$user_email = '';
 				}
-
-				$fees_data = get_post_meta( $wpep_current_form_id, 'fees_data' );
-
+				$fees_data                         = get_post_meta( $wpep_current_form_id, 'fees_data', true );
 				$wpep_donation_goal_switch         = get_post_meta( $wpep_current_form_id, 'wpep_donation_goal_switch', true );
 				$wpep_donation_goal_amount         = get_post_meta( $wpep_current_form_id, 'wpep_donation_goal_amount', true );
 				$wpep_donation_goal_message_switch = get_post_meta( $wpep_current_form_id, 'wpep_donation_goal_message_switch', true );
 				$wpep_donation_goal_message        = get_post_meta( $wpep_current_form_id, 'wpep_donation_goal_message', true );
 				$wpep_donation_goal_form_close     = get_post_meta( $wpep_current_form_id, 'wpep_donation_goal_form_close', true );
 				$wpep_donation_goal_achieved       = ! empty( get_post_meta( $wpep_current_form_id, 'wpep_donation_goal_achieved', true ) ) ? get_post_meta( $wpep_current_form_id, 'wpep_donation_goal_achieved', true ) : 0;
-
-				$form_payment_global = get_post_meta( $wpep_current_form_id, 'wpep_individual_form_global', true );
-
-				$wpep_amount_layout_type         = get_post_meta( $wpep_current_form_id, 'wpep_square_amount_type', true );
-				$wpep_square_form_builder_fields = get_post_meta( $wpep_current_form_id, 'wpep_square_form_builder_fields', true );
-				$json_form                       = $wpep_square_form_builder_fields;
-				$open_form_json                  = json_decode( $json_form );
+				$wpep_amount_layout_type           = get_post_meta( $wpep_current_form_id, 'wpep_square_amount_type', true );
+				$wpep_square_form_builder_fields   = get_post_meta( $wpep_current_form_id, 'wpep_square_form_builder_fields', true );
+				$json_form                         = $wpep_square_form_builder_fields;
+				$open_form_json                    = json_decode( $json_form );
 				if ( 'on' === $wpep_show_shadow ) {
 					$shadow_class = 'wpep_form_shadow';
-
 				} else {
-
 					$shadow_class = '';
-
 				}
-
-				if ( 'on' === $form_payment_global ) {
-
-					$global_payment_mode = get_option( 'wpep_square_payment_mode_global', true );
-
-					if ( 'on' === $global_payment_mode ) {
-
-						/* If Global Form Live Mode */
-
-						wp_enqueue_script( 'square_payment_form_external', 'https://sandbox.web.squarecdn.com/v1/square.js', array(), '3', true );
-
-						$square_application_id_in_use = WPEP_SQUARE_APP_ID;
-						$square_location_id_in_use    = get_option( 'wpep_square_location_id', true );
-						$square_currency              = get_option( 'wpep_square_currency_new' );
-
-					}
-
-					if ( 'on' !== $global_payment_mode ) {
-
-						/* If Global Form Test Mode */
-
-						wp_enqueue_script( 'square_payment_form_external', 'https://sandbox.web.squarecdn.com/v1/square.js', array(), '3', true );
-
-						$square_application_id_in_use = get_option( 'wpep_square_test_app_id_global', true );
-						$square_location_id_in_use    = get_option( 'wpep_square_test_location_id_global', true );
-						$square_currency              = get_option( 'wpep_square_currency_test' );
-
-					}
-				}
-
-				if ( 'on' !== $form_payment_global ) {
-
-					$individual_payment_mode = get_post_meta( $wpep_current_form_id, 'wpep_payment_mode', true );
-
-					if ( 'on' === $individual_payment_mode ) {
-
-						/* If Individual Form Live Mode */
-
-						wp_enqueue_script( 'square_payment_form_external', 'https://sandbox.web.squarecdn.com/v1/square.js', array(), '3', true );
-
-						$square_application_id_in_use = WPEP_SQUARE_APP_ID;
-						$square_location_id_in_use    = get_post_meta( $wpep_current_form_id, 'wpep_square_location_id', true );
-						$square_currency              = get_post_meta( $wpep_current_form_id, 'wpep_post_square_currency_new', true );
-
-					}
-
-					if ( 'on' !== $individual_payment_mode ) {
-
-						/* If Individual Form Test Mode */
-
-						wp_enqueue_script( 'square_payment_form_external', 'https://sandbox.web.squarecdn.com/v1/square.js', array(), '3', true );
-
+				if ( empty( $global_form ) ) {
+					// For single form.
+					if ( empty( $individual_payment_mode ) ) { // For test individual.
 						$square_application_id_in_use = get_post_meta( $wpep_current_form_id, 'wpep_square_test_app_id', true );
 						$square_location_id_in_use    = get_post_meta( $wpep_current_form_id, 'wpep_square_test_location_id', true );
 						$square_currency              = get_post_meta( $wpep_current_form_id, 'wpep_post_square_currency_test', true );
-
+						
+					} elseif ( ! empty( $individual_payment_mode ) ) { // For live individual.
+						$square_application_id_in_use = WPEP_SQUARE_APP_ID;
+						$square_location_id_in_use    = get_post_meta( $wpep_current_form_id, 'wpep_square_location_id', true );
+						$square_currency              = get_post_meta( $wpep_current_form_id, 'wpep_post_square_currency_new', true );
 					}
+				} elseif ( 0 === $global_payment_mode ) { // For test global.
+					$square_application_id_in_use = get_option( 'wpep_square_test_app_id_global', true );
+					$square_location_id_in_use    = get_option( 'wpep_square_test_location_id_global', true );
+					$square_currency              = get_option( 'wpep_square_currency_test' );
+				} else { // For live global.
+					$square_application_id_in_use = WPEP_SQUARE_APP_ID;
+					$square_location_id_in_use    = get_option( 'wpep_square_location_id', true );
+					$square_currency              = get_option( 'wpep_square_currency_new' );
 				}
 				?>
 
@@ -141,7 +149,7 @@ function wpep_popup_into_footer() {
 					<div class="wpep-popup">
 						<?php $logo = get_the_post_thumbnail_url( $wpep_current_form_id ); ?>
 						<?php
-						if ( isset( $logo ) && '' !== $logo ) {
+						if ( ! empty( $logo ) && '' !== $logo ) {
 							echo '<span class="wpep-popup-logo"><img src="' . esc_url( $logo ) . '" class="wpep-popup-logo-img"></span>';
 						}
 						?>
@@ -150,7 +158,8 @@ function wpep_popup_into_footer() {
 							<span></span>
 						</a>
 						<div class="wpep-content">
-							<div class="wizard-<?php echo esc_attr( $wpep_current_form_id ); ?> <?php
+							<div class="wizard-<?php echo esc_attr( $wpep_current_form_id ); ?>
+							<?php
 							if ( 'on' !== $wpep_show_wizard ) {
 								echo 'singlepage';
 							} else {
@@ -166,7 +175,8 @@ function wpep_popup_into_footer() {
 												data-currency="<?php echo esc_attr( $square_currency ); ?>"
 												data-currency-type="<?php echo esc_attr( $currency_symbol_type ); ?>"
 												data-redirection="<?php echo esc_attr( $want_redirection ); ?>"
-												data-delay="<?php echo esc_attr( $redirection_delay ); ?>"data-user-email="<?php echo esc_attr( $user_email ); ?>"
+												data-delay="<?php echo esc_attr( $redirection_delay ); ?>"
+												data-postal="<?php echo esc_attr( $postal_ph ); ?>" data-user-email="<?php echo esc_attr( $user_email ); ?>"
 												data-redirectionurl="<?php echo esc_url( $wpep_payment_success_url ); ?>">
 
 											<style>
@@ -336,19 +346,19 @@ function wpep_popup_into_footer() {
 													require WPEP_ROOT_PATH . 'views/frontend/donation-payment-form.php';
 
 												}
+												if ( wepp_fs()->is__premium_only() ) {
+													if ( 'subscription' === $payment_type ) {
 
-												if ( 'subscription' === $payment_type ) {
+														require WPEP_ROOT_PATH . 'views/frontend/subscription-payment-form.php';
 
-													require WPEP_ROOT_PATH . 'views/frontend/subscription-payment-form.php';
+													}
 
+													if ( 'donation_recurring' === $payment_type ) {
+
+														require WPEP_ROOT_PATH . 'views/frontend/subscription-payment-form.php';
+
+													}
 												}
-
-												if ( 'donation_recurring' === $payment_type ) {
-
-													require WPEP_ROOT_PATH . 'views/frontend/subscription-payment-form.php';
-
-												}
-
 												?>
 											</div>
 											<!-- wizard partials -->
@@ -370,16 +380,24 @@ function wpep_popup_into_footer() {
 	}
 }
 
-add_action( 'init', 'wpep_session_start' );
 /**
- * Start the session and initialize the 'form_ids' session variable.
+ * Initializes a session and resets the 'form_ids' session variable.
+ *
+ * This function starts a PHP session, and if the 'form_ids' session variable is set,
+ * it resets it to an empty array. It is designed for use with the WP Easy Pay plugin to handle form session data.
+ *
+ * @since 1.0.0
+ * @return void
  */
 function wpep_session_start() {
 	session_start();
 	if ( isset( $_SESSION['form_ids'] ) ) {
 		$_SESSION['form_ids'] = array();
 	}
+	session_write_close();
 }
+
+add_action( 'init', 'wpep_session_start' );
 
 
 ?>

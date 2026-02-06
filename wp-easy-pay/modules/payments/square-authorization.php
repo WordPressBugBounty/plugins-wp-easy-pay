@@ -4,11 +4,10 @@
  *
  * PHP version 7
  *
- * Category: Wordpress_Plugin
- *
+ * @category Wordpress_Plugin
  * @package  WP_Easy_Pay
- * Author:   Author <contact@apiexperts.io>
- * License: https://opensource.org/licenses/MIT MIT License
+ * @author   Author <contact@apiexperts.io>
+ * @license  https://opensource.org/licenses/MIT MIT License
  * @link     http://wpeasypay.com/
  */
 
@@ -20,13 +19,18 @@ add_action( 'admin_init', 'wpep_square_disconnect' );
  * Authorizes the plugin with Square and retrieves the access token.
  */
 function wpep_authorize_with_square() {
+
+	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
+		exit;
+	}
+	unset( $_REQUEST['cp_admin_page_nonce'] );
+	$request = $_REQUEST;
+
 	if ( ! empty( $_GET['wpep_prepare_connection_call'] ) ) {
-		if ( isset( $_POST['wp_global_nonce'] ) ) {
-			check_admin_referer( 'wp_global_nonce', 'wp_global_nonce' );
-		}
-		$url_identifiers                  = $_REQUEST;
+
+		$url_identifiers                  = $request;
 		$url_identifiers['oauth_version'] = 2;
-		$url_identifiers['wpep_disconnect_nonce']      = esc_attr( wp_create_nonce( 'wpep_disconnect_square' ) );
+		$url_identifiers['wp_nonce']      = esc_attr( wp_create_nonce( wp_rand( 10, 100 ) ) );
 		unset( $url_identifiers['wpep_prepare_connection_call'] );
 		$redirect_url = add_query_arg( $url_identifiers, admin_url( $url_identifiers['wpep_admin_url'] ) );
 
@@ -35,7 +39,7 @@ function wpep_authorize_with_square() {
 		$middle_server_data = array(
 
 			'redirect'      => rawurlencode( $redirect_url ),
-			'scope'         => rawurlencode( 'MERCHANT_PROFILE_READ PAYMENTS_READ PAYMENTS_WRITE CUSTOMERS_READ CUSTOMERS_WRITE ORDERS_WRITE' ),
+			'scope'         => rawurlencode( 'MERCHANT_PROFILE_READ PAYMENTS_READ PAYMENTS_WRITE CUSTOMERS_READ CUSTOMERS_WRITE ORDERS_WRITE ITEMS_WRITE INVOICES_WRITE SUBSCRIPTIONS_WRITE ITEMS_READ SUBSCRIPTIONS_READ INVOICES_READ DEVICE_CREDENTIAL_MANAGEMENT INVENTORY_READ INVENTORY_WRITE' ),
 			'plug'          => WPEP_SQUARE_PLUGIN_NAME,
 			'app_name'      => WPEP_SQUARE_APP_NAME,
 			'oauth_version' => 2,
@@ -62,12 +66,12 @@ function wpep_authorize_with_square() {
 
 		);
 
-		if ( isset( $_REQUEST['wpep_page_post'] ) && ! empty( $_REQUEST['wpep_page_post'] ) && 'global' === sanitize_text_field( wp_unslash( $_REQUEST['wpep_page_post'] ) ) ) {
-			if ( isset( $_POST['wp_global_nonce'] ) ) {
-				check_admin_referer( 'wp_global_nonce', 'wp_global_nonce' );
+		if ( isset( $request['wpep_page_post'] ) && ! empty( $request['wpep_page_post'] ) && 'global' === $request['wpep_page_post'] ) {
+
+			$query_arg['wpep_disconnect_global'] = 'true';
+			if ( isset( $url_identifiers['wpep_sandbox'] ) ) {
+				$query_arg['wpep_disconnect_sandbox_global'] = $url_identifiers['wpep_sandbox'];
 			}
-			$query_arg['wpep_disconnect_global']         = 'true';
-			$query_arg['wpep_disconnect_sandbox_global'] = $url_identifiers['wpep_sandbox'];
 
 			$query_arg      = array_merge( $url_identifiers, $query_arg );
 			$disconnect_url = admin_url( $url_identifiers['wpep_admin_url'] );
@@ -83,22 +87,21 @@ function wpep_authorize_with_square() {
 			}
 		}
 
-		if ( isset( $_REQUEST['wpep_page_post'] ) && ! empty( $_REQUEST['wpep_page_post'] ) && 'global' !== sanitize_text_field( wp_unslash( $_REQUEST['wpep_page_post'] ) ) ) {
-			if ( isset( $_POST['wp_global_nonce'] ) ) {
-				check_admin_referer( 'wp_global_nonce', 'wp_global_nonce' );
-			}
+		if ( isset( $request['wpep_page_post'] ) && ! empty( $request['wpep_page_post'] ) && 'global' !== $request['wpep_page_post'] ) {
+
 			$query_arg['wpep_disconnect_global'] = 'false';
-			$query_arg['wpep_form_id']           = isset( $_REQUEST['wpep_page_post'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['wpep_page_post'] ) ) : '';
-			$query_arg                           = array_merge( $url_identifiers, $query_arg );
-			$disconnect_url                      = admin_url( $url_identifiers['wpep_admin_url'] );
-			$disconnect_url                      = add_query_arg( $query_arg, $disconnect_url );
+			$query_arg['wpep_form_id']           = $request['wpep_page_post'];
+
+			$query_arg      = array_merge( $url_identifiers, $query_arg );
+			$disconnect_url = admin_url( $url_identifiers['wpep_admin_url'] );
+			$disconnect_url = add_query_arg( $query_arg, $disconnect_url );
 
 			update_post_meta( $query_arg['wpep_form_id'], 'wpep_square_disconnect_url', $disconnect_url );
 
 		}
 
-		$wp_redirect = 'wp_redirect';
-		$wp_redirect( $middle_server_url );
+		wp_redirect( $middle_server_url ); // phpcs:ignore
+		exit;
 
 	}
 }
@@ -108,59 +111,54 @@ function wpep_authorize_with_square() {
  */
 function wpep_square_callback_success() {
 
-	if (
-		isset( $_REQUEST['access_token'] ) &&
-		null !== sanitize_text_field( wp_unslash( $_REQUEST['access_token'] ) ) &&
-		isset( $_REQUEST['token_type'] ) &&
-		null !== sanitize_text_field( wp_unslash( $_REQUEST['token_type'] ) ) &&
-		isset( $_REQUEST['wpep_square_token_nonce'] ) &&
-		null !== sanitize_text_field( wp_unslash( $_REQUEST['wpep_square_token_nonce'] ) ) &&
-		'bearer' === sanitize_text_field( wp_unslash( $_REQUEST['token_type'] ) )
-	) {
-		if ( function_exists( 'wp_verify_nonce' ) && ! wp_verify_nonce( sanitize_key( $_REQUEST['wpep_square_token_nonce'] ), 'connect_wpep_square' ) ) {
+	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
+		exit;
+	}
+
+	$request = $_REQUEST;
+
+	if ( ! empty( $request['access_token'] ) && ! empty( $request['token_type'] ) && ! empty( $request['wpep_square_token_nonce'] ) && 'bearer' === $request['token_type'] ) {
+
+		if ( function_exists( 'wp_verify_nonce' ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $request['wpep_square_token_nonce'] ) ), 'connect_wpep_square' ) ) {
 			wp_die( 'Looks like the URL is malformed!' );
 		}
+
 		$usf_state = get_option( 'wpep_usf_state' );
 
-		if ( isset( $_REQUEST['usf_state'] ) && $usf_state !== $_REQUEST['usf_state'] ) {
+		if ( $usf_state !== $request['usf_state'] ) {
 			wp_die( 'The request is not coming back from the same origin it was sent to. Try Later' );
 		}
 
-		$initial_page  = 0;
-		$wpep_sandbox  = isset( $_REQUEST['wpep_sandbox'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['wpep_sandbox'] ) ) : '';
-		$access_token  = isset( $_REQUEST['access_token'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['access_token'] ) ) : '';
-		// $api_client    = wpep_setup_square_with_access_token( $access_token, $wpep_sandbox );
-		// $locations_api = new \SquareConnect\Api\LocationsApi( $api_client );
-		// $locations     = $locations_api->listLocations()->getLocations();
-		$all_locations = array();
-		
-		if ( 'yes' == $wpep_sandbox ) {
+		$initial_page = 0;
 
-			$url = 'https://connect.squareupsandbox.com/v2/locations';
-
-		} else {
-
-			$url = 'https://connect.squareup.com/v2/locations';
-
+		if ( isset( $request['wpep_sandbox'] ) ) {
+			$wpep_sandbox = $request['wpep_sandbox'];
 		}
-		//remote request
-		
-		$headers = array(
-			'Square-Version' => '2021-03-17',
-			'Authorization'  => 'Bearer ' . $access_token,
-			'Content-Type'   => 'application/json'
-		);
-		
-		$response = wp_remote_get($url, array(
-			'headers'  =>  $headers
-			)
-		);
-		
-		$locations = json_decode(wp_remote_retrieve_body($response));
-				
-		if ( $response['response']['code'] === 200 && isset ( $locations ) ) {
-			
-			foreach ( $locations->locations as $key => $location ) {
+
+		if ( 'yes' === $wpep_sandbox ) {
+			$api_url = 'https://connect.squareupsandbox.com/v2/locations';
+		} else {
+			$api_url = 'https://connect.squareup.com/v2/locations';
+		}
+
+			$headers = array(
+				'Square-Version' => '2024-02-22',
+				'Authorization'  => 'Bearer ' . $request['access_token'],
+				'Content-Type'   => 'application/json',
+			);
+
+			$response = wp_remote_get( $api_url, array( 'headers' => $headers ) );
+
+			// Response information.
+			$response_code = wp_remote_retrieve_response_code( $response );
+			$locations     = json_decode( wp_remote_retrieve_body( $response ) );
+			$locations     = $locations->locations;
+
+			// Now you can handle the response as needed.
+
+			$all_locations = array();
+
+			foreach ( $locations as $key => $location ) {
 
 				$one_location = array(
 
@@ -173,49 +171,75 @@ function wpep_square_callback_success() {
 				array_push( $all_locations, $one_location );
 
 			}
-		}
 
-		// getting currency from square account dynamically.
-		update_option( 'wpep_square_currency_new', $all_locations[0]['currency'] );
+			// getting currency from square account dynamically.
+			update_option( 'wpep_square_currency_new', $all_locations[0]['currency'] );
 
-		$wpep_page_post = isset( $_REQUEST['wpep_page_post'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['wpep_page_post'] ) ) : '';
+			if ( isset( $request['wpep_page_post'] ) && ! empty( $request['wpep_page_post'] ) && 'global' !== $request['wpep_page_post'] ) {
+				$current_post_id = $request['wpep_page_post'];
 
-		if ( ! empty( $wpep_page_post ) && 'global' === sanitize_text_field( $wpep_page_post ) ) {
+				if ( 'yes' === $wpep_sandbox ) {
 
-			$expires_at    = isset( $_REQUEST['expires_at'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['expires_at'] ) ) : '';
-			$refresh_token = isset( $_REQUEST['refresh_token'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['refresh_token'] ) ) : '';
-			$access_token  = isset( $_REQUEST['access_token'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['access_token'] ) ) : '';
-			if ( 'yes' === $wpep_sandbox ) {
+					update_post_meta( $current_post_id, 'wpep_test_token_details_upgraded', $_REQUEST );
+					update_post_meta( $current_post_id, 'wpep_test_location_data', $all_locations );
+					update_post_meta( $current_post_id, 'wpep_square_test_app_id', WPEP_SQUARE_TEST_APP_ID );
+					update_post_meta( $current_post_id, 'wpep_square_test_token', sanitize_text_field( $request['access_token'] ) );
+					update_post_meta( $current_post_id, 'wpep_test_refresh_token', $request['refresh_token'] );
+					update_post_meta( $current_post_id, 'wpep_token_test_expires_at', $request['expires_at'] );
+					update_post_meta( $current_post_id, 'wpep_post_square_currency_test', $all_locations[0]['currency'] );
 
-				update_option( 'wpep_test_location_data', $all_locations );
-				update_option( 'wpep_square_test_token_global', sanitize_text_field( $access_token ) );
-				update_option( 'wpep_square_test_btn_auth', 'true' );
-				update_option( 'wpep_refresh_test_token', sanitize_text_field( $refresh_token ) );
-				update_option( 'wpep_token_test_expires_at', sanitize_text_field( $expires_at ) );
-				update_option( 'wpep_square_test_app_id_global', WPEP_SQUARE_TEST_APP_ID );
-				update_option( 'wpep_square_currency_test', $all_locations[0]['currency'] );
+				} else {
 
-			} else {
+					update_post_meta( $current_post_id, 'wpep_live_token_details_upgraded', $_REQUEST );
+					update_post_meta( $current_post_id, 'wpep_live_location_data', $all_locations );
+					update_post_meta( $current_post_id, 'wpep_live_token_upgraded', sanitize_text_field( $request['access_token'] ) );
+					update_post_meta( $current_post_id, 'wpep_square_btn_auth', 'true' );
+					update_post_meta( $current_post_id, 'wpep_refresh_token', $request['refresh_token'] );
+					update_post_meta( $current_post_id, 'wpep_token_expires_at', $request['expires_at'] );
+					update_post_meta( $current_post_id, 'wpep_live_square_app_id', WPEP_SQUARE_APP_ID );
+					update_post_meta( $current_post_id, 'wpep_post_square_currency_new', $all_locations[0]['currency'] );
+				}
 
-				update_option( 'wpep_live_location_data', $all_locations );
-				update_option( 'wpep_live_token_upgraded', sanitize_text_field( $access_token ) );
-				update_option( 'wpep_square_btn_auth', 'true' );
-				update_option( 'wpep_refresh_token', sanitize_text_field( $refresh_token ) );
-				update_option( 'wpep_token_expires_at', sanitize_text_field( $expires_at ) );
-				update_option( 'wpep_live_square_app_id', WPEP_SQUARE_APP_ID );
+				$query_args = array(
+					'post'   => $request['post'],
+					'action' => $request['action'],
+				);
 
+				$initial_page = add_query_arg( $query_args, admin_url( 'post.php' ) );
 			}
 
-			$query_args   = array(
-				'page'      => isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '',
-				'post_type' => isset( $_REQUEST['wpep_post_type'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['wpep_post_type'] ) ) : '',
-			);
-			$initial_page = add_query_arg( $query_args, admin_url( 'edit.php' ) );
+			if ( isset( $request['wpep_page_post'] ) && ! empty( $request['wpep_page_post'] ) && 'global' === $request['wpep_page_post'] ) {
 
-		}
+				if ( 'yes' === $wpep_sandbox ) {
 
-		$wp_redirect = 'wp_redirect';
-		$wp_redirect( $initial_page );
+					update_option( 'wpep_test_location_data', $all_locations );
+					update_option( 'wpep_square_test_token_global', $request['access_token'] );
+					update_option( 'wpep_square_test_btn_auth', 'true' );
+					update_option( 'wpep_refresh_test_token', $request['refresh_token'] );
+					update_option( 'wpep_token_test_expires_at', $request['expires_at'] );
+					update_option( 'wpep_square_test_app_id_global', WPEP_SQUARE_TEST_APP_ID );
+					update_option( 'wpep_square_currency_test', $all_locations[0]['currency'] );
+
+				} else {
+
+					update_option( 'wpep_live_location_data', $all_locations );
+					update_option( 'wpep_live_token_upgraded', sanitize_text_field( $request['access_token'] ) );
+					update_option( 'wpep_square_btn_auth', 'true' );
+					update_option( 'wpep_refresh_token', $request['refresh_token'] );
+					update_option( 'wpep_token_expires_at', $request['expires_at'] );
+					update_option( 'wpep_live_square_app_id', WPEP_SQUARE_APP_ID );
+
+				}
+
+				$query_args = array(
+
+					'page' => $request['page'],
+
+				);
+				$initial_page = add_query_arg( $query_args, admin_url( 'admin.php' ) );
+			}
+			wp_safe_redirect( $initial_page );
+			exit;
 
 	}
 }
@@ -224,58 +248,103 @@ function wpep_square_callback_success() {
  * Disconnects the Square integration and revokes the access token.
  */
 function wpep_square_disconnect() {
-	
-	if ( current_user_can( 'manage_options' ) ) {
-	
-		if ( ! empty( $_REQUEST['wpep_disconnect_square'] ) ) {
 
-			if ( ! isset( $_REQUEST['wpep_disconnect_nonce'] ) || ( isset($_REQUEST['wpep_disconnect_nonce']) && !wp_verify_nonce( sanitize_text_field( $_REQUEST['wpep_disconnect_nonce'] ), 'wpep_disconnect_square' ) ) ) {
-				exit( 'Not Authorized' );
+	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
+		exit;
+	}
+
+	$request = $_REQUEST;
+
+	if ( ! empty( $request['wpep_disconnect_square'] ) ) {
+
+		if ( isset( $request['wpep_disconnect_global'] ) ) {
+
+			if ( 'true' === $request['wpep_disconnect_global'] ) {
+
+				if ( isset( $request['wpep_sandbox'] ) && 'yes' === $request['wpep_sandbox'] ) {
+
+					$access_token = get_option( 'wpep_square_test_token_global', false );
+					wpep_revoke_access_token( $access_token, 'yes' );
+
+					delete_option( 'wpep_test_location_data' );
+					delete_option( 'wpep_square_test_token_global' );
+					delete_option( 'wpep_square_test_btn_auth' );
+					delete_option( 'wpep_refresh_test_token' );
+					delete_option( 'wpep_token_test_expires_at' );
+
+				} else {
+
+					$access_token = get_option( 'wpep_live_token_upgraded', false );
+					wpep_revoke_access_token( $access_token, 'live' );
+
+					delete_option( 'wpep_live_token_details_upgraded' );
+					delete_option( 'wpep_live_token_upgraded' );
+					delete_option( 'wpep_square_btn_auth' );
+					delete_option( 'wpep_refresh_token' );
+					delete_option( 'wpep_token_expires_at' );
+					delete_option( 'wpep_live_location_data' );
+					delete_option( 'wpep_square_currency_new' );
+				}
+
+				$query_args = array(
+
+					'page' => $request['page'],
+
+				);
+
+				$initial_page = add_query_arg( $query_args, admin_url( 'admin.php' ) );
+
 			}
-			if ( isset( $_REQUEST['wpep_disconnect_global'] ) ) {
 
-				if ( 'true' === $_REQUEST['wpep_disconnect_global'] ) {
+			if ( 'false' === $request['wpep_disconnect_global'] ) {
 
-					if ( isset( $_REQUEST['wpep_sandbox'] ) && 'yes' === $_REQUEST['wpep_sandbox'] ) {
+				$form_id = $request['wpep_form_id'];
 
-						$access_token = get_option( 'wpep_square_test_token_global', false );
-						wpep_revoke_access_token( $access_token, 'yes' );
+				if ( isset( $request['wpep_sandbox'] ) && 'yes' === $request['wpep_sandbox'] ) {
 
-						delete_option( 'wpep_test_location_data' );
-						delete_option( 'wpep_square_test_token_global' );
-						delete_option( 'wpep_square_test_btn_auth' );
-						delete_option( 'wpep_refresh_test_token' );
-						delete_option( 'wpep_token_test_expires_at' );
+					$access_token = get_post_meta( $form_id, 'wpep_square_test_token', true );
+					wpep_revoke_access_token( $access_token, 'yes' );
 
-					} else {
+					delete_post_meta( $form_id, 'wpep_test_token_details_upgraded' );
+					delete_post_meta( $form_id, 'wpep_test_location_data' );
+					delete_post_meta( $form_id, 'wpep_square_test_app_id' );
+					delete_post_meta( $form_id, 'wpep_square_test_token' );
+					delete_post_meta( $form_id, 'wpep_post_square_currency_test' );
+					delete_post_meta( $form_id, 'wpep_test_refresh_token' );
+					delete_post_meta( $form_id, 'wpep_token_test_expires_at' );
 
-						$access_token = get_option( 'wpep_live_token_upgraded', false );
-						wpep_revoke_access_token( $access_token, 'live' );
+				} else {
 
-						delete_option( 'wpep_live_token_details_upgraded' );
-						delete_option( 'wpep_live_token_upgraded' );
-						delete_option( 'wpep_square_btn_auth' );
-						delete_option( 'wpep_refresh_token' );
-						delete_option( 'wpep_token_expires_at' );
-						delete_option( 'wpep_live_location_data' );
-						delete_option( 'wpep_square_currency_new' );
-					}
+					$access_token = get_post_meta( $form_id, 'wpep_live_token_upgraded', true );
+					wpep_revoke_access_token( $access_token, 'live' );
 
-					$query_args = array(
-						'page'      => isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '',
-						'post_type' => isset( $_REQUEST['wpep_post_type'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['wpep_post_type'] ) ) : '',
-					);
-
-					$initial_page = add_query_arg( $query_args, admin_url( 'edit.php' ) );
+					delete_post_meta( $form_id, 'wpep_live_token_details_upgraded' );
+					delete_post_meta( $form_id, 'wpep_live_location_data' );
+					delete_post_meta( $form_id, 'wpep_live_token_upgraded' );
+					delete_post_meta( $form_id, 'wpep_square_btn_auth' );
+					delete_post_meta( $form_id, 'wpep_refresh_token' );
+					delete_post_meta( $form_id, 'wpep_token_expires_at' );
+					delete_post_meta( $form_id, 'wpep_live_square_app_id' );
 
 				}
-			}
-			$wp_redirect = 'wp_redirect';
-			$wp_redirect( $initial_page );
 
+				$query_args = array(
+
+					'post'   => $request['post'],
+					'action' => $request['action'],
+
+				);
+
+				$initial_page = add_query_arg( $query_args, admin_url( 'post.php' ) );
+			}
 		}
+
+		wp_safe_redirect( $initial_page );
+		exit;
+
 	}
 }
+
 /**
  * Revokes the given access token from Square.
  *
@@ -284,18 +353,28 @@ function wpep_square_disconnect() {
  */
 function wpep_revoke_access_token( $access_token, $sandbox ) {
 
-	$curl_init   = 'curl_init';
-	$curl_setopt = 'curl_setopt';
-	$curl_exec   = 'curl_exec';
-	$curl_close  = 'curl_close';
-	$ch          = $curl_init();
+	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
+		exit;
+	}
 
-	$curl_setopt( $ch, CURLOPT_URL, 'https://connect.apiexperts.io/' );
-	$curl_setopt( $ch, CURLOPT_POST, 1 );
-	$curl_setopt( $ch, CURLOPT_POSTFIELDS, 'oauth_version=2&request_type=revoke_token&app_name=' . WPEP_SQUARE_APP_NAME . '&sandbox_enabled=' . $sandbox . '&access_token=' . $access_token );
-	$curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+	$api_url    = 'https://connect.apiexperts.io/';
+	$oauth_data = array(
+		'oauth_version'   => 2,
+		'request_type'    => 'revoke_token',
+		'app_name'        => WPEP_SQUARE_APP_NAME,
+		'sandbox_enabled' => $sandbox,
+		'access_token'    => $access_token,
+	);
 
-	$server_output = $curl_exec( $ch );
+	$response = wp_remote_post(
+		$api_url,
+		array(
+			'body'    => $oauth_data,
+			'timeout' => 15,
+		)
+	);
 
-	$curl_close( $ch );
+	// Response information.
+	$response_code = wp_remote_retrieve_response_code( $response );
+	$response_body = wp_remote_retrieve_body( $response );
 }

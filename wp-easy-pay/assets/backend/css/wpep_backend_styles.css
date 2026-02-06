@@ -2,7 +2,7 @@
 @import url("https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css");
 .post-type-wp_easy_pay .easypayblock * {
   box-sizing: border-box;
-}
+} 
 
 .post-type-wp_easy_pay a {
   outline: none;
@@ -13,17 +13,6 @@
 
   display: none !important;
   
-}
-
-.extra-field-overlays a {
-    position: absolute;
-    top: 35px;
-}
-
-/* Target the 'Get Pro' submenu item by its text content */
-.wp-submenu li a[href*='get_pro_menu'] {
-    color: #ccc60d !important; /* Golden color */
-    font-weight: bold; /* Make text bold */
 }
 
 .post-type-wp_easy_pay a:hover,
@@ -747,7 +736,6 @@ h3.sectionTitle span {
 .wpeasyPay label {
   font-size: 14px;
   color: #808080;
-  margin-bottom: 5px;
   display: inline-block;
 }
 
@@ -1153,7 +1141,7 @@ ul.accordion li a.toggle:hover {
   top: -40px;
   font-size: 10px;
   text-align: center;
-  z-index: 1;
+  z-index: 0;
   width: 79px;
   margin: auto;
 }
@@ -1741,6 +1729,10 @@ table.widefat {
   font-size: 14px;
 }
 
+.sorting-indicator {
+	margin-top: 5px !important;
+}
+
 .widefat tfoot td,
 .widefat tfoot th {
   align-content: normal;
@@ -1816,7 +1808,7 @@ tfoot {
 .tablenav.top {
   background: #fff;
   padding: 10px 20px;
-  height: auto;
+  /* height: auto; */
   margin: 20px 0px 0px 0px;
   box-shadow: 0 0 13px 0 rgba(82, 63, 105, 0.1);
 }
@@ -1830,7 +1822,7 @@ tfoot {
 }
 
 .tablenav .tablenav-pages {
-  margin: 10px 0px 0px;
+  /* margin: 10px 0px 0px; */
   font-size: 14px;
   color: #828282;
 }
@@ -1840,9 +1832,9 @@ tfoot {
   color: #808080;
   border-color: #f0f3ff;
   padding: 0px 15px 0px 15px;
-  text-align: center;
+  /* text-align: center; */
   background: #f0f3ff;
-  height: 40px;
+  /* height: 40px; */
 }
 
 .tablenav .actions select:focus {
@@ -2075,6 +2067,22 @@ td.actions.column-actions a:hover {
   background-repeat: no-repeat;
   width: 16px;
   height: 16px;
+  content: "";
+  display: inline-block;
+  background-size: 100%;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.restoreIcon {
+  position: relative;
+}
+
+.restoreIcon::before {
+  background: url(../img/restore.png);
+  background-repeat: no-repeat;
+  width: 20px;
+  height: 20px;
   content: "";
   display: inline-block;
   background-size: 100%;
@@ -2472,10 +2480,10 @@ tr.inline-edit-row td {
 .paymentint select:disabled + label,
 .paymentint textarea.disabled + label,
 .paymentint textarea:disabled + label {
-  opacity: 0.7;
+  opacity: 1;
 }
 
-.paymentint input.disabled + label::after,
+/* .paymentint input.disabled + label::after,
 .paymentint input:disabled + label::after,
 .paymentint select.disabled + label::after,
 .paymentint select:disabled + label::after,
@@ -2489,7 +2497,7 @@ tr.inline-edit-row td {
   padding: 0px 10px;
   border-radius: 50px;
   color: #fff;
-}
+} */
 
 /* Indicates how Google Pay button will appear */
 .button-google-pay {
@@ -3205,7 +3213,7 @@ select.wpep-form-control {
 .wpeasyPay textarea.disabled,
 .wpeasyPay textarea:disabled {
   background: #f3f3f3;
-  border: 1px solid #f3f3f3;
+  border: 1px solid #a8a8a8;
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -3223,7 +3231,7 @@ select.wpep-form-control {
 .wpeasyPay textarea.disabled:hover,
 .wpeasyPay textarea:disabled:hover {
   background: #f3f3f3;
-  border: 1px solid #f3f3f3;
+  border: 1px solid #a8a8a8;
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -3243,7 +3251,7 @@ select.wpep-form-control {
 .defaultPriceSelectedWrap input {
   cursor: help;
   position: relative;
-  vertical-align: text-top;
+  vertical-align: middle;
 }
 
 .defaultPriceSelectedWrap::after {
@@ -3554,6 +3562,11 @@ a.connectSquarePop:focus {
   margin-top: 35px !important;
 }
 
+#tabular_layout_for_square {
+  margin-bottom: 10px !important;
+  margin-top: 35px !important;
+}
+
 .timgfield {
   width: 50px;
   height: 50px;
@@ -3577,6 +3590,22 @@ a.connectSquarePop:focus {
   object-fit: fill;
 }
 
+/* button.give_refund_button {
+  background: transparent;
+  border: none;
+  vertical-align: text-top;
+  color: red;
+  border-bottom: 1px solid red;
+  padding: 0px;
+  margin: 0px 10px 0px 0px;
+  cursor: pointer;
+} */
+
+/* button.give_refund_button:hover, button.give_refund_button:active, button.give_refund_button:focus {
+  border-bottom: 1px solid red;
+  outline: none;
+  opacity: 0.7;
+} */
 
 .wpep_refunded {
   cursor: no-drop;
@@ -3590,7 +3619,7 @@ a.connectSquarePop:focus {
   outline: none;
   opacity: 0.7;
 }
-.wpep-reports-popup-overlay {
+/* .wpep-reports-popup-overlay {
   position: fixed;
   left: 0;
   right: 0;
@@ -3602,19 +3631,51 @@ a.connectSquarePop:focus {
   z-index: 9999;
 }
 div#wpep-reports-popup {
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: 500px;
+    z-index: 99999;
+    max-width: 400px;
+    background: #fff;
+    padding: 0 20px 20px 20px;
+    margin: auto;
+    border-radius: 6px;
+}
+.form-select label {
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 5px;
+  display: block;
+}
+#formSelection {
   width: 100%;
-  height: 350px;
-  z-index: 99999;
-  max-width: 350px;
-  background: #fff;
-  padding: 0 20px 20px 20px;
-  margin: auto;
-  border-radius: 6px;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.checkAllFields {
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.select_fields {
+  font-weight: bold;
+  color: #555;
+}
+.wpep_check_all {
+  display: flex;
+  align-items: center;
+}
+
+.wpep_check_all input[type="checkbox"] {
+  margin-left: 10px;
 }
 .wpep-reports-header {
   display: flex;
@@ -3634,7 +3695,7 @@ div#wpep-reports-popup {
 .firstLi {
   position: absolute;
   right: 20px;
-}
+} */
 
 #tabs-list li{
 
@@ -3695,7 +3756,11 @@ label.fees_label {
 .ck-editor__editable {
   min-height: 250px;
 }
-
+a#wpep_reset_donation_goal {
+    float: right;
+    color: #b32d2e;
+    font-weight: bold;
+}
 .ck.ck-editor__main h1, .ck.ck-editor__main h2, .ck.ck-editor__main h3, .ck.ck-editor__main p {
     color: #000;
     padding: 0!important;
@@ -3794,6 +3859,960 @@ label.fees_label {
 .extra-field-overlays img{
   width: 100px;
 }
+.wpep-modal {
+	display: none;
+	position: fixed;
+	z-index: 9999;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+	background-color: rgba(0, 0, 0, 0.4);
+}
+
+.wpep-modal-content {
+	background-color: #fefefe;
+	margin: 15% auto;
+	padding: 20px;
+	border: 1px solid #888;
+	width: 60%;
+	text-align: center;
+	border-radius: 5px;
+}
+div#confirmation-dialog {
+    width: 100%;
+}
+.wpep-modal-close {
+	color: #aaa;
+	float: right;
+	font-size: 28px;
+	font-weight: bold;
+	cursor: pointer;
+}
+.warning-message {
+    color: red;
+	font-size: 24px;
+	margin-bottom: 10px;
+}
+#confirmation {
+  margin-bottom: 20px;
+}
+#confirmation-dialog {
+  width: 300px;
+  background: #f2f2f2;
+  padding: 20px;
+  text-align: center;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+}
+.draft-button {
+    color: green;
+}
+
+.delete-button {
+    color: red;
+ margin-right: 10px;
+}
+
+.green-button {
+    color: green;
+ margin-right: 10px;
+}
+.wpep-modal-content {
+    display: flex;
+    align-items: center;
+}
+
+.column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.content-red {
+   color: red;
+}
+.content-green {
+   color: green;
+}
+.delete-wpep-message, .draft-wpep-message {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-delete, .modal-draft {
+  background-color: #fefefe;
+  margin: 20% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 400px;
+  text-align: center;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal {
+  background-color: #fff;
+  padding: 20px;
+  max-width: 600px;
+  width: 100%;
+  border-radius: 5px;
+  display: none;
+}
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.content-red {
+  color: red;
+}
+
+.content-green {
+  color: green;
+}
+
+.separator {
+  width: 1px;
+  height: 100px;
+  background-color: #ccc;
+  margin: 0 20px;
+}
+.modal-error-wpep {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content-message {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 500px;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+.error-message-wpep {
+	color: red;
+	display: block;
+}
+.contentWrap.wpeasyPay {
+    margin: 0px 0px 0px -25px;
+}
+.contentHeader {
+    display: flex;
+    background: white;
+    padding: 20px 30px;
+    gap: 20px;
+	position: sticky;
+	align-items: center;
+}
+.wp_easypay_heading h1 {
+	font-family: poppins;
+    font-weight: 400;
+	font-size: 24px;
+	color: #3F5580;
+    margin: 0;
+}
+.wp_easypay_version {
+	margin-left: auto;
+	position: relative;
+    top: 20px;
+}
+.wp_easypay_version h1 {
+    font-family: 'Poppins';
+    font-weight: 400;
+    font-size: 14px;
+    margin: 0;
+    color: #616D84;
+}
+.payment_container_body {
+    /* display: flex; */
+    /* justify-content: center; */
+    /* align-items: center; */
+    width: 100%;
+	padding: 30px 50px;
+    box-sizing: border-box;
+}
+
+.payment_container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+	padding: 10px;
+    gap: 20px;
+	background: linear-gradient(#2065e040, #ffffff26, #2065e040);
+}
+.payment_container_1 {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+    /* width: 100%; */
+}
+
+.payment_box {
+    flex: 1 1 calc(20% - 20px); /* 4 items per row with space between */
+    box-sizing: border-box;
+    padding: 20px;
+    background-color: #f9f9f9; /* Adjust as needed */
+    border-radius: 3px;
+    text-align: center;
+    transition: transform 0.3s;
+}
+.payment_box.after_div1 {
+	background: radial-gradient(#FFFFFF, #f3923740);
+    flex: 1 1 calc(33.33% - 20px);
+    box-sizing: border-box;
+    padding: 30px;
+    border-radius: 3px;
+    text-align: center;
+    transition: transform 0.3s;
+}
+.payment_box.after_div2 {
+    background: radial-gradient(#FFFFFF, #8377D140);
+    flex: 1 1 calc(33.33% - 20px);
+    box-sizing: border-box;
+    padding: 30px;
+    border-radius: 3px;
+    text-align: center;
+    transition: transform 0.3s;
+}
+.payment_box.after_div3 {
+    background: radial-gradient(#FFFFFF, #78BC6140);
+    flex: 1 1 calc(33.33% - 20px);
+    box-sizing: border-box;
+    padding: 30px;
+    border-radius: 3px;
+    text-align: center;
+    transition: transform 0.3s;
+}
+.payment_box.total_pay_box {
+    background-color: transparent;
+    color: gray;
+    text-align: center;
+    margin: 10px;
+    box-sizing: border-box;
+}
+.payment_box_heading p {
+    font-family: 'Poppins';
+    font-weight: 400;
+    font-size: 16px;
+	color: #616D84;
+}
+.payment_box_total span {
+    font-family: 'Poppins';
+    font-weight: 500;
+    font-size: 24px;
+	color: #3F5580;
+}
+
+.total_payment_container_body {
+    /* display: flex; */
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+	margin-top: 25px;
+}
+
+.total_payment_container {
+    /* display: flex; */
+    justify-content: space-between;
+    width: 100%;
+}
+
+.total_payment_box {
+    background: linear-gradient(179deg, #cddaff, #ffffff);
+    color: gray;
+    padding: 20px;
+    text-align: center;
+    margin: 10px;
+    box-sizing: border-box;
+}
+.total_payment_box_heading p {
+    font-size: 15px;
+}
+.total_payment_box_total span {
+    font-size: 18px;
+    font-weight: 700;
+}
+.unlock-button {
+    display: inline-block;
+    padding: 5px 10px;
+    font-weight: 500;
+    color: #FFFFFF;
+    background: linear-gradient(to right, #2065E0, #11377A);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+}
+.unlock-button .icon-lock {
+    width: 1em;
+    height: 1em;
+    vertical-align: middle;
+    font-size: 16px;
+	color: #F39237;
+}
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .payment_box {
+        flex: 1 1 calc(33.33% - 20px); /* 3 items per row */
+    }
+}
+
+@media (max-width: 768px) {
+    .payment_box, .after_div1, .after_div2, .after_div3 {
+        flex: 1 1 calc(50% - 20px); /* 2 items per row */
+    }
+}
+
+@media (max-width: 480px) {
+    .payment_box, .after_div1, .after_div2, .after_div3 {
+        flex: 1 1 100%; /* 1 item per row */
+    }
+}
+.payment_container_body_2 {
+    /* display: flex; */
+    /* justify-content: center; */
+    /* align-items: center; */
+    width: 100%;
+	padding: 30px 50px;
+    box-sizing: border-box;
+}
+.payment_container_body_1 {
+    /* display: flex; */
+    /* justify-content: center; */
+    /* align-items: center; */
+    width: 100%;
+	padding: 0px 50px;
+    box-sizing: border-box;
+}
+.chart-container {
+    background-color: #f1f8ff;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.chart_div {
+    /* margin: 50px; */
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 50px;
+    margin-top: 30px;
+	position: relative;
+}
+#paymentChart {
+    width: 100%;
+    height: auto;
+}
+.filter-container {
+    display: flex;
+    justify-content: space-between; /* Ensures datepicker is on the left, and filter is on the right */
+    align-items: center;
+    width: 100%; /* Full width container */
+    max-width: 100%; /* Ensure container can take the full width */
+    margin-bottom: 20px;
+}
+
+.datepicker-wrapper,
+.filter-wrapper {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    border: 1px solid #BFC0C7; /* Border for the input and select */
+    border-radius: 4px;
+    background-color: #fff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.2); /* Light shadow */
+	position: relative;
+}
+
+.datepicker-wrapper input {
+    border: none;
+    outline: none;
+    font-size: 14px;
+    width: 100%;
+    padding-left: 10px; /* Space between the calendar icon and text */
+    background-color: transparent;
+	flex: 1;
+	min-width:200px;
+}
+
+.filter-wrapper select {
+	flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+	color: #BFC0C7;
+    background-color: transparent;
+}
+
+.filter-wrapper {
+    white-space: nowrap; /* Prevent text wrapping */
+    margin-left: 10px;
+}
+
+.calendar-icon {
+    font-size: 16px;
+    color: #BFC0C7; /* Blue icon color */
+}
+
+
+.datepicker-wrapper input,
+.filter-wrapper select {
+    font-size: 14px;
+    color: #333;
+}
+
+/* Space between the icon and input text */
+.datepicker-wrapper i {
+    margin-right: 8px;
+}
+.filter-wrapper label {
+	font-size: 14px;
+    color: #808080;
+    margin-bottom: 0 !important;
+    display: inline-block;
+}
+.payment_chart_overlay {
+	position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(255 255 255 / 50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(1px);
+}
+.center-button {
+    display: inline-block;
+    padding: 10px 20px;
+    font-weight: 500;
+    color: #FFFFFF;
+    background: linear-gradient(to right, #2065E0, #11377A);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+}
+.center-button-div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.center-button .icon-lock {
+	vertical-align: middle;
+    font-size: 16px;
+	color: #F39237;
+}
+.integrations_tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons inside the tab */
+.integrations_tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+.integrations_tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.integrations_tab button.active {
+  background-color: #2065e0;
+  color: #ddd;
+}
+
+/* Style the tab content */
+.integration_tab_content {
+  display: block;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
+
+.integrations{
+  padding: 0px 15px;
+}
+
+
+.integrations h1{
+  /* color: #1d2327;
+  font-size: 3.3em;
+  margin: 1em 0;
+  text-transform: uppercase;
+  color: #2065e0; */
+  margin: 40px 0px;
+}
+
+/* Extra field overlay */
+
+.extra-field-overlays{
+  background: #f3f3f3;
+  height: 100%;
+  z-index: 1;
+  position: absolute;
+  opacity: 0.8;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  top: 0;
+  color: #2065e0;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.extra-field-overlays p{
+  font-size: 24px;
+}
+
+.extra-field-overlays img{
+  width: 100px;
+}
+.integration_container_body, .mailchimp_container_body {
+    padding: 40px 40px 10px 40px;
+	display: flex;
+    flex-wrap: wrap;
+}
+.integration_content, .integration_img, .mailchimp_img, .mailchimp_content {
+  flex: 1 0 calc(33.33% - 20px); /* Adjust the width and margin as needed */
+  margin: 10px;
+  padding: 20px;
+	align-content: center;
+  box-sizing: border-box;
+}
+.integration_content {
+    padding: 50px;
+}
+@media (max-width: 768px) {
+  .integration_content, .integration_img, .mailchimp_img, .mailchimp_content {
+    flex: 1 0 calc(50% - 20px); /* Adjust the width and margin as needed */
+  }
+}
+
+@media (max-width: 480px) {
+  .integration_content, .integration_img, .mailchimp_img, .mailchimp_content {
+    flex: 1 0 calc(100% - 20px); /* Adjust the width and margin as needed */
+  }
+}
+h1.recaptcha_heading {
+    font-size: xxx-large;
+    color: #3F5580;
+	line-height: 50px;
+}
+p.recaptcha_text {
+    font-size: 16px;
+    font-weight: 500;
+    color: #3F5580;
+}
+.integration_button {
+    /* padding: 12px 50px; */
+    padding: 12px 50px;
+    font-weight: 700;
+    font-size: 16px;
+    color: #5C4E22;
+    background-color: #F8C630;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.integration_button_div {
+    margin-top: 30px;
+}
+.square-list {
+  list-style-type: none; /* Hide default list marker */
+    margin-top: 50px;
+}
+
+.square-list li {
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 20px;
+    color: #3F5580;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.square-list li:before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 10px; /* Adjust size */
+  height: 10px; /* Adjust size */
+  background-image: linear-gradient(to right, #89B3FF, #2065E0); /* Adjust gradient colors */
+  /* border-radius: 50%; */
+}
+
+.footer_container {
+    background: #2065E0;
+    background-image: url(../img/footer-img.png);
+    padding: 0px 80px;
+    /* padding: 40px 40px 10px 40px; */
+    display: flex;
+    flex-wrap: wrap;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.footer_table_text {
+    flex: 5 0 calc(50% - 20px);
+    margin: 10px;
+    padding: 20px;
+    align-content: center;
+    box-sizing: border-box;
+}
+.footer_table_text p {
+	color: white;
+	font-size: x-large;
+}
+.footer_table_button {
+    flex: 1 0 calc(33.33% - 20px);
+    margin: 10px;
+    padding: 20px;
+    align-content: center;
+    box-sizing: border-box;
+}
+.footer_button {
+	padding: 12px 50px;
+    font-weight: 700;
+    font-size: 16px;
+    color: #5C4E22;
+    background-color: #F8C630;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+@media (max-width: 768px) {
+  .footer_table_button, .footer_table_text {
+    flex: 1 0 calc(50% - 20px); /* Adjust the width and margin as needed */
+  }
+}
+
+@media (max-width: 480px) {
+  .footer_table_button, .footer_table_text {
+    flex: 1 0 calc(100% - 20px); /* Adjust the width and margin as needed */
+  }
+}
+.subscription_container_body {
+	padding: 40px 40px 10px 40px;
+	display: flex;
+    flex-wrap: wrap;
+    background-color: white;
+}
+.subscription_content, .subscription_content1 {
+	flex: 1 0 calc(33.33% - 20px); /* Adjust the width and margin as needed */
+	margin: 10px;
+	padding: 20px;
+	align-content: center;
+	box-sizing: border-box;
+}
+.custom_container_body {
+    /* padding: 40px 40px 10px 40px; */
+	display: flex;
+    flex-wrap: wrap;
+}
+.custom_content {
+  flex: 1 0 calc(33.33% - 20px); /* Adjust the width and margin as needed */
+  /* margin: 10px; */
+  /* padding: 20px; */
+	align-content: center;
+  box-sizing: border-box;
+}
+.custom_img {
+  flex: 2 0 calc(33.33% - 20px); /* Adjust the width and margin as needed */
+  /* margin: 10px; */
+  /* padding: 20px; */
+	align-content: center;
+  box-sizing: border-box;
+}
+.custom_content {
+    padding: 50px;
+}
+h2.custom_heading {
+	font-size: 25px !important;
+    font-weight: bold !important;
+    color: #3F5580 !important;
+    line-height: 50px !important;
+    padding: 0 !important;
+}
+p.custom_text {
+    font-size: 14px;
+    color: #3F5580;
+}
+button.custom_button {
+    /* padding: 12px 50px; */
+    padding: 12px 50px;
+    font-weight: 700;
+    font-size: 16px;
+    color: #5C4E22;
+    background-color: #F8C630;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.custom_button_div {
+    margin-top: 30px;
+}
+.custom_img img {
+	max-width: 100%;
+	height: auto;
+}
+.custom_square-list {
+  list-style-type: none; /* Hide default list marker */
+}
+
+.custom_square-list li {
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 20px;
+    color: #3F5580;
+    font-size: 14px;
+}
+
+.custom_square-list li:before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 10px; /* Adjust size */
+  height: 10px; /* Adjust size */
+  background-image: linear-gradient(to right, #89B3FF, #2065E0); /* Adjust gradient colors */
+  /* border-radius: 50%; */
+}
+
+.custom_footer_container {
+     background: #2065E0;
+    background-image: url(../img/footer-img.png);
+    padding: 0px 80px;
+    /* padding: 40px 40px 10px 40px; */
+    display: flex;
+    flex-wrap: wrap;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.custom_footer_table_text {
+    flex: 5 0 calc(50% - 20px);
+    margin: 10px;
+    align-content: center;
+    box-sizing: border-box;
+}
+.custom_footer_table_text p {
+	color: white;
+	font-size: 20px;
+}
+.custom_footer_table_button {
+    flex: 1 0 calc(33.33% - 20px);
+    margin: 10px;
+    align-content: center;
+    box-sizing: border-box;
+}
+.custom_footer_button {
+	padding: 12px 50px;
+    font-weight: 700;
+    font-size: 16px;
+    color: #5C4E22;
+    background-color: #F8C630;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+@media (max-width: 768px) {
+  .custom_footer_table_button, .custom_footer_table_text {
+    flex: 1 0 calc(50% - 20px); /* Adjust the width and margin as needed */
+  }
+}
+
+@media (max-width: 480px) {
+  .custom_footer_table_button, .custom_footer_table_text {
+    flex: 1 0 calc(100% - 20px); /* Adjust the width and margin as needed */
+  }
+}
+label.googlePayTest, label.applePayTest {
+	margin-bottom: 0 !important;
+	margin-right: 5px;
+}
+label.googlePayTest::after, label.applePayTest::after {
+    content: none !important;
+}
+.get-premium-button {
+    display: inline-block;
+    padding: 4px 10px;
+    font-weight: 500;
+    color: #000000;
+    background-color: #F8C630;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+	text-decoration: none;
+}
+.get-premium-button .icon-lock {
+    width: 1em;
+    height: 1em;
+    vertical-align: middle;
+    font-size: 16px;
+}
+label.paymentTypes {
+    margin-right: 20px;
+}
+span.pro_tag {
+    padding: 3px 12px 5px 12px;
+    background: #F8C630;
+    margin-left: 10px;
+    border-radius: 5px;
+    font-weight: 500;
+    color: #000000;
+    text-decoration: none !important;
+}
+span.pro_tag_gateway {
+    padding: 3px 12px 6px 12px;
+    background: #F8C630;
+    margin-left: 20px;
+    border-radius: 5px;
+    font-weight: 500;
+    color: #000000;
+    text-decoration: none !important;
+}
+/* Button style */
+  #openPopupBtn {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Modal (popup) style */
+  .pre-modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+  }
+
+  /* Modal content */
+  .pre-modal-content {
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 40%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    background: linear-gradient(to bottom, color1, color2, ...);
+    background: linear-gradient(180deg, #2065E0, #5189ed);
+}
+
+  /* Close button */
+  .pre-close {
+    color: white;
+    float: right;
+    font-size: 28px;
+  }
+
+  .pre-close:hover,
+  .pre-close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .premium_popup_content {
+    padding: 50px;
+}
+.premium_popup_content p {
+    color: white;
+    font-size: 18px;
+    font-family: 'circular';
+    margin-top: 30px;
+}
+@media screen and (max-width: 600px) {
+	.pre-modal-content {
+	  width: 100%; /* Full width on smaller screens */
+	  margin: 20% auto; /* Adjust margin for centering */
+	}
+}
 .custom-notification {
 	display: flex;
 	align-items: center;
@@ -3829,7 +4848,6 @@ label.fees_label {
 	font-weight: bolder;
 	color: white;
 }
-
 .notification-content {
 	flex-grow: 1;
 	background: #FFF1F1;
@@ -3839,7 +4857,6 @@ label.fees_label {
 	border: 0.5px solid #FF7373;
 	margin-left: -10px;
 }
-
 .notification-text {
 	margin: 0;
 	font-size: 14px;
@@ -3848,9 +4865,596 @@ label.fees_label {
 	color: #1E2124;
 	margin-left: 5px;
 }
-
 .wpep-highlight {
 	font-weight: bold;
 	text-decoration: underline;
 	color: #1E2124;
+}
+.wpep-square-product-table {
+    width: 100%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+}
+
+.wpep-square-product-table table {
+    width: 100%;
+}
+
+.wpep-square-product-table th {
+    padding: 10px 15px;
+    text-align: left;
+}
+.wpep-square-product-table td {
+	padding: 10px 15px;
+    text-align: left;
+	font-size: 14px;
+}
+.wpep_sq_product_img {
+    display: flex;               /* Use flexbox */
+    align-items: center;         /* Vertically center content */
+    justify-content: start;      /* Align content to the left */
+    gap: 10px;                   /* Add spacing between image and text */
+}
+
+.wpep_sq_product_img img {
+    display: inline-block;       /* Ensure image respects alignment */
+    vertical-align: middle;      /* Align image with text */
+}
+
+.wpep_sq_product_img {
+    text-align: left;            /* Ensure text is aligned properly */
+}
+.wpep-square-product-table tbody {
+	border-bottom: 1px solid;
+}
+.wpep-square-product-table tbody tr {
+	border-bottom: 1px solid #ddd;
+}
+.delete_product {
+    /* font-size: 18px; */
+    color: #555;
+    background: #f5f5f5;
+    cursor: pointer;
+    border-radius: 2px;
+    border: none;
+    padding: 5px 10px;
+}
+
+.wpep-square-product-table thead {
+    background-color: #f5f5f5;
+}
+
+.wpep-square-product-table th {
+    font-weight: bold;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #555;
+}
+
+/* Add Product Button Row */
+.wpep-square-add-products {
+    text-align: center;
+    padding: 20px 0;
+    background-color: #fff;
+    border: 1px dashed #ccc;
+}
+
+.wpep-square-add-button {
+    background-color: transparent;
+    color: #007bff;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px; /* Space between icon and text */
+    text-transform: capitalize;
+}
+.wpep-square-add-popup-button {
+    background-color: transparent;
+    color: #007bff;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px; /* Space between icon and text */
+    text-transform: capitalize;
+}
+
+.wpep-square-add-button:hover {
+    background-color: #007bff;
+    color: white;
+    transition: 0.3s;
+}
+.wpep-square-add-popup-button:hover {
+    background-color: #007bff;
+    color: white;
+    transition: 0.3s;
+}
+
+.wpep-square-plus-icon {
+    display: inline-block;
+    font-size: 16px;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.wpep-square-add-button:hover .wpep-square-plus-icon {
+    color: white;
+}
+
+.wpep-square-add-popup-button:hover .wpep-square-plus-icon {
+    color: white;
+}
+
+/* Responsive Styling */
+@media (max-width: 600px) {
+    .wpep-square-product-table th, 
+    .wpep-square-product-table td {
+        font-size: 12px;
+        padding: 8px;
+    }
+    
+    .wpep-square-add-button {
+        font-size: 12px;
+        padding: 8px 15px;
+    }
+    
+    .wpep-square-add-popup-button {
+        font-size: 12px;
+        padding: 8px 15px;
+    }
+
+    .wpep-square-plus-icon {
+        font-size: 14px;
+    }
+}
+
+/* Modal Container */
+.square-product-modal {
+    display: none;  /* Initially hidden */
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+    align-items: center;
+    justify-content: center;
+}
+
+/* Modal Content */
+.square-product-modal-content {
+    background-color: #f3f3f3;
+    width: 600px;
+    max-width: 90%;
+    height: 650px;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+/* Close Button */
+.square-product-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #555;
+    cursor: pointer;
+}
+
+/* Modal Title */
+.square-product-modal-title {
+	font-size: 18px !important;
+    /* font-weight: bold; */
+    margin-bottom: 10px !important;
+    color: #333;
+    margin-left: -8px !important;
+}
+
+.square-product-search-box {
+    display: flex;
+    align-items: center;
+    border: 1px solid #777777;
+    border-radius: 5px;
+    padding: 8px;
+    width: 100%;
+    /* background: #fff; */
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.square-product-search-box input {
+    border: none;
+    outline: none;
+    flex: 1;
+    font-size: 16px;
+    padding-left: 10px;
+    background: none;
+}
+.square-product-search-box input:focus {
+    box-shadow: none;
+}
+
+/* Left Icon */
+.search-icon {
+    font-size: 22px;
+    color: gray;
+}
+
+/* Clear (X) Icon */
+.clear-icon {
+    font-size: 14px;
+    color: gray;
+    cursor: pointer;
+    display: none; /* Initially hidden */
+}
+
+/* Show clear icon when input has text */
+.square-product-search-box input:not(:placeholder-shown) + .clear-icon {
+    display: block;
+}
+
+/* Search Box */
+
+
+.square-product-list {
+        border-radius: 5px;
+    background-color: #fff;
+    /* height: 73%; */
+    max-height: 400px;
+    overflow-y: auto;
+    position: relative;
+    border: 1px solid #d7d7d7;
+    /* padding: 20px; */
+}
+.popup_header {
+    position: sticky;
+    z-index: 10;
+    top: 0;
+    background: white;
+    padding: 10px;
+}
+.check_all_square_product_div {
+    float: right;
+    display: -webkit-inline-box;
+    padding: 12px;
+}
+
+/* Product List */
+.square-product-list h3 {
+    font-size: 16px !important;
+    font-weight: bold !important;
+    margin-bottom: 10px !important;
+    color: #555 !important;
+    padding: 10px !important;
+}
+
+.square-product-list ul {
+    list-style: none;
+    padding: 0px 20px;
+    margin: 0;
+}
+
+.square-product-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+    padding: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.square-product-list label {
+    display: flex;
+    align-items: center; /* Align image and text vertically */
+    gap: 5px; /* Space between image and text */
+    cursor: pointer;
+}
+
+.square-product-list li:last-child {
+    border-bottom: none;
+}
+
+.square-product-list input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+}
+.wpep-square-add-product {
+    background-color: transparent;
+    color: #007bff;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    gap: 8px; /* Space between icon and text */
+    text-transform: capitalize;
+    margin-top: 10px;
+}
+.wpep-square-add-product:hover {
+    background-color: #007bff;
+    color: white;
+    transition: 0.3s;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .square-product-modal-content {
+        width: 90%;
+    }
+}
+.loader-overlay {
+    position: absolute;
+	border-radius: 10px;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8); /* Light background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* Ensure it's on top */
+}
+
+/* Spinning Loader */
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db; /* Blue top color */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Rotation Animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.no_square_pro_found {
+    text-align: center;
+    padding: 50px;
+    /* height: 400px; */
+    font-size: 25px;
+    color: #a9a9a9;
+    font-weight: bold;
+}
+button.apple_verify_domain, button.apple_verify_domain_test {
+  padding: 3px 8px;
+  background: #2065e0;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 3px;
+}
+button.apple_verify_domain:disabled, button.apple_verify_domain_test:disabled {
+  cursor: not-allowed;
+  background: #919191;
+}
+.apple_pay_verification {
+  display: flex;
+  align-items: center; /* Align vertically in the center */
+  gap: 3px; /* Space between items */
+}
+
+.apple_pay_verification button,
+.apple_pay_verification p {
+  margin: 0; /* Remove default margins */
+  margin-left: 5px;
+  margin-top: -5px;
+}
+
+.apple_domain_error, .apple_domain_error_test {
+  color: red; /* Add color to the error message */
+}
+/* Main container for the popup */
+#wpep-reports-popup-container {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  z-index: 9999; /* Ensure it is on top */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Overlay behind the modal */
+.wpep-reports-popup-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7); /* Darken the background more */
+  z-index: 9998; /* Overlay below the popup */
+}
+
+/* Main popup box */
+#wpep-reports-popup {
+  position: relative;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 30px;
+  width: 60%;  /* Adjusted width */
+  max-width: 600px;
+  max-height: 80%;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Soft shadow around the popup */
+  z-index: 10000; /* Popup is on top */
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto; /* Allows vertical scrolling if content overflows */
+}
+
+/* Header styling */
+.wpep-reports-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #ddd;
+  margin-bottom: 20px;
+}
+
+.wpep-reports-header h3 {
+  font-size: 20px;
+  color: #333;
+  font-weight: bold;
+}
+
+.wpep-reports-close {
+  font-size: 24px;
+  color: #999;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Form dropdown */
+.wpep-form-select {
+  width: 100% !important; /* Ensure the select container is full width */
+}
+
+.wpep-form-select label {
+  font-weight: bold;
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 5px;
+  display: block;
+}
+
+#wpep-form-selection {
+  width: 100% !important; /* Full width for the select form */
+  padding: 10px;
+  max-width: none;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  box-sizing: border-box; /* Ensures padding doesn't affect width */
+  display: block !important; /* Force it to behave as block and take full width */
+}
+
+/* Select Fields Section */
+.wpep-check-all-fields {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wpep-select-fields {
+  font-size: 16px;
+  font-weight: bold;
+  color: #555;
+}
+
+/* Checkbox section */
+.wpep-check-all {
+  display: flex;
+  align-items: center;
+}
+
+.wpep-check-all input[type="checkbox"] {
+  margin-left: 10px;
+}
+/* Form Fields Container */
+#wpep-form-fields {
+  display: none;
+    margin-bottom: 20px;
+    padding: 20px;
+    /* background-color: #f9f9f9; */
+    /* border: 1px solid #ccc; */
+    /* border-radius: 6px; */
+    box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.1);
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* Fields list items */
+#wpep-dynamic-fields li {
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Scrollable Fields Container */
+.wpep-form-fields-container {
+  max-height: 250px;   /* Set max height for form fields area */
+  overflow-y: auto;    /* Enable vertical scrolling */
+  margin-bottom: 20px; /* Space before footer */
+  padding-right: 10px; /* Prevent scrollbar overlap */
+}
+
+/* Fields container */
+.wpep-reports-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.wpep-reports-list li {
+  margin-bottom: 15px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Footer Styling */
+.wpep-reports-footer {
+  padding-top: 10px;
+  text-align: right;
+}
+
+#wpep-download-now {
+  background-color: #5D97FF;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+#wpep-download-now:disabled{
+  background-color: #adadad;
+  cursor: not-allowed;  
+}
+
+
+/* Close button styling */
+.wpep-reports-close:hover {
+  color: #333;
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+  #wpep-reports-popup {
+      width: 90%;
+      padding: 20px;
+  }
+
+  .wpep-reports-header h3 {
+      font-size: 18px;
+  }
+
+  #wpep-download-now {
+      width: 100%;
+  }
 }

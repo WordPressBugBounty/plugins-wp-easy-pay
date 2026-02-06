@@ -23,4 +23,3 @@ function wpep_new_user_email_notification( $username, $password, $email ) {
 
 	wp_mail( $to, $subject, $body, $headers );
 }
-

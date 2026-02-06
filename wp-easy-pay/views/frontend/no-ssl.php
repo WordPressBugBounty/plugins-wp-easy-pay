@@ -1,4 +1,3 @@
-<p> Sorry, your website is not using HTTPS. Please click the link below to convert your website to HTTPS.</p>
 <?php
 /**
  * Filename: no-ssl.php
@@ -8,6 +7,9 @@
  */
 
 ?>
+
+<p> Sorry, your website is not using HTTPS. Please click the link below to convert your website to HTTPS.</p>
+
 <?php
 $site_url = 'https://' . ( isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '' )
 . ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' );

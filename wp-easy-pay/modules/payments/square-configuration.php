@@ -6,8 +6,6 @@
  * @package WP_Easy_Pay
  */
 
-?>
-<?php
 require_once WPEP_ROOT_PATH . 'square-sdk/autoload.php';
 
 /**
@@ -86,7 +84,6 @@ function wpep_setup_square_configuration_by_form_id( $current_form_id ) {
 		if ( 'on' === $wpep_payment_mode ) {
 			/* if live is on */
 			$access_token = get_option( 'wpep_live_token_upgraded', true );
-
 			$api_config->setHost( 'https://connect.squareup.com' );
 			$api_config->setAccessToken( $access_token );
 			$square_currency = get_option( 'wpep_square_currency_new', true );
@@ -94,13 +91,10 @@ function wpep_setup_square_configuration_by_form_id( $current_form_id ) {
 		}
 
 		if ( 'on' !== $wpep_payment_mode ) {
-
 			/* if test is on */
 			$access_token = get_option( 'wpep_square_test_token_global', true );
-
 			$api_config->setHost( 'https://connect.squareupsandbox.com' );
 			$api_config->setAccessToken( $access_token );
-
 			$square_currency = get_option( 'wpep_square_currency_test', true );
 
 		}
@@ -259,6 +253,7 @@ function wpep_refresh_token_details( $wpep_current_form_id ) {
 		$global_payment_mode = get_option( 'wpep_square_payment_mode_global', true );
 
 		if ( 'on' === $global_payment_mode ) {
+
 			/* If Global Form Live Mode */
 			$refresh_token_details['refresh_token'] = get_option( 'wpep_refresh_token', false );
 			$refresh_token_details['expires_at']    = get_option( 'wpep_token_expires_at', false );
@@ -280,13 +275,64 @@ function wpep_refresh_token_details( $wpep_current_form_id ) {
 		if ( 'on' === $individual_payment_mode ) {
 
 			/* If Individual Form Live Mode */
-
 			$refresh_token_details['refresh_token'] = get_post_meta( $wpep_current_form_id, 'wpep_refresh_token', true );
 			$refresh_token_details['expires_at']    = get_post_meta( $wpep_current_form_id, 'wpep_token_expires_at', true );
+			$refresh_token_details['type']          = 'specific';
+
+		} else {
+
+			/* If Individual Form SANDBOX Mode */
+			$refresh_token_details['refresh_token'] = get_post_meta( $wpep_current_form_id, 'wpep_test_refresh_token', true );
+			$refresh_token_details['expires_at']    = get_post_meta( $wpep_current_form_id, 'wpep_token_test_expires_at', true );
 			$refresh_token_details['type']          = 'specific';
 
 		}
 	}
 
 	return $refresh_token_details;
+}
+
+/**
+ * Returns the payment access token and mode (live or test) based on the global or individual form settings.
+ *
+ * This function checks if the global payment mode is enabled for the form, and if not, it falls back to individual form settings.
+ * It then retrieves the relevant access token and payment mode (live/test) based on the settings.
+ *
+ * @param int $wpep_current_form_id The form ID for which the payment mode is being returned.
+ *
+ * @return array The access token and payment mode (either 'live' or 'test').
+ */
+function wpep_return_payment_mode( $wpep_current_form_id ) {
+
+	$form_payment_global = get_post_meta( $wpep_current_form_id, 'wpep_individual_form_global', true );
+
+	if ( 'on' === $form_payment_global ) {
+
+		$global_payment_mode = get_option( 'wpep_square_payment_mode_global', true );
+
+		if ( 'on' === $global_payment_mode ) {
+			/* If Global Form Live Mode */
+			$access_token = get_option( 'wpep_live_token_upgraded', true );
+			return array( $access_token, 'live' );
+		} else {
+			/* If Global Form Test Mode */
+			$access_token = get_option( 'wpep_square_test_token_global', true );
+			return array( $access_token, 'test' );
+		}
+	}
+
+	if ( 'on' !== $form_payment_global ) {
+
+		$individual_payment_mode = get_post_meta( $wpep_current_form_id, 'wpep_payment_mode', true );
+
+		if ( 'on' === $individual_payment_mode ) {
+			/* If Individual Form Live Mode */
+			$access_token = get_post_meta( $wpep_current_form_id, 'wpep_live_token_upgraded', true );
+			return array( $access_token, 'live' );
+		} else {
+			/* If Individual Form Test Mode */
+			$access_token = get_post_meta( $wpep_current_form_id, 'wpep_square_test_token', true );
+			return array( $access_token, 'test' );
+		}
+	}
 }

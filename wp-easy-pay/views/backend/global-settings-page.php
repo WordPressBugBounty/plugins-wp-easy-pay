@@ -1,26 +1,50 @@
 <?php
 /**
- * Filename: global-settings-page.php
- * Description: global settings page backend.
+ * WP EASY PAY
  *
- * @package WP_Easy_Pay
+ * PHP version 7
+ *
+ * @category Wordpress_Plugin
+ * @package  WP_Easy_Pay
+ * @author   Author <contact@apiexperts.io>
+ * @license  https://opensource.org/licenses/MIT MIT License
+ * @link     http://wpeasypay.com/
  */
 
-wp_enqueue_script( 'wpep_backend_js', WPEP_ROOT_URL . 'assets/backend/js/wpep_backend_scripts.js', array(), '1.0.0', true );
+if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
+	exit;
+}
 
-if ( isset( $_POST['_wpnoncewpepglobal'] ) && ! empty( $_POST ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnoncewpepglobal'] ) ), '_wpnoncewpepglobal' ) ) {
-	$post_custom           = $_POST;
-	$payment_mode          = 0;
-	$wpep_square_after_pay = 0;
-	$location_id_test      = null;
+if ( isset( $_POST ) && ! empty( $_POST ) ) {
+	$post_custom            = $_POST;
+	$payment_mode           = 0;
+	$wpep_square_google_pay = 0;
+	$wpep_square_apple_pay  = 0;
+	$wpep_square_after_pay  = 0;
+
+	$wpep_square_test_google_pay_global = 0;
+	$location_id_test                   = null;
 
 	if ( isset( $post_custom['wpep_square_test_location_id_global'] ) ) {
 		$location_id_test = sanitize_text_field( $post_custom['wpep_square_test_location_id_global'] );
 	}
 
 	$wpep_email_notification = sanitize_text_field( $post_custom['wpep_email_notification'] );
+	if ( wepp_fs()->is__premium_only() ) {
+		$wpep_device_id   = isset( $post_custom['wpep_device_id'] ) ? sanitize_text_field( $post_custom['wpep_device_id'] ) : '';
+		$wpep_device_code = isset( $post_custom['wpep_device_code'] ) ? sanitize_text_field( $post_custom['wpep_device_code'] ) : '';
 
-
+		if ( isset( $post_custom['wpep_square_google_pay'] ) ) {
+			$wpep_square_google_pay = sanitize_text_field( $post_custom['wpep_square_google_pay'] );
+		} else {
+			$wpep_square_google_pay = 'off';
+		}
+		if ( isset( $post_custom['wpep_square_test_apple_pay'] ) ) {
+			$wpep_square_test_apple_pay = sanitize_text_field( $post_custom['wpep_square_test_apple_pay'] );
+		} else {
+			$wpep_square_test_apple_pay = 'off';
+		}
+	}
 
 	if ( isset( $post_custom['wpep_square_test_after_pay'] ) ) {
 		$wpep_square_test_after_pay = sanitize_text_field( $post_custom['wpep_square_test_after_pay'] );
@@ -32,6 +56,12 @@ if ( isset( $_POST['_wpnoncewpepglobal'] ) && ! empty( $_POST ) && wp_verify_non
 		$wpep_square_test_cash_app = sanitize_text_field( $post_custom['wpep_square_test_cash_app'] );
 	} else {
 		$wpep_square_test_cash_app = 'off';
+	}
+
+	if ( isset( $post_custom['wpep_square_test_giftcard'] ) ) {
+		$wpep_square_test_giftcard = sanitize_text_field( $post_custom['wpep_square_test_giftcard'] );
+	} else {
+		$wpep_square_test_giftcard = 'off';
 	}
 
 	if ( isset( $post_custom['wpep_square_test_ach_debit'] ) ) {
@@ -46,14 +76,32 @@ if ( isset( $_POST['_wpnoncewpepglobal'] ) && ! empty( $_POST ) && wp_verify_non
 		$wpep_square_cash_app = 'off';
 	}
 
+	if ( isset( $post_custom['wpep_square_giftcard'] ) ) {
+		$wpep_square_giftcard = sanitize_text_field( $post_custom['wpep_square_giftcard'] );
+	} else {
+		$wpep_square_giftcard = 'off';
+	}
+
 	if ( isset( $post_custom['wpep_square_ach_debit'] ) ) {
 		$wpep_square_ach_debit = sanitize_text_field( $post_custom['wpep_square_ach_debit'] );
 	} else {
 		$wpep_square_ach_debit = 'off';
 	}
 
+	if ( wepp_fs()->is__premium_only() ) {
+		if ( isset( $post_custom['wpep_square_terminal'] ) ) {
+			$wpep_square_terminal = sanitize_text_field( $post_custom['wpep_square_terminal'] );
+		} else {
+			$wpep_square_terminal = 'off';
+		}
+		if ( isset( $post_custom['wpep_square_test_google_pay_global'] ) ) {
+			$wpep_square_test_google_pay_global = sanitize_text_field( $post_custom['wpep_square_test_google_pay_global'] );
+		}
 
-
+		if ( isset( $post_custom['wpep_square_apple_pay'] ) ) {
+			$wpep_square_apple_pay = sanitize_text_field( $post_custom['wpep_square_apple_pay'] );
+		}
+	}
 	if ( isset( $post_custom['wpep_square_after_pay'] ) ) {
 		$wpep_square_after_pay = sanitize_text_field( $post_custom['wpep_square_after_pay'] );
 	}
@@ -71,20 +119,38 @@ if ( isset( $_POST['_wpnoncewpepglobal'] ) && ! empty( $_POST ) && wp_verify_non
 		$currency = sanitize_text_field( $post_custom['wpep_square_currency_test'] );
 		update_option( 'wpep_square_currency_test', $currency );
 	}
-
 	update_option( 'wpep_square_test_location_id_global', $location_id_test );
 	update_option( 'wpep_square_payment_mode_global', $payment_mode );
 
-
 	update_option( 'wpep_square_after_pay', $wpep_square_after_pay );
 	update_option( 'wpep_square_cash_app', $wpep_square_cash_app );
+	update_option( 'wpep_square_giftcard', $wpep_square_giftcard );
 	update_option( 'wpep_email_notification', $wpep_email_notification );
+
+	if ( wepp_fs()->is__premium_only() ) {
+		update_option( 'wpep_square_test_google_pay_global', $wpep_square_test_google_pay_global );
+		update_option( 'wpep_square_google_pay', $wpep_square_google_pay );
+		update_option( 'wpep_square_apple_pay', $wpep_square_apple_pay );
+		update_option( 'wpep_device_code', $wpep_device_code );
+		update_option( 'wpep_device_id', $wpep_device_id );
+
+		if ( isset( $wpep_square_test_apple_pay ) ) {
+			update_option( 'wpep_square_test_apple_pay', $wpep_square_test_apple_pay );
+		}
+		if ( isset( $wpep_square_terminal ) ) {
+			update_option( 'wpep_square_terminal', $wpep_square_terminal );
+		}
+	}
 	if ( isset( $wpep_square_test_after_pay ) ) {
 		update_option( 'wpep_square_test_after_pay', $wpep_square_test_after_pay );
 	}
 
 	if ( isset( $wpep_square_test_cash_app ) ) {
 		update_option( 'wpep_square_test_cash_app', $wpep_square_test_cash_app );
+	}
+
+	if ( isset( $wpep_square_test_giftcard ) ) {
+		update_option( 'wpep_square_test_giftcard', $wpep_square_test_giftcard );
 	}
 
 	if ( isset( $wpep_square_test_ach_debit ) ) {
@@ -99,16 +165,26 @@ if ( isset( $_POST['_wpnoncewpepglobal'] ) && ! empty( $_POST ) && wp_verify_non
 	$wpep_email_notification = $current_user_custom->user_email;
 }
 
+if ( wepp_fs()->is__premium_only() ) {
+	$wpep_square_google_pay             = get_option( 'wpep_square_google_pay', true );
+	$wpep_square_apple_pay              = get_option( 'wpep_square_apple_pay', true );
+	$wpep_square_test_google_pay_global = get_option( 'wpep_square_test_google_pay_global', true );
+	$wpep_square_terminal               = get_option( 'wpep_square_terminal', false );
+	$wpep_device_id                     = get_option( 'wpep_device_id', false );
+	$wpep_device_code                   = get_option( 'wpep_device_code', false );
+	$wpep_square_test_apple_pay         = get_option( 'wpep_square_test_apple_pay', false );
+}
+
 $wpep_square_payment_mode_global = get_option( 'wpep_square_payment_mode_global', true );
-
-$wpep_square_after_pay = get_option( 'wpep_square_after_pay', true );
-$wpep_square_cash_app  = get_option( 'wpep_square_cash_app', true );
-$wpep_square_ach_debit = get_option( 'wpep_square_ach_debit', false );
-
-$wpep_email_notification    = get_option( 'wpep_email_notification', false );
-$wpep_square_test_after_pay = get_option( 'wpep_square_test_after_pay', false );
-$wpep_square_test_cash_app  = get_option( 'wpep_square_test_cash_app', false );
-$wpep_square_test_ach_debit = get_option( 'wpep_square_test_ach_debit', false );
+$wpep_square_after_pay           = get_option( 'wpep_square_after_pay', true );
+$wpep_square_cash_app            = get_option( 'wpep_square_cash_app', true );
+$wpep_square_giftcard            = get_option( 'wpep_square_giftcard', true );
+$wpep_square_ach_debit           = get_option( 'wpep_square_ach_debit', false );
+$wpep_email_notification         = get_option( 'wpep_email_notification', false );
+$wpep_square_test_after_pay      = get_option( 'wpep_square_test_after_pay', false );
+$wpep_square_test_cash_app       = get_option( 'wpep_square_test_cash_app', false );
+$wpep_square_test_giftcard       = get_option( 'wpep_square_test_giftcard', false );
+$wpep_square_test_ach_debit      = get_option( 'wpep_square_test_ach_debit', false );
 
 
 
@@ -123,8 +199,8 @@ $wpep_square_connect_url         = wpep_create_connect_url( 'global' );
 $wpep_create_connect_sandbox_url = wpep_create_connect_sandbox_url( 'global' );
 
 
-$live_token   = get_option( 'wpep_live_token_upgraded' );
-if( isset( $live_token ) && ! empty( $live_token ) ){
+$live_token = get_option( 'wpep_live_token_upgraded' );
+if ( isset( $live_token ) && ! empty( $live_token ) ) {
 	$wpep_sandbox = false;
 
 	$info = array(
@@ -133,13 +209,9 @@ if( isset( $live_token ) && ! empty( $live_token ) ){
 		'client_id'    => WPEP_SQUARE_APP_ID,
 
 	);
-	$revoked = 'false';
 
-	
-	// $api_client    = wpep_setup_square_with_access_token( $live_token, $wpep_sandbox );
-	// $locations_api = new \SquareConnect\Api\LocationsApi( $api_client );
-	// $locations     = $locations_api->listLocations()->getLocations();
-	if ( 'yes' == $wpep_sandbox ) {
+	$revoked = 'false';
+	if ( 'yes' === $wpep_sandbox ) {
 
 		$url = 'https://connect.squareupsandbox.com/v2/locations';
 
@@ -148,26 +220,34 @@ if( isset( $live_token ) && ! empty( $live_token ) ){
 		$url = 'https://connect.squareup.com/v2/locations';
 
 	}
-	//remote request
-	
+	// remote request.
+
 	$headers = array(
 		'Square-Version' => '2021-03-17',
 		'Authorization'  => 'Bearer ' . $live_token,
-		'Content-Type'   => 'application/json'
+		'Content-Type'   => 'application/json',
 	);
-	
-	$response = wp_remote_get($url, array(
-		'headers'  =>  $headers
+
+	$response = wp_remote_get(
+		$url,
+		array(
+			'headers' => $headers,
 		)
 	);
-	
-	$response_body = json_decode(wp_remote_retrieve_body($response));
-			
-	if ( $response['response']['code'] != 200 || 'ACCESS_TOKEN_REVOKED' === @$response_body->errors[0]->code || 'UNAUTHORIZED' === @$response_body->errors[0]->code ) {
+
+	$response_body = json_decode( wp_remote_retrieve_body( $response ) );
+	if ( isset( $response['response']['code'] ) && 200 !== $response['response']['code'] ) {
+		// Handle non-200 response code.
 		$revoked = 'true';
+	} elseif ( isset( $response_body ) && is_object( $response_body ) ) {
+		// Ensure $response_body is not null and is an object.
+		if ( isset( $response_body->errors ) && is_array( $response_body->errors ) && isset( $response_body->errors[0]->code ) ) {
+			if ( 'ACCESS_TOKEN_REVOKED' === $response_body->errors[0]->code || 'UNAUTHORIZED' === $response_body->errors[0]->code ) {
+				$revoked = 'true';
+			}
+		}
 	}
 }
-
 ?>
 
 <form class="wpeasyPay-form" method="post" action="#">
@@ -177,9 +257,7 @@ if( isset( $live_token ) && ! empty( $live_token ) ){
 		<div class="swtichWrap">
 		<input type="checkbox" id="on-off" name="wpep_square_payment_mode_global" class="switch-input" 
 		<?php
-		if ( 'on' === $wpep_square_payment_mode_global || ( isset( $_COOKIE['wpep-payment-mode'] ) && 'live' === $_COOKIE['wpep-payment-mode'] ) ) {
-			echo esc_html( 'checked' );
-		}
+		checked( $wpep_square_payment_mode_global, 'on', 1 );
 		?>
 		/>
 		<label for="on-off" class="switch-label">
@@ -200,16 +278,15 @@ if( isset( $live_token ) && ! empty( $live_token ) ){
 		<?php
 			$wpep_square_test_token = get_option( 'wpep_square_test_token_global' );
 
-		if ( empty( $wpep_square_test_token ) ) {
+		if ( false === $wpep_square_test_token ) {
 			?>
 			<div class="squareConnect">
 				<div class="squareConnectwrap">
-					
-					<h2>Connect your square (sandbox) account now!</h2>
-
-					<?php
-			$get = $_GET;
-			if ( isset( $get['type'] ) && 'bad_request.missing_parameter' === $get['type'] ) {
+				<h2>Connect your square (sandbox) account now!</h2>
+				
+				<?php
+					$get = $_GET;
+				if ( isset( $get['type'] ) && 'bad_request.missing_parameter' === $get['type'] ) {
 					?>
 
 					<p style="color: red;"> You have denied WP EASY PAY the permission to access your Square account. Please connect again to and click allow to complete OAuth. </p>
@@ -217,7 +294,6 @@ if( isset( $live_token ) && ! empty( $live_token ) ){
 					<?php
 				}
 				?>
-
 				<div class="center-container">
 					<div class="custom-notification">
 						<div class="notification-icon">
@@ -246,7 +322,7 @@ if( isset( $live_token ) && ! empty( $live_token ) ){
 				<div class="wpeasyPay__body">
 
 			<?php
-			if ( get_option( 'wpep_square_currency_test', false ) !== false ) {
+			if ( false !== get_option( 'wpep_square_currency_test', false ) ) {
 				?>
 				<div class="form-group">
 					<label>Country Currency</label>
@@ -337,16 +413,13 @@ endif;
 							}
 
 							$saved_location_id = get_option( 'wpep_square_test_location_id_global', false );
-							$selected = '';
+							$selected          = '';
 							if ( false !== $saved_location_id ) {
-
 								if ( $saved_location_id === $location_id ) {
-
-											$selected = 'selected';
-
+									$selected = 'selected';
 								}
 							}
-										echo "<option value='" . esc_attr( $location_id ) . "'" . esc_html( $selected ) . '>' . esc_html( $location_name ) . '</option>';
+							echo "<option value='" . esc_attr( $location_id ) . "'" . esc_html( $selected ) . '>' . esc_html( $location_name ) . '</option>';
 						}
 					}
 
@@ -357,6 +430,34 @@ endif;
 
 				<div class="paymentint">
 				<label class="title">Other Payment Options</label>
+				<?php if ( wepp_fs()->is__premium_only() ) { ?>
+				<div class="wizard-form-checkbox">
+				<input id="googlePayTest" name="wpep_square_test_google_pay_global" value="on" type="checkbox"
+					<?php
+					if ( 'on' === $wpep_square_test_google_pay_global ) {
+						echo 'checked';
+					}
+					?>
+					>
+					<label for="googlePayTest">Google Pay</label>
+
+				</div>
+				<div class="wizard-form-checkbox">
+					<div class="apple_pay_verification">
+						<input id="applePayTest" class="applePayEnableTest" name="wpep_square_test_apple_pay" value="on" type="checkbox" 
+						<?php
+						if ( 'on' === $wpep_square_test_apple_pay ) {
+							echo 'checked';
+						}
+						?>
+						>
+						<label for="applePayTest">Apple Pay</label>
+						<button class="apple_verify_domain_test" style="display:none;">Verify domain</button>
+						<p class="apple_domain_error_test"></p>
+						<input type="hidden" id="apple_domain_verification" name="apple_domain_verification" value="<?php echo esc_attr( wp_create_nonce( 'apple-domain-verification-nonce' ) ); ?>" />
+					</div>
+				</div>
+				<?php } ?>
 				<div class="wizard-form-checkbox ">
 					<input id="afterPayTest" name="wpep_square_test_after_pay" value="on" type="checkbox"
 					<?php
@@ -367,7 +468,6 @@ endif;
 					>
 					<label for="afterPayTest">After Pay</label>
 				</div>
-
 				<div class="wizard-form-checkbox">
 					<input id="cashAppTest" name="wpep_square_test_cash_app" value="on" type="checkbox" 
 					<?php
@@ -378,7 +478,18 @@ endif;
 					>
 					<label for="cashAppTest">Cash App</label>
 				</div>
-
+				<?php if ( wepp_fs()->is__premium_only() ) { ?>
+				<div class="wizard-form-checkbox">
+					<input id="giftcard-test" name="wpep_square_test_giftcard" value="on" type="checkbox" 
+					<?php
+					if ( 'on' === $wpep_square_test_giftcard ) {
+						echo 'checked';
+					}
+					?>
+					>
+					<label for="giftcard-test">Square Gift Card</label>
+				</div>
+				<?php } ?>
 				<div class="wizard-form-checkbox">
 					<input id="achDebitTest" name="wpep_square_test_ach_debit" value="on" type="checkbox" 
 					<?php
@@ -389,7 +500,25 @@ endif;
 					>
 					<label for="achDebitTest">ACH Debit</label>
 				</div>
-
+				<?php if ( ! wepp_fs()->is__premium_only() ) { ?>
+					<div class="wizard-form-checkbox">
+						<input id="googlePayTest" name="wpep_square_test_google_pay" value="on" type="checkbox" disabled>
+						<label class="googlePayTest" for="googlePayTest">
+							Google Pay
+						</label>
+						<input id="applePayTest" name="wpep_square_test_apple_pay" value="on" type="checkbox" disabled>
+						<label class="applePayTest" for="applePayTest">
+							Apple Pay
+						</label>
+						<input id="giftcardTest" name="wpep_square_test_giftcard" value="on" type="checkbox" disabled>
+						<label class="giftcard" for="giftcard">
+							Gift Card
+							<a href="https://wpeasypay.com/pricing/?utm_source=plugin&utm_medium=payment_options&utm_campaign=plugin" style="text-decoration: none !important;">
+								<span class="pro_tag_gateway" id="pro_tag">Get Pro</span>
+							</a>
+						</label>
+					</div>	
+				<?php } ?>
 				</div>
 				<p style="color: red;"> Note: Disconnecting from Square and Reconnecting with another account can stop your subscription payments. </p>
 				<div class="btnFooter d-btn">
@@ -403,12 +532,10 @@ endif;
 		?>
 
 		</div>
-
-		<div class="livePayment paymentView" id="wpep_spmgl">
+		<div class="livePayment paymentView liveActive" id="wpep_spmgl">
 		<?php
 		$wpep_square_live_token = get_option( 'wpep_live_token_upgraded' );
-
-			if ( empty( $wpep_square_live_token ) ) {
+		if ( empty( $wpep_square_live_token ) || false === $wpep_square_live_token ) {
 			?>
 
 		<div class="squareConnect">
@@ -504,7 +631,7 @@ endif;
 
 					<?php
 
-					if ( $all_locations && ! empty( $all_locations ) && false !== $all_locations ) {
+					if ( isset( $all_locations ) && ! empty( $all_locations ) && false !== $all_locations ) {
 
 						foreach ( $all_locations as $location ) {
 
@@ -530,8 +657,8 @@ endif;
 									$location_name = $location->name;
 								}
 							}
-
 							$saved_location_id = get_option( 'wpep_square_location_id', false );
+							$selected          = '';
 							if ( false !== $saved_location_id ) {
 
 								if ( $saved_location_id === $location_id ) {
@@ -553,7 +680,36 @@ endif;
 
 		<div class="paymentint">
 			<label class="title">Other Payment Options</label>
-		  
+			<?php if ( wepp_fs()->is__premium_only() ) { ?>
+			<div class="wizard-form-checkbox">
+				<input id="googlePayLive" name="wpep_square_google_pay" value="on" type="checkbox"
+					<?php
+					if ( 'on' === $wpep_square_google_pay ) {
+						echo esc_html( 'checked' );
+					}
+					?>
+					>
+				<label for="googlePayLive">Google Pay</label>
+			</div>
+			<div class="wizard-form-checkbox">
+				<div class="apple_pay_verification">
+					<input id="applePayLive" class="applePayEnable" name="wpep_square_apple_pay" value="on" type="checkbox"
+					
+						<?php
+						if ( 'on' === $wpep_square_apple_pay ) {
+							echo esc_html( 'checked' );
+						}
+						?>
+					
+					>
+					<label for="applePayLive">Apple Pay</label>
+					<button class="apple_verify_domain" style="display:none;">Verify domain</button>
+					<p class="apple_domain_error"></p>
+					<input type="hidden" id="apple_domain_verification" name="apple_domain_verification" value="<?php echo esc_attr( wp_create_nonce( 'apple-domain-verification-nonce' ) ); ?>" />
+				</div>
+			</div>
+			<?php } ?>
+
 			<div class="wizard-form-checkbox ">
 			<input id="afterPayLive" name="wpep_square_after_pay" value="on" type="checkbox"
 			
@@ -565,7 +721,6 @@ endif;
 			>
 			<label for="afterPayLive">After Pay</label>
 			</div>
-
 			<div class="wizard-form-checkbox">
 			<input id="cashAppLive" name="wpep_square_cash_app" value="on" type="checkbox"
 			
@@ -578,7 +733,20 @@ endif;
 			>
 			<label for="cashAppLive">Cash App</label>
 			</div>
-
+			<?php if ( wepp_fs()->is__premium_only() ) { ?>
+			<div class="wizard-form-checkbox">
+				<input id="giftcard-live" name="wpep_square_giftcard" value="on" type="checkbox"
+				
+				<?php
+				if ( 'on' === $wpep_square_giftcard ) {
+					echo esc_html( 'checked' );
+				}
+				?>
+				
+				>
+				<label for="giftcard-live">Square Gift Card</label>
+			</div>
+			<?php } ?>
 			<div class="wizard-form-checkbox">
 			<input id="achDebitLive" name="wpep_square_ach_debit" value="on" type="checkbox"
 			<?php
@@ -589,6 +757,50 @@ endif;
 			>
 			<label for="achDebitLive">ACH Debit</label>
 			</div>
+			<?php if ( ! wepp_fs()->is__premium_only() ) { ?>
+					<div class="wizard-form-checkbox">
+						<input id="googlePayTest" name="wpep_square_test_google_pay" value="on" type="checkbox" disabled>
+						<label class="googlePayTest" for="googlePayTest">
+							Google Pay
+						</label>
+						<input id="applePayTest" name="wpep_square_test_apple_pay" value="on" type="checkbox" disabled>
+						<label class="applePayTest" for="applePayTest">
+							Apple Pay
+						</label>
+						<input id="giftcardTest" name="wpep_square_test_giftcard" value="on" type="checkbox" disabled>
+						<label class="giftcard" for="giftcard">
+							Gift Card
+							<a href="https://wpeasypay.com/pricing/?utm_source=plugin&utm_medium=payment_options&utm_campaign=plugin" style="text-decoration: none !important;">
+								<span class="pro_tag_gateway" id="pro_tag">Get Pro</span>
+							</a>
+						</label>
+					</div>	
+			<?php } else { ?>
+			<div class="wizard-form-checkbox">
+			<input id="TerminalLive" name="wpep_square_terminal" value="on" type="checkbox"
+				<?php
+				if ( 'on' === $wpep_square_terminal ) {
+					echo esc_html( 'checked' );
+				}
+				?>
+			>
+			<label for="TerminalLive">Terminal Pay</label>
+			<br>
+			<span id="terminalform">
+			<label for="btn_wpep_gen_code" style="margin:0!important">
+				Generate device code
+				</label>
+				<br>
+				<input type="text" name="wpep_device_code" id="wpep_device_code" value="<?php echo esc_attr( $wpep_device_code ); ?>"  style="padding: 5px; border: 1px solid #ccc; border-radius: 4px;" >
+				<button id="btn_wpep_gen_code" style="padding: 5px 10px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+				Get Code
+				</button>
+				<br>
+			 
+				<input type="hidden" name="wpep_device_id" id="wpep_device_id" value="<?php echo esc_attr( $wpep_device_id ); ?>" style="padding: 5px; border: 1px solid #ccc; border-radius: 4px;" >
+				</span>
+			</div> 
+		<?php } ?>
 
 		</div>
 
@@ -607,13 +819,9 @@ endif;
 			
 			<?php
 		}
-
 		?>
-		<input type="hidden" id="_wpnoncewpepglobal" name="_wpnoncewpepglobal" value="<?php echo esc_attr( wp_create_nonce( '_wpnoncewpepglobal' ) ); ?>" />
-
 		</div>
 
 	</div>
-	
 </form>
 </div>

@@ -12,8 +12,9 @@
  * @param int    $current_form_id  The ID of the current form.
  * @param array  $form_values      The values submitted in the form.
  * @param string $transaction_id   The transaction ID associated with the form submission.
+ * @param string $currency   The currency of the current form.
  */
-function wpep_send_admin_email( $current_form_id, $form_values, $transaction_id ) {
+function wpep_send_admin_email( $current_form_id, $form_values, $transaction_id, $currency ) {
 
 	$to           = get_post_meta( $current_form_id, 'wpep_square_admin_email_to_field', true );
 	$cc           = get_post_meta( $current_form_id, 'wpep_square_admin_email_cc_field', true );
@@ -22,8 +23,6 @@ function wpep_send_admin_email( $current_form_id, $form_values, $transaction_id 
 	$subject      = get_post_meta( $current_form_id, 'wpep_square_admin_email_subject_field', true );
 	$message      = get_post_meta( $current_form_id, 'wpep_square_admin_email_content_field', true );
 	$current_user = wp_get_current_user();
-
-	// $payment_received = file_get_contents( WPEP_ROOT_PATH . 'modules/email_notifications/templates/payment_received.php' );
 
 	$img_url = WPEP_ROOT_URL . 'assets/frontend/img/payment.png';
 
@@ -46,14 +45,46 @@ function wpep_send_admin_email( $current_form_id, $form_values, $transaction_id 
 					$label = 'user_email';
 				}
 				$tag = '[' . str_replace( ' ', '_', strtolower( $label ) ) . ']';
+				if ( '[line_items]' === $tag ) {
 
+					$wpep_square_payment_type = get_post_meta( $current_form_id, 'wpep_square_payment_type', true );
+					$value                    = str_replace( '\"', '"', $value );
+					$value                    = json_decode( $value, true );
+					if ( is_array( $value ) ) {
+						if ( isset( $wpep_square_payment_type ) && 'simple' === $wpep_square_payment_type ) {
+							$line_items = '<strong>Simple Payment</strong><br><br>';
+						} elseif ( isset( $wpep_square_payment_type ) && 'donation' === $wpep_square_payment_type ) {
+							$line_items = '<strong>Donation Payment</strong><br><br>';
+						} elseif ( isset( $wpep_square_payment_type ) && 'donation_recurring' === $wpep_square_payment_type ) {
+							$line_items = '<strong>Donation Recurring</strong><br><br>';
+						} elseif ( isset( $wpep_square_payment_type ) && 'subscription' === $wpep_square_payment_type ) {
+							$line_items = '<strong>Subscription Payment</strong><br><br>';
+						}
+
+						foreach ( $value as $val ) {
+
+							if ( $val['quantity'] > 0 ) {
+								$line_item_label = trim( $val['label'], "'" );
+
+								// Replace remaining escaped characters with actual characters.
+								$line_item_label = str_replace( '\\n', "\n", $line_item_label );
+								$line_item_label = str_replace( '\\t', "\t", $line_item_label );
+								$line_item_price = explode( ' ', $val['price'] );
+
+								$line_items .= $line_item_price[0] * $val['quantity'] . ' ' . $currency . ' - ' . $line_item_label . '<br>';
+
+							}
+						}
+						$value = (string) $line_items;
+					}
+				}
 				$message = str_replace( $tag, $value, $message );
 
 				$subject = str_replace( $tag, $value, $subject );
+
 			}
 		}
 	}
-
 		$message = str_replace( $transaction_tag, $transaction_id, $message );
 		$subject = str_replace( $transaction_tag, $transaction_id, $subject );
 
@@ -64,5 +95,6 @@ function wpep_send_admin_email( $current_form_id, $form_values, $transaction_id 
 		$headers .= "MIME-Version: 1.0\r\n";
 		$headers .= "Content-Type: text/html; charset=UTF-8\r\n";
 		$message  = $message;
+
 		wp_mail( $to, $subject, $message, $headers );
 }

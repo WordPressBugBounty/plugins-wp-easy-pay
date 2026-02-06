@@ -67,6 +67,17 @@ endif;
 <ul id="tabs-list">
 	<!-- MENU TOGGLE -->
 	<label id="open-nav-label" for="nav-ctrl"></label>
+	<?php
+	if ( wepp_fs()->is__premium_only() ) {
+		?>
+	<li id="li-for-panel-1" data-id="panel-1-ctrl">
+		<label class="panel-label" for="panel-1-ctrl">Square account settings</label>
+	</li>
+	<!--INLINE-BLOCK FIX -->
+		<?php
+	}
+	?>
+
 	<li id="li-for-panel-2" data-id="panel-2-ctrl">
 		<label class="panel-label" for="panel-2-ctrl">Form settings</label>
 	</li>
@@ -82,6 +93,16 @@ endif;
 	<li id="li-for-panel-5" data-id="panel-5-ctrl">
 		<label class="panel-label" for="panel-5-ctrl">Transaction notes</label>
 	</li>
+	<?php
+	if ( wepp_fs()->is__premium_only() ) {
+		?>
+		<li id="li-for-panel-6" data-id="panel-6-ctrl" class="last">
+			<label class="panel-label" for="panel-6-ctrl">Additional charges</label>
+		</li>
+		<?php
+	}
+	?>
+
 	<label id="close-nav-label" for="nav-ctrl">Close</label>
 
 	<!-- <li class="last-child swtichHold">

@@ -6,8 +6,6 @@
  * @package WP_Easy_Pay
  */
 
-?>
-<?php
 $wpep_form_theme_color = ! empty( get_post_meta( get_the_ID(), 'wpep_form_theme_color', true ) ) ? get_post_meta( get_the_ID(), 'wpep_form_theme_color', true ) : '#5d97ff';
 $wpep_show_shadow      = get_post_meta( get_the_ID(), 'wpep_show_shadow', true );
 $wpep_btn_theme        = get_post_meta( get_the_ID(), 'wpep_btn_theme', true );
@@ -55,7 +53,6 @@ $wpep_btn_label        = get_post_meta( get_the_ID(), 'wpep_payment_btn_label', 
 </style>
 
 <div class="colorWra">
-	
 	<div class="form-group">
 		<label class="lbltitle">Form theme color:</label>
 
@@ -95,9 +92,12 @@ $wpep_btn_label        = get_post_meta( get_the_ID(), 'wpep_payment_btn_label', 
 		?>
 			/> Use theme default popup button style</label>
 	</div>
+
+
 	<div class="form-group">
 
 		<label class="lbltitle">Pay Button Label</label>
-		<label><input type="text" name="wpep_payment_btn_label" placeholder="Pay Now" value="<?php echo ! empty( $wpep_btn_label ) ? $wpep_btn_label : '' ?>" id="formType2"/></label>
+		<label><input type="text" name="wpep_payment_btn_label" placeholder="Pay Now" value="<?php echo ! empty( $wpep_btn_label ) ? esc_html( trim( $wpep_btn_label ) ) : ''; ?>" id="formType2"/></label>
+	
 	</div>
 </div>

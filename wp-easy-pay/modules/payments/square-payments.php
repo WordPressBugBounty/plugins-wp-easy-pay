@@ -6,12 +6,9 @@
  * @package WP_Easy_Pay
  */
 
-?>
-<?php
 require_once WPEP_ROOT_PATH . 'modules/payments/square-configuration.php';
 require_once WPEP_ROOT_PATH . 'modules/payments/payment-helper-functions.php';
 require_once WPEP_ROOT_PATH . 'modules/error-logging.php';
-
 
 add_action( 'wp_ajax_wpep_payment_request', 'wpep_payment_request' );
 add_action( 'wp_ajax_nopriv_wpep_payment_request', 'wpep_payment_request' );
@@ -19,25 +16,19 @@ add_action( 'wp_ajax_nopriv_wpep_payment_request', 'wpep_payment_request' );
 add_action( 'wp_ajax_wpep_file_upload', 'wpep_file_upload' );
 add_action( 'wp_ajax_nopriv_wpep_file_upload', 'wpep_file_upload' );
 
-
 add_action( 'wp_ajax_wpep_payment_refund', 'wpep_payment_refund' );
 
 /**
  * Handle file upload.
  */
 function wpep_file_upload() {
+	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
+		exit;
+	}
 
-	if ( ! wp_verify_nonce( $nonce, 'wpep_local_vars_nonce' ) ) {
-		echo esc_html( 'Error: Nonce verification failed.' );
-		wp_die();
-	}
-	if ( isset( $_POST['transaction_report_id'] ) && ! empty( $_POST['transaction_report_id'] ) ) {
-		$transaction_report_id = isset( $_POST['transaction_report_id'] ) ? sanitize_text_field( wp_unslash( $_POST['transaction_report_id'] ) ) : '';
-		$transaction_report_id = sanitize_text_field( $transaction_report_id );
-	}
-	if ( isset( $_FILES['file'] ) && ! empty( $_FILES['file'] ) ) {
-		$uploadedfile = sanitize_text_field( wp_unslash( $_FILES['file'] ) );
-	}
+	$files        = $_FILES;
+	$uploadedfile = $files['file'];
+
 	$upload_overrides = array(
 		'test_form' => false,
 	);
@@ -47,76 +38,75 @@ function wpep_file_upload() {
 		$return_response = array(
 			'uploaded_file_url' => $movefile['url'],
 		);
-		$form_values     = get_post_meta( $transaction_report_id, 'wpep_form_values' );
-		array_push(
-			$form_values[0],
-			array(
-				'label' => 'Uploaded File URL',
-				'value' => $movefile['url'],
-			)
-		);
-		update_post_meta( $transaction_report_id, 'wpep_form_values', $form_values[0] );
-
-		wp_die( 'upload success' );
+		wp_die( wp_json_encode( $return_response ) );
 	} else {
-		echo esc_html( $movefile['error'] );
+		echo wp_json_encode( $movefile );
 		wp_die();
 	}
 }
+
 /**
  * Handle payment request.
  */
 function wpep_payment_request() {
 
-	if ( isset( $_POST['wp_payment_nonce'] ) ) {
-		$payment_nonce           = sanitize_text_field( wp_unslash( $_POST['wp_payment_nonce'] ) );
-		$sanitized_payment_nonce = sanitize_text_field( $payment_nonce );
+	if ( isset( $_POST['wp_payment_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_payment_nonce'] ) ), 'payment_nonce' ) ) {
+		$error = array(
+			'status' => 'failed',
+			'code'   => '',
+			'detail' => 'Sorry! Your request cannot be completed.',
+		);
 
-		if ( ! wp_verify_nonce( $sanitized_payment_nonce, 'payment_nonce' ) ) {
-			// Nonce verification failed. Handle the error or exit.
-			// For example: return an error message or terminate the script.
-			exit( 'Invalid nonce.' );
-		}
-		$post            = $_POST;
-		$payment_type    = $post['payment_type'];
-		$save_card       = $post['save_card'];
-		$cof             = $post['card_on_file'];
-		$first_name      = $post['first_name'];
-		$last_name       = $post['last_name'];
-		$email           = $post['email'];
-		$nonce           = $post['nonce'];
-		$current_form_id = $post['current_form_id'];
-		$amount          = $post['amount'];
-		$currency        = $post['currency'];
+		wp_die( wp_json_encode( $error ) );
+	}
 
-		if ( isset( $cof ) && ! empty( $cof ) ) {
+	$post            = $_POST;
+	$payment_type    = $post['payment_type'];
+	$save_card       = $post['save_card'];
+	$cof             = $post['card_on_file'];
+	$first_name      = $post['first_name'];
+	$last_name       = $post['last_name'];
+	$email           = $post['email'];
+	$nonce           = $post['nonce'];
+	$current_form_id = $post['current_form_id'];
+	$amount          = $post['amount'];
+	$currency        = $post['currency'];
 
-			if ( isset( $_POST['email'] ) ) {
-				$email = sanitize_text_field( wp_unslash( $_POST['email'] ) );
-			}
+	if ( isset( $cof ) && ! empty( $cof ) && 'false' !== $cof ) {
 
-			$cof                       = str_replace( 'doc:', 'ccof:', $cof );
-			$wp_user_id                = email_exists( $email );
-			$stored_square_customer_id = '';
-			if ( $wp_user_id ) {
-				$stored_square_customer_id = get_user_meta( $wp_user_id, 'wpep_square_customer_id', true );
-			}
-
-			update_option( 'cof_to_use', $cof );
-			update_option( 'customer_id_to_use', $stored_square_customer_id );
+		if ( isset( $_POST['email'] ) ) {
+			$email = sanitize_text_field( wp_unslash( $_POST['email'] ) );
 		}
 
-		if ( 'single' === $payment_type ) {
-			wpep_single_square_payment();
+		$cof        = str_replace( 'doc:', 'ccof:', $cof );
+		$wp_user_id = email_exists( $email );
+		if ( $wp_user_id ) {
+			$stored_square_customer_id = get_user_meta( $wp_user_id, 'wpep_square_customer_id', true );
 		}
 
-		if ( 'donation_recurring' === $payment_type ) {
-			wpep_subscription_square_payment();
+		update_option( 'cof_to_use', $cof );
+		update_option( 'customer_id_to_use', $stored_square_customer_id );
+	}
 
+	if ( 'single' === $payment_type ) {
+		$single_pay = wpep_single_square_payment();
+
+		if ( ! empty( $single_pay['errorCode'] ) ) {
+			$data = array(
+				'errorCode' => $single_pay['errorCode'],
+				'detail'    => $single_pay['errorDetail'],
+			);
+			echo wp_json_encode( $data );
+			wp_die();
 		}
 	}
-}
 
+	if ( 'donation_recurring' === $payment_type ) {
+
+		wpep_subscription_square_payment();
+
+	}
+}
 
 /**
  * Process a single payment using the Square payment gateway.
@@ -129,21 +119,26 @@ function wpep_payment_request() {
  * @return bool Whether the payment was successful (true) or not (false).
  */
 function wpep_single_square_payment( $square_customer_id = false, $square_customer_card_on_file = false, $current_form_id = false, $amount = false ) {
-	if ( isset( $_POST['wp_payment_nonce'] ) ) {
-		$payment_nonce           = sanitize_text_field( wp_unslash( $_POST['wp_payment_nonce'] ) );
-		$sanitized_payment_nonce = sanitize_text_field( $payment_nonce );
 
-		if ( ! wp_verify_nonce( $sanitized_payment_nonce, 'payment_nonce' ) ) {
-			// Nonce verification failed. Handle the error or exit.
-			// For example: return an error message or terminate the script.
-			exit( 'Invalid nonce.' );
-		}
+	// if recaptch enable.
+	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
+		exit;
 	}
-	$post = (array) sanitize_meta( '', wp_unslash( $_POST ), '' );
 
-	$form_values        = $post['form_values'];
-	$verification_token = $post['buyer_verification'];
-	$payment_type       = $post['payment_type'];
+	$post                   = $_POST;
+	$subscription           = false;
+	$scheduled_subscription = false;
+	$form_values            = $post['form_values'];
+
+	if ( 'false' !== $post['buyer_verification'] ) {
+		$verification_token = $post['buyer_verification'];
+	}
+
+	$payment_type = $post['payment_type'];
+
+	if ( false !== $square_customer_id && false !== $square_customer_card_on_file && false === $current_form_id && false === $amount ) {
+		$subscription = true;
+	}
 
 	/* If $square_customer_id, $square_customer_card_on_file, $current_form_id and $amount are true it means it's scheduled subscription charge */
 	if ( false !== $square_customer_id && false !== $square_customer_card_on_file && false !== $current_form_id && false !== $amount ) {
@@ -156,7 +151,7 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 
 	$refresh_token_details = wpep_refresh_token_details( $current_form_id );
 
-	if ( count( $refresh_token_details ) !== 0 ) {
+	if ( 0 !== count( $refresh_token_details ) ) {
 		$expires_at    = $refresh_token_details['expires_at'];
 		$refresh_token = $refresh_token_details['refresh_token'];
 		$type          = $refresh_token_details['type'];
@@ -171,25 +166,42 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 	$body         = new \SquareConnect\Model\CreatePaymentRequest();
 
 	if ( ! empty( $post ) && false === $amount && isset( $post['nonce'] ) ) {
-		$nonce         = $post['nonce'];
-		$amount        = floatval( str_replace( ',', '', $post['amount'] ) );
-		$signup_amount = floatval( str_replace( ',', '', $post['signup_amount'] ) );
+		$nonce = $post['nonce'];
+		if ( false !== strpos( $post['amount'], '$' ) ) {
+			$amount = str_replace( '$', '', $post['amount'] );
+			$amount = trim( $amount, ' ' );
+		} else {
+			$amount = $post['amount'];
+		}
+
+		$amount = str_replace( ',', '', $amount );
+
+		$signup_amount = ( isset( $post['signup_amount'] ) ) ? floatval( str_replace( ',', '', $post['signup_amount'] ) ) : '';
+
 		$body->setSourceId( $nonce );
 	}
 
 	if ( ! empty( $post ) && isset( $post['card_on_file'] ) && 'false' !== $post['card_on_file'] ) {
-		$amount                       = $post['amount'];
-		$signup_amount                = $post['signup_amount'];
-		$square_customer_id           = $post['square_customer_id'];
+		$amount        = $amount;
+		$signup_amount = $post['signup_amount'];
+
+		if ( 'false' !== $post['save_customer_id'] ) {
+				$save_customer_id = $post['save_customer_id'];
+		}
+
+		$square_customer_id           = $save_customer_id;
 		$square_customer_card_on_file = $post['card_on_file'];
 		$square_customer_card_on_file = str_replace( 'doc:', 'ccof:', $square_customer_card_on_file );
+
 		$body->setCustomerId( $square_customer_id );
 		$body->setSourceId( $square_customer_card_on_file );
 	}
 
 	$cof_to_use         = get_option( 'cof_to_use' );
-	$customer_id_to_use = get_option( 'customer_id_to_use' );
+	$customer_id_to_use = get_transient( 'customer_id_to_use' );
+
 	if ( isset( $cof_to_use ) && ! empty( $cof_to_use ) && 'false' !== $cof_to_use ) {
+
 		$body->setCustomerId( $customer_id_to_use );
 		$body->setSourceId( $cof_to_use );
 	}
@@ -201,7 +213,8 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 		$amount = $amount * 100;
 	}
 
-	$amount               = (int) $amount;
+	$amount = (int) ( round( $amount ) );
+
 	$signup_amount        = (float) $signup_amount;
 	$report_amount        = $amount;
 	$report_signup_amount = $signup_amount;
@@ -215,11 +228,11 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 	}
 
 	if ( 'single' === $payment_type && 'true' !== $save_card ) {
-		$body->setVerificationToken( $verification_token );
+		( isset( $verification_token ) ) ? $body->setVerificationToken( $verification_token ) : '';
 	}
 
 	$note               = get_post_meta( $current_form_id, 'wpep_transaction_notes_box', true );
-	$fees_data          = get_post_meta( $current_form_id, 'fees_data' );
+	$fees_data          = get_post_meta( $current_form_id, 'fees_data', true );
 	$form_values_object = (object) $form_values;
 
 	foreach ( $form_values_object as $form_value ) {
@@ -260,11 +273,10 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 	} else {
 		$body->setNote( $note );
 	}
-
 	$body->setIdempotencyKey( uniqid() );
 
-	$n_u_m_o_f_a_t_t_e_m_p_t_s = 5;
-	$attempts                  = 0;
+	$num_of_attempts = 5;
+	$attempts        = 0;
 
 	do {
 
@@ -273,19 +285,21 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 			$creds        = wpep_get_creds( $current_form_id );
 			$access_token = $creds['access_token'];
 
+			$headers = array(
+				'Square-Version' => '2022-04-20',
+				'Authorization'  => 'Bearer ' . $access_token,
+				'Content-Type'   => 'application/json',
+			);
+
 			$data = array(
 				'idempotency_key' => uniqid(),
-				'order'           =>
-				array(
+				'order'           => array(
 					'location_id' => $location_id,
-					'line_items'  =>
-					array(
-						0 =>
+					'line_items'  => array(
 						array(
-							'name'             => 'WPEP Order ' . uniqid(),
+							'name'             => ucfirst( $payment_type ),
 							'quantity'         => '1',
-							'base_price_money' =>
-							array(
+							'base_price_money' => array(
 								'amount'   => $amount,
 								'currency' => $square_currency,
 							),
@@ -294,32 +308,37 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 				),
 			);
 
-			$request_args = array(
-				'headers' => array(
-					'Square-Version' => '2022-04-20',
-					'Authorization'  => 'Bearer ' . $access_token,
-					'Content-Type'   => 'application/json',
-				),
-				'body'    => wp_json_encode( $data ),
+			$response = wp_remote_post(
+				$creds['url'] . '/v2/orders',
+				array(
+					'headers' => $headers,
+					'body'    => wp_json_encode( $data ),
+				)
 			);
 
-			$response = wp_remote_post( $creds['url'] . '/v2/orders', $request_args );
+			// Response information.
+			$response_code = wp_remote_retrieve_response_code( $response );
+			$response_body = wp_remote_retrieve_body( $response );
 
+			// Check for errors.
 			if ( is_wp_error( $response ) ) {
 				echo esc_html( 'Error: ' . $response->get_error_message() );
-			} else {
-				$result   = wp_remote_retrieve_body( $response );
-				$order_id = json_decode( $result )->order->id;
-
-				$body->setOrderId( $order_id );
-
-				$result = $payments_api->createPayment( $body );
 			}
+
+			// Now you can handle the response as needed.
+			$result = json_decode( $response_body );
+
+			$order_id = $result->order->id;
+
+			$body->setOrderId( $order_id );
+
+			$result = $payments_api->createPayment( $body );
 
 			delete_option( 'cof_to_use' );
 			delete_option( 'customer_id_to_use' );
 			$transaction_id         = $result->getPayment()->getId();
 			$transaction_status     = $result->getPayment()->getStatus();
+			$transaction_source     = $result->getPayment()->getSourceType();
 			$transaction_ach_status = $result->getPayment()->getSourceType();
 			if ( isset( $transaction_id ) && 'BANK_ACCOUNT' === $transaction_ach_status ) {
 				$transaction_status = 'COMPLETED';
@@ -327,11 +346,13 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 			$transaction_data = array(
 				'transaction_id'     => $transaction_id,
 				'transaction_status' => $transaction_status,
+				'transaction_source' => $transaction_source,
 			);
 
 			if ( $scheduled_subscription ) {
 				return $transaction_data;
 			}
+
 			/* Adding Single Transaction Report */
 			if ( 'single' === $payment_type || 'donation' === $payment_type ) {
 
@@ -368,6 +389,7 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 					'form_values'     => $form_values,
 					'currency'        => $square_currency,
 				);
+
 				// adding additional tax values to subscription reports.
 				if ( isset( $fees_data[0] ) && count( $fees_data[0] ) > 0 ) {
 					$personal_information['taxes'] = $fees_data[0];
@@ -377,11 +399,10 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 				$wpep_transaction_id = wpep_single_transaction_report( $transaction_data, $current_form_id, $personal_information );
 
 				require_once WPEP_ROOT_PATH . 'modules/email_notifications/admin-email.php';
-
-				wpep_send_admin_email( $current_form_id, $form_values, $transaction_id );
+				wpep_send_admin_email( $current_form_id, $form_values, $transaction_id, $square_currency );
 
 				require_once WPEP_ROOT_PATH . 'modules/email_notifications/user-email.php';
-				wpep_send_user_email( $current_form_id, $form_values, $transaction_id );
+				wpep_send_user_email( $current_form_id, $form_values, $transaction_id, $square_currency );
 
 			}
 
@@ -389,6 +410,7 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 				'status'                => 'success',
 				'transaction_report_id' => $wpep_transaction_id,
 			);
+
 			wp_die( wp_json_encode( $response ) );
 
 		} catch ( \SquareConnect\ApiException $e ) {
@@ -413,7 +435,7 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 
 		break;
 
-	} while ( $attempts < $n_u_m_o_f_a_t_t_e_m_p_t_s );
+	} while ( $attempts < $num_of_attempts );
 }
 
 /**
@@ -424,8 +446,16 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
  */
 function wpep_get_creds( $wpep_current_form_id ) {
 
-	$form_payment_global = get_post_meta( $wpep_current_form_id, 'wpep_individual_form_global', true );
+	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
+		exit;
+	}
+	$post = $_POST;
 
+	if ( empty( $wpep_current_form_id ) ) {
+		$form_payment_global = 'on';
+	} else {
+		$form_payment_global = get_post_meta( $wpep_current_form_id, 'wpep_individual_form_global', true );
+	}
 	if ( 'on' === $form_payment_global ) {
 
 		$global_payment_mode = get_option( 'wpep_square_payment_mode_global', true );
@@ -435,8 +465,11 @@ function wpep_get_creds( $wpep_current_form_id ) {
 			/* If Global Form Live Mode */
 			$access_token = get_option( 'wpep_live_token_upgraded', true );
 
-			$creds['access_token'] = $access_token;
-			$creds['url']          = 'https://connect.squareup.com';
+			$creds['access_token']       = $access_token;
+			$creds['url']                = 'https://connect.squareup.com';
+			$creds['_payment_mode']      = $global_payment_mode;
+			$creds['_location_id']       = get_option( 'wpep_square_location_id', true );
+			$creds['wpep_refresh_token'] = get_option( 'wpep_refresh_token', true );
 
 		}
 
@@ -445,8 +478,10 @@ function wpep_get_creds( $wpep_current_form_id ) {
 			/* If Global Form Test Mode */
 			$access_token = get_option( 'wpep_square_test_token_global', true );
 
-			$creds['access_token'] = $access_token;
-			$creds['url']          = 'https://connect.squareupsandbox.com';
+			$creds['access_token']  = $access_token;
+			$creds['url']           = 'https://connect.squareupsandbox.com';
+			$creds['_payment_mode'] = $global_payment_mode;
+			$creds['_location_id']  = get_option( 'wpep_square_test_location_id_global', false );
 
 		}
 	}
@@ -460,21 +495,26 @@ function wpep_get_creds( $wpep_current_form_id ) {
 			/* If Individual Form Live Mode */
 			$access_token = get_post_meta( $wpep_current_form_id, 'wpep_live_token_upgraded', true );
 
-			$creds['access_token'] = $access_token;
-			$creds['url']          = 'https://connect.squareup.com';
+			$creds['access_token']       = $access_token;
+			$creds['url']                = 'https://connect.squareup.com';
+			$creds['_payment_mode']      = $individual_payment_mode;
+			$creds['_location_id']       = get_post_meta( $wpep_current_form_id, 'wpep_square_location_id', true );
+			$creds['wpep_refresh_token'] = get_post_meta( $wpep_current_form_id, 'wpep_refresh_token', true );
 
 		}
 
 		if ( 'on' !== $individual_payment_mode ) {
 
 			/* If Individual Form Test Mode */
-			$access_token = get_post_meta( $current_form_id, 'wpep_square_test_token', true );
+			$access_token = get_post_meta( $wpep_current_form_id, 'wpep_square_test_token', true );
 
-			$creds['access_token'] = $access_token;
-			$creds['url']          = 'https://connect.squareupsandbox.com';
+			$creds['access_token']  = $access_token;
+			$creds['url']           = 'https://connect.squareupsandbox.com';
+			$creds['_payment_mode'] = $individual_payment_mode;
+			$creds['_location_id']  = get_post_meta( $wpep_current_form_id, 'wpep_square_test_location_id', true );
 
 		}
 	}
-
+	$creds['_payment_global'] = $form_payment_global;
 	return $creds;
 }

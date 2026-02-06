@@ -10,17 +10,34 @@ jQuery( document ).ready(
 					
 					if ( jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).length > 0 ) { 
 						jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).remove();
+						jQuery(`#wpep-coupons-${form_id}`).children().show();
 					}
 				
 					if ( jQuery(`#theForm-${form_id} .wpep-alert-coupon`).length > 0 ) {
 						jQuery(`#theForm-${form_id} .wpep-alert-coupon`).remove();
 					}
-
-					jQuery( 'form[data-id="' + form_id + '"] .display' ).text( radioValue );
-					jQuery( 'form[data-id="' + form_id + '"] .display' ).next().next( 'input[name="one_unit_cost"]' ).val( radioValue ).trigger('change');
-					jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( radioValue ).trigger('change');
-					//jQuery( '#one_unit_cost' ).val( radioValue.trim() );
 					jQuery( '#wpep_quantity_' + form_id ).val( 1 );
+					if ( undefined != jQuery( '#wpep_quantity_'+form_id ).val() ) {
+						var amount_value_with_quantity = radioValue * jQuery( '#wpep_quantity_'+form_id ).val();
+					} else {
+						var amount_value_with_quantity = radioValue;
+					}
+					jQuery( 'form[data-id="' + form_id + '"] .display' ).text( amount_value_with_quantity );
+					var selected_payment_tab = jQuery( `ul.wpep_tabs-${form_id} li.tab-link.current` ).data( 'tab' );
+					if(selected_payment_tab == 'giftcard-'+form_id){
+						jQuery(`#amount_display_${form_id}`).hide();
+						if(jQuery('#giftcard_text_'+form_id).length == 0){
+							jQuery('.wpep-single-form-'+form_id+' span' ).append(`<small id="giftcard_text_${form_id}" class="giftcard_text" style="font-size: 100%;">with Giftcard</small>`);
+						}
+					} else {
+						jQuery('#giftcard_text_'+form_id).remove();
+						jQuery(`#amount_display_${form_id}`).show();
+						// jQuery(`#amount_display_${current_form_id}`).text(jQuery(`#amount_display_${current_form_id}`).siblings('input[name="wpep-selected-amount"]').val());
+					}
+					jQuery( 'form[data-id="' + form_id + '"] .display' ).next().next( 'input[name="one_unit_cost"]' ).val( radioValue ).trigger('change');
+					jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( amount_value_with_quantity ).trigger('change');
+					//jQuery( '#one_unit_cost' ).val( radioValue.trim() );
+					jQuery(`#wpep_coupon_applied_${form_id}`).hide();
 					jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-submit-btn' ).removeClass( 'wpep-disabled' );
 					jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-submit-btn' ).removeClass( 'wpep-disabled' );
 				}
@@ -61,7 +78,6 @@ jQuery( document ).ready(
 
 		}
 
-		
 		// Select the target node (in this case, .paynowDrop)
 		var targetNode = document.querySelector('.paynowDrop');
 		// Options for the observer (which mutations to observe)
@@ -78,6 +94,7 @@ jQuery( document ).ready(
 
 					if ( jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).length > 0 ) { 
 						jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).remove();
+						jQuery(`#wpep-coupons-${form_id}`).children().show();
 					}
 
 					if ( jQuery(`#theForm-${form_id} .wpep-alert-coupon`).length > 0 ) {
@@ -85,11 +102,22 @@ jQuery( document ).ready(
 					}
 
 					jQuery( 'form[data-id="' + form_id + '"] .display' ).text( $selected_value );
+					var selected_payment_tab = jQuery( `ul.wpep_tabs-${form_id} li.tab-link.current` ).data( 'tab' );
+					if(selected_payment_tab == 'giftcard-'+form_id){
+						jQuery(`#amount_display_${form_id}`).hide();
+						if(jQuery('#giftcard_text_'+form_id).length == 0){
+							jQuery('.wpep-single-form-'+form_id+' span' ).append(`<small id="giftcard_text_${form_id}" class="giftcard_text" style="font-size: 100%;">with Giftcard</small>`);
+						}
+					} else {
+						jQuery('#giftcard_text_'+form_id).remove();
+						jQuery(`#amount_display_${form_id}`).show();
+						// jQuery(`#amount_display_${current_form_id}`).text(jQuery(`#amount_display_${current_form_id}`).siblings('input[name="wpep-selected-amount"]').val());
+					}
 					jQuery( 'form[data-id="' + form_id + '"] .display' ).next().next( 'input[name="one_unit_cost"]' ).val( $selected_value ).trigger('change');
 					jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( $selected_value ).trigger('change');
-					jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-submit-btn' ).removeClass( 'wpep-disabled' );
-					jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-submit-btn' ).removeClass( 'wpep-disabled' );
-
+					jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-' + current_form_id).removeClass( 'wpep-disabled' );
+					jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-' + current_form_id).removeClass( 'wpep-disabled' );
+					jQuery(`#wpep_coupon_applied_${form_id}`).hide();
 					if (jQuery( '.paynowDrop option:selected' ).text() == "Other") {
 						jQuery( 'form[data-id="' + form_id + '"] .showPayment' ).addClass( 'shcusIn' );
 						jQuery( 'form[data-id="' + form_id + '"] .showPayment input' ).val( '' );
@@ -112,8 +140,6 @@ jQuery( document ).ready(
 		// To stop observing at some point, call observer.disconnect()
 		// observer.disconnect();
 
-
-
 		jQuery( '.otherPayment' ).on(
 			'change',
 			function (e) {
@@ -129,34 +155,59 @@ jQuery( document ).ready(
 
 				if ( jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).length > 0 ) { 
 					jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).remove();
+					jQuery(`#wpep-coupons-${form_id}`).children().show();
 				}
-
+			
 				if ( jQuery(`#theForm-${form_id} .wpep-alert-coupon`).length > 0 ) {
 					jQuery(`#theForm-${form_id} .wpep-alert-coupon`).remove();
 				}
 
+				setTimeout(function() {
+					if (val != '' && val >= min && val <= max) {
+						currency = prepare_display_amount(currencyType, currency, val);
+					
+						jQuery( this ).val( val );
+						jQuery( 'form[data-id="' + form_id + '"] .display' ).text( currency );
+						var selected_payment_tab = jQuery( `ul.wpep_tabs-${form_id} li.tab-link.current` ).data( 'tab' );
+						if(selected_payment_tab == 'giftcard-'+form_id){
+							jQuery(`#amount_display_${form_id}`).hide();
+							if(jQuery('#giftcard_text_'+form_id).length == 0){
+								jQuery('.wpep-single-form-'+form_id+' span' ).append(`<small id="giftcard_text_${form_id}" class="giftcard_text" style="font-size: 100%;">with Giftcard</small>`);
+							}
+						} else {
+							jQuery('#giftcard_text_'+form_id).remove();
+							jQuery(`#amount_display_${form_id}`).show();
+							// jQuery(`#amount_display_${current_form_id}`).text(jQuery(`#amount_display_${current_form_id}`).siblings('input[name="wpep-selected-amount"]').val());
+						}
+						jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( jQuery('.otherPayment ').val() ).trigger('change');
+						jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-' + current_form_id).removeClass( 'wpep-disabled' );
+						jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-' + current_form_id).removeClass( 'wpep-disabled' );
+						jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-submit-btn' ).removeClass( 'wpep-disabled' );
+						jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-submit-btn' ).removeClass( 'wpep-disabled' );
 
-				if (val != '' && val >= min && val <= max) {
-
-					currency = prepare_display_amount(currencyType, currency, val);
-
-					jQuery( this ).val( val );
-					jQuery( 'form[data-id="' + form_id + '"] .display' ).text( currency );
-					jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( jQuery( this ).val() ).trigger('change');
-					jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-submit-btn' ).removeClass( 'wpep-disabled' );
-					jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-submit-btn' ).removeClass( 'wpep-disabled' );
-
-				} else {
-
-					currency = prepare_display_amount(currencyType, currency);
-
-					jQuery( this ).val( '' );
-					jQuery( 'form[data-id="' + form_id + '"] .display' ).text( '' );
-					jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( '' ).trigger('change');
-					jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-submit-btn' ).addClass( 'wpep-disabled' );
-					jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-submit-btn' ).addClass( 'wpep-disabled' );
-				}
-
+					} else {
+						currency = prepare_display_amount(currencyType, currency);
+						
+						jQuery( this ).val( '' );
+						jQuery( 'form[data-id="' + form_id + '"] .display' ).text( '' );
+						var selected_payment_tab = jQuery( `ul.wpep_tabs-${form_id} li.tab-link.current` ).data( 'tab' );
+						if(selected_payment_tab == 'giftcard-'+form_id){
+							jQuery(`#amount_display_${form_id}`).hide();
+							if(jQuery('#giftcard_text_'+form_id).length == 0){
+								jQuery('.wpep-single-form-'+form_id+' span' ).append(`<small id="giftcard_text_${form_id}" class="giftcard_text" style="font-size: 100%;">with Giftcard</small>`);
+							}
+						} else {
+							jQuery('#giftcard_text_'+form_id).remove();
+							jQuery(`#amount_display_${form_id}`).show();
+							// jQuery(`#amount_display_${current_form_id}`).text(jQuery(`#amount_display_${current_form_id}`).siblings('input[name="wpep-selected-amount"]').val());
+						}
+						jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( '' ).trigger('change');
+						jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-submit-btn' ).addClass( 'wpep-disabled' );
+						jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-submit-btn' ).addClass( 'wpep-disabled' );
+					}
+					jQuery(`#wpep_coupon_applied_${form_id}`).hide();
+					jQuery('#wpep-single-form-'+ current_form_id ).click();
+				}, 1000);
 			}
 		);
 
@@ -209,6 +260,7 @@ jQuery( document ).ready(
 			}
 		);
 
+
 		function validateEmail(email) {
 			var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 			return re.test( String( email ).toLowerCase() );
@@ -245,14 +297,24 @@ jQuery( document ).ready(
 				.find( "option" )
 				.each(
 					function() {
-						template +=
-						'<span class="custom-option ' +
-						jQuery( this ).attr( "class" ) +
-						'" data-value="' +
-						jQuery( this ).attr( "value" ) +
-						'">' +
-						jQuery( this ).html() +
-						"</span>";
+						if(jQuery( this ).attr( "selected" ) !== undefined && jQuery( this ).val() !== '' ){
+							template +=
+							'<span class="custom-option selection' +
+							'" data-value="' +
+							jQuery( this ).attr( "value" ) +
+							'">' +
+							jQuery( this ).html() +
+							"</span>";
+						} else {
+							template +=
+							'<span class="custom-option ' +
+							jQuery( this ).attr( "class" ) +
+							'" data-value="' +
+							jQuery( this ).attr( "value" ) +
+							'">' +
+							jQuery( this ).html() +
+							"</span>";
+						} 
 					}
 				);
 				template += "</div></div>";
@@ -260,7 +322,16 @@ jQuery( document ).ready(
 				jQuery( this ).wrap( '<div class="custom-select-wrapper"></div>' );
 				jQuery( this ).hide();
 				jQuery( this ).after( template );
-
+				jQuery( this )
+					.find( "option" )
+					.each(
+					function() {
+						if(jQuery( this ).attr( "selected" ) !== undefined && jQuery( this ).val() !== '' ){
+							jQuery( this ).addClass( "selection" );
+							jQuery( '.custom-select-trigger' ).text(jQuery( this ).text());
+						}
+					}
+				);
 			}
 		);
 
@@ -294,7 +365,7 @@ jQuery( document ).ready(
 		jQuery( ".custom-option" ).on(
 			"click",
 			function() {
-
+				var form_id = jQuery( this ).parents( 'form' ).data( 'id' );
 				jQuery( this )
 				.parents( ".custom-select-wrapper" )
 				.find( "select" )
@@ -314,6 +385,22 @@ jQuery( document ).ready(
 				.parents( ".custom-select" )
 				.find( ".custom-select-trigger" )
 				.text( jQuery( this ).text() );
+				if ( jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).length > 0 ) { 
+					jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).remove();
+					jQuery(`#wpep-coupons-${form_id}`).children().show();
+				}
+				jQuery( '#wpep_quantity_'+form_id ).val( 1 )
+				if ( jQuery(`#theForm-${form_id} .wpep-alert-coupon`).length > 0 ) {
+					jQuery(`#theForm-${form_id} .wpep-alert-coupon`).remove();
+				}
+				if ( undefined != jQuery( '#wpep_quantity_'+form_id ).val() ) {
+					var amount_value_with_quantity = jQuery( this ).data( "value" ) * jQuery( '#wpep_quantity_'+form_id ).val();
+				} else {
+					var amount_value_with_quantity = jQuery( this ).data( "value" );
+				}
+				jQuery( 'form[data-id="' + form_id + '"] .display' ).next().next( 'input[name="one_unit_cost"]' ).val( jQuery( this ).data( "value" ) ).trigger('change');
+				jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( amount_value_with_quantity ).trigger('change');
+				jQuery(`#wpep_coupon_applied_${form_id}`).hide();
 				
 			}
 		);
@@ -353,11 +440,16 @@ jQuery( document ).ready(
 		jQuery( ".otherpayment" ).click(
 			function () {
 				var form_id = jQuery( this ).parents( 'form' ).data( 'id' );
-				jQuery( 'form[data-id="' + form_id + '"] .showPayment' ).addClass( 'shcusIn' );
-				jQuery( 'form[data-id="' + form_id + '"] .display' ).empty();
-				jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-submit-btn' ).addClass( 'wpep-disabled' );
-				jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-submit-btn' ).addClass( 'wpep-disabled' );
-				jQuery( 'form[data-id="' + form_id + '"] .showPayment input' ).val( '' );
+				jQuery( '.wpep_coupon_remove_btn' ).trigger("click");
+				setTimeout(function() {
+					jQuery( 'form[data-id="' + form_id + '"] .showPayment' ).addClass( 'shcusIn' );
+					jQuery( 'form[data-id="' + form_id + '"] .display' ).empty();
+					jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-submit-btn' ).addClass( 'wpep-disabled' );
+					jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-submit-btn' ).addClass( 'wpep-disabled' );
+					jQuery( 'form[data-id="' + form_id + '"] .showPayment input' ).val( '' );
+					jQuery( 'form[data-id="' + form_id + '"] .display' ).next().next( 'input[name="one_unit_cost"]' ).val( 0 ).trigger('change');
+					jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( 0 ).trigger('change');
+				}, 1000 );
 			}
 		);
 
@@ -369,13 +461,24 @@ jQuery( document ).ready(
 				
 				if ( jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).length > 0 ) { 
 					jQuery(`#theForm-${form_id} input[name="wpep-discount"]`).remove();
+					jQuery(`#wpep-coupons-${form_id}`).children().show();
 				}
 
 				if ( jQuery(`#theForm-${form_id} .wpep-alert-coupon`).length > 0 ) {
 					jQuery(`#theForm-${form_id} .wpep-alert-coupon`).remove();
 				}
 
-				jQuery( 'form[data-id="' + form_id + '"] .display' ).text( jQuery( this ).text() );
+				var selected_payment_tab = jQuery( `ul.wpep_tabs-${form_id} li.tab-link.current` ).data( 'tab' );
+				if(selected_payment_tab == 'giftcard-'+form_id){
+					jQuery(`#amount_display_${form_id}`).hide();
+					if(jQuery('#giftcard_text_'+form_id).length == 0){
+						jQuery('.wpep-single-form-'+form_id+' span' ).append(`<small id="giftcard_text_${form_id}" class="giftcard_text" style="font-size: 100%;">with Giftcard</small>`);
+					}
+				} else {
+					jQuery('#giftcard_text_'+form_id).remove();
+					jQuery(`#amount_display_${form_id}`).show();
+					// jQuery(`#amount_display_${current_form_id}`).text(jQuery(`#amount_display_${current_form_id}`).siblings('input[name="wpep-selected-amount"]').val());
+				}
 				jQuery( 'form[data-id="' + form_id + '"] .display' ).next().next( 'input[name="one_unit_cost"]' ).val( jQuery( this ).text() ).trigger('change');
 				jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( jQuery( this ).text() ).trigger('change');
 				//jQuery( '#one_unit_cost' ).val( jQuery( this ).text().trim() );
@@ -389,6 +492,14 @@ jQuery( document ).ready(
 				// jQuery('#wpep_amount_'+form_id).val(jQuery(this).text().replace('$',''));
 			}
 		);
+		
+		jQuery('#wpep_personal_information input[type="checkbox"]').change(function() {
+			if (jQuery(this).is(':checked')) {
+				jQuery(this).val('1');
+			} else {
+				jQuery(this).val('0');
+			}
+		});
 
 	}
 );

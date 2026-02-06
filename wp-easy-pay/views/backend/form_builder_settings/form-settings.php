@@ -22,11 +22,10 @@ wp_localize_script(
 	'wpep_backend_script',
 	'wpep_form_setting_amounts',
 	array(
-		'wpep_radio_amounts'        => $wpep_radio_amounts,
-		'wpep_dropdown_amounts'     => $wpep_dropdown_amounts,
-		'PriceSelected'             => $price_selected,
-		'wpep_tabular_products'     => $wpep_products_with_labels,
-		'wp_payment_donation_nonce' => wp_create_nonce( 'donation_nonce' ),
+		'wpep_radio_amounts'    => $wpep_radio_amounts,
+		'wpep_dropdown_amounts' => $wpep_dropdown_amounts,
+		'PriceSelected'         => $price_selected,
+		'wpep_tabular_products' => $wpep_products_with_labels,
 	)
 );
 
@@ -66,11 +65,12 @@ $wpep_btn_theme   = get_post_meta( get_the_ID(), 'wpep_btn_theme', true );
 
 $currency_symbol_type = ! empty( get_post_meta( get_the_ID(), 'currencySymbolType', true ) ) ? get_post_meta( get_the_ID(), 'currencySymbolType', true ) : 'code';
 $want_redirection     = ! empty( get_post_meta( get_the_ID(), 'wantRedirection', true ) ) ? get_post_meta( get_the_ID(), 'wantRedirection', true ) : 'No';
-$redirection_delay    = ! empty( get_post_meta( get_the_ID(), 'redirectionDelay', true ) ) ? get_post_meta( get_the_ID(), 'redirectionDelay', true ) : '';
+$redirection_delay    = ! empty( get_post_meta( get_the_ID(), 'redirectionDelay', true ) ) ? get_post_meta( get_the_ID(), 'redirectionDelay', true ) : 5;
 
-$enable_terms_condition = get_post_meta( get_the_ID(), 'enableTermsCondition', true );
-$enable_quantity        = get_post_meta( get_the_ID(), 'enableQuantity', true );
-$enable_coupon          = get_post_meta( get_the_ID(), 'enableCoupon', true );
+$enable_terms_condition     = get_post_meta( get_the_ID(), 'enableTermsCondition', true );
+$enable_quantity            = get_post_meta( get_the_ID(), 'enableQuantity', true );
+$enable_coupon              = get_post_meta( get_the_ID(), 'enableCoupon', true );
+$enable_square_product_sync = get_post_meta( get_the_ID(), 'enableSquareProductSync', true );
 
 $terms_label = ! empty( get_post_meta( get_the_ID(), 'termsLabel', true ) ) ? get_post_meta( get_the_ID(), 'termsLabel', true ) : '';
 $terms_link  = ! empty( get_post_meta( get_the_ID(), 'termsLink', true ) ) ? get_post_meta( get_the_ID(), 'termsLink', true ) : '';
@@ -122,7 +122,6 @@ if ( 'on' === $wpep_enable_mailchimp && $api_key && $server ) {
 			/>
 			Open form in popup
 		</label>
-
 	</div>
 
 	<div id="formPopup" style="display: none">
@@ -130,7 +129,7 @@ if ( 'on' === $wpep_enable_mailchimp && $api_key && $server ) {
 			<div class="globalSettingswrap">
 				<h2>Global settings is active</h2>
 
-				<?php $global_setting_url = admin_url( 'edit.php?post_type=wp_easy_pay&page=wpep-settings', 'https' ); ?>
+				<?php $global_setting_url = admin_url( 'admin.php?page=wpep-settings', 'https' ); ?>
 				<a href="<?php echo esc_url( $global_setting_url ); ?>" class="btn btn-primary btnglobal">Go to Square Connect
 					Settings</a>
 			</div>
@@ -152,7 +151,7 @@ if ( 'on' === $wpep_enable_mailchimp && $api_key && $server ) {
 					<label>Form Description:</label>
 					<textarea type="text" class="form-control form-control-textarea"
 								placeholder="Please Enter description"
-								name="post_content"> <?php echo esc_html( $wpep_content ); ?> </textarea>
+								name="post_content"><?php echo esc_html( $wpep_content ); ?></textarea>
 				</div>
 
 				<div class="form-group" id="popupWrapper">
@@ -165,25 +164,26 @@ if ( 'on' === $wpep_enable_mailchimp && $api_key && $server ) {
 
 				<div class="form-group">
 					<label>Select Payment Type:</label>
-					<select class="form-control" name="wpep_square_payment_type" id="paymentTypeSel">
-						<option value="simple" 
-						<?php
-						if ( 'simple' === $wpep_square_payment_type ) {
-							echo 'selected';
-						}
-						?>
-						> Simple Payment
-						</option>
-
-						<option value="donation" 
-						<?php
-						if ( 'donation' === $wpep_square_payment_type ) {
-							echo 'selected';
-						}
-						?>
-						> Donation Payment
-						</option>
-					</select>
+					<input type="radio" class="paymentTypes" id="paymentTypeSimple" name="wpep_square_payment_type" value="simple"
+					<?php
+					if ( 'simple' === $wpep_square_payment_type ) :
+						echo 'checked';
+					endif;
+					?>
+					>
+					<label class="paymentTypes" for = "paymentTypeSel">Simple Payment</label>
+					<input type="radio" id="paymentTypeDonation" name="wpep_square_payment_type" value="donation"
+					<?php
+					if ( 'donation' === $wpep_square_payment_type ) :
+						echo 'checked';
+					endif;
+					?>
+					>
+					<label class="paymentTypes" for = "paymentTypeSel">Donation Payment</label>
+					<input type="radio" id="paymentTypeDonationRecurring" name="wpep_square_payment_type" value="donation" disabled>
+					<label class="paymentTypes" for = "paymentTypeDonationRecurring">Donation Recurring<span class="pro_tag" id="pro_tag">Pro</span></label>
+					<input type="radio" id="paymentTypeSubscription" name="wpep_square_payment_type" value="donation-recurring" disabled>
+					<label class="paymentTypes" for = "paymentTypeSubscription">Subscription Payment<span class="pro_tag" id="pro_tag">Pro</span></label>
 				</div>
 
 				<div id="donation" class="drop-payment-select-show-hide">
@@ -193,10 +193,44 @@ if ( 'on' === $wpep_enable_mailchimp && $api_key && $server ) {
 								name="wpep_organization_name" value="<?php echo esc_attr( $wpep_organization_name ); ?>"/>
 					</div>
 				</div>
+				<div id="donation-goal" style="display:none">
+					<div class="form-group">
+						<input type="checkbox" id="wpep_donation_goal_switch" name="wpep_donation_goal_switch" value="checked" <?php echo esc_attr( $wpep_donation_goal_switch ); ?> >
+						<label for="wpep_donation_goal_switch"> Enable Goal</label>
+						<?php
+						$wpep_donation_goal_achieved = ! empty( get_post_meta( get_the_ID(), 'wpep_donation_goal_achieved', true ) ) ? get_post_meta( get_the_ID(), 'wpep_donation_goal_achieved', true ) : 0;
+
+						if ( ! empty( $wpep_donation_goal_achieved ) || $wpep_donation_goal_achieved > 0 ) {
+							?>
+							<a href="#" data-id="<?php echo esc_attr( get_the_ID() ); ?>" id="wpep_reset_donation_goal">Reset Your Goal</a>
+							<?php
+						}
+						?>
+						<input type="hidden" id="donation_goal_nonce" name="donation_goal_nonce" value="<?php echo esc_attr( wp_create_nonce( 'donation-goal-nonce' ) ); ?>" />
+					</div>
+
+					<div class="form-group">						
+						<input type="number" class="form-control" placeholder="Enter Goal Amount"
+							name="wpep_donation_goal_amount" min="0" value="<?php echo esc_attr( $wpep_donation_goal_amount ); ?>"/>
+					</div>
+
+					<div class="form-group">
+						<input type="checkbox" id="wpep_donation_goal_message_switch" name="wpep_donation_goal_message_switch" value="checked" <?php echo esc_html( $wpep_donation_goal_message_switch ); ?> >
+						<label for="wpep_donation_goal_message_switch"> Enable Goal Message </label>
+					</div>
+
+					<div class="form-group">						
+						<textarea class="form-control form-control-textarea" placeholder="Enter message to display after the goal amount is a achieved." name="wpep_donation_goal_message"><?php echo esc_html( $wpep_donation_goal_message ); ?></textarea>
+					</div>
+
+					<div class="form-group">
+						<input type="checkbox" id="wpep_donation_goal_form_close" name="wpep_donation_goal_form_close" value="checked" <?php echo esc_attr( $wpep_donation_goal_form_close ); ?> >
+						<label for="wpep_donation_goal_form_close"> Close form when goal is achieved </label>
+					</div>
+				</div>
 				<div class="form-group">
 					<label>Amount Type:</label>
 					<select class="form-control" name="wpep_square_amount_type" id="paymentDrop">
-					
 						<option value="payment_custom" 
 						<?php
 						if ( 'payment_custom' === $wpep_square_amount_type ) {
@@ -205,6 +239,7 @@ if ( 'on' === $wpep_enable_mailchimp && $api_key && $server ) {
 						?>
 						> Payment custom layout
 						</option>
+
 					</select>
 
 				</div>
@@ -311,8 +346,6 @@ endif;
 
 				</div>
 			
-
-
 				<?php
 
 				if ( isset( $wpep_products_with_labels ) && ! empty( $wpep_products_with_labels ) ) {
@@ -334,7 +367,6 @@ endif;
 						echo '<input type="text" name="wpep_tabular_products_price[]" value="' . esc_attr( $product['amount'] ) . '"  placeholder="Product Price" class="form-control tamountfield">';
 						echo '<input type="text" name="wpep_tabular_products_label[]" value="' . esc_attr( $product['label'] ) . '" placeholder="Label" class="form-control tlabbelfield">';
 						echo '<input type="text" name="wpep_tabular_products_qty[]" value="' . esc_attr( $product['quantity'] ) . '" placeholder="Quantity" class="form-control tqtufield">';
-						echo '<input type="hidden" name="wpep_tabular_product_hidden_image_nonce" value="' . esc_attr( $nonce ) . '" />';
 						echo '<input type="hidden" name="wpep_tabular_product_hidden_image[]" value="' . esc_url( $product['products_url'] ) . '">';
 						echo '</div>';
 						echo '<input type="button" class="btnplus" onclick="wpep_add_repeator_field_product(' . esc_html( $count ) . ');" value="">';
@@ -349,8 +381,6 @@ endif;
 						echo '</div>';
 						++$count;
 					}
-
-
 					echo '</div>';
 				}
 				?>
@@ -380,6 +410,7 @@ endif;
 						</select>
 
 					</div>
+
 					<div class="formFlex formFlexTime form-group">
 						<label>Redirection in seconds:</label>
 						<input id="redirectionCheck" class="redirectionCheckInput form-control" type="number"
@@ -404,9 +435,8 @@ endif;
 					<label>Payment Success Message:</label>
 					<textarea type="text" class="form-control form-control-textarea"
 								placeholder="Please Enter success message"
-								name="wpep_payment_success_msg"> <?php echo esc_html( $wpep_payment_success_msg ); ?> </textarea>
+								name="wpep_payment_success_msg"><?php echo esc_html( $wpep_payment_success_msg ); ?></textarea>
 				</div>
-
 				<div class="clearfix" id="enableTCWrap" style="display: none;">
 					<div class="form-group wpep-form-group-half-left">
 						<label>Link Label:</label>
@@ -423,5 +453,20 @@ endif;
 		</div>
 
 	</div>
-
+	<div id="pre-popupModal" class="pre-modal">
+		<div class="pre-modal-content">
+		<span class="pre-close">&times;</span>
+			<div class="premium_popup_content">
+				<div class="wp_easypay_logo">
+					<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/Logo_white.png' ); ?>" class="wpep_logo">
+				</div>
+				<p>We regret to inform you that the feature you are attempting to access is not available on your current plan. To unlock this and other premium features, Please click on Upgrade to Premium</p>
+				<div class="integration_button_div">
+					<a href="https://wpeasypay.com/pricing/?utm_source=plugin&utm_medium=payment_type_popup&utm_campaign=plugin"  class="integration_button" style="text-decoration: none !important;">
+							Upgrade to Premium
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
 </main>

@@ -21,7 +21,7 @@ jQuery( document ).ready(
 						}
 					}
 				);
-
+		
 				/*var result1 = jQuery( "#theForm-" + form_id + " .wizard-fieldset.show .fieldMainWrapper div.wpep-required input" ).filter(
 					function () {
 						return jQuery.trim( jQuery( this ).val() ).length == 0
@@ -43,7 +43,7 @@ jQuery( document ).ready(
 						wpepError = jQuery( '<span />' ).attr( 'class', 'wpepError' ).html( 'Required Field' );
 
 						if (current.find( 'input[type="text"]' ).length > 0) {
-
+								
 							if (current.find( 'input[type="text"]' ).val() == '' || current.find( 'input[type="text"]' ).val() == undefined) {
 								// console.log('input is empty ');
 								if (current.find( 'input[type="text"] ~ .wpepError' ).length == 0) {
@@ -72,21 +72,52 @@ jQuery( document ).ready(
 							}
 						}
 
-						if (current.find( 'input[type="tel"]' ).length > 0) {
-
-							if (current.find( 'input[type="tel"]' ).val() == '' || current.find( 'input[type="tel"]' ).val() == undefined) {
-								// console.log('input is empty ');
-								if (current.find( 'input[type="tel"] ~ .wpepError' ).length == 0) {
-									jQuery( wpepError ).insertAfter( current.find( 'input[type="tel"]' ) );
-								}
-								result2 = false;
-								// return false;
-							} else {
-								wpepError = '';
-								current.find( '.wpepError' ).remove();
-								result2 = true;
-								// console.log('input value: '+ current.find('input').not(':input[type="email"]').val());
+						if (current.find('input[type="number"]').length > 0) {
+						  var numberInput = current.find('input[type="number"]');
+						  var inputValue = parseInt(numberInput.val(), 10);
+						  var maxVal = parseInt(numberInput.attr('max'), 10)
+						  if (isNaN(inputValue) || inputValue === undefined || inputValue === '') {
+							if (current.find('input[type="number"] ~ .wpepError').length === 0) {
+							  jQuery(wpepError).insertAfter(numberInput);
 							}
+							result2 = false;
+						  } else if (inputValue > maxVal) {
+							if (current.find('input[type="number"] ~ .wpepError').length === 0) {
+							  jQuery(wpepError).insertAfter(numberInput);
+							}
+							jQuery('.wpepError').text('Maximum value exceeded. Max: ' + maxVal);
+							result2 = false;
+						  } else {
+							wpepError = '';
+							current.find('.wpepError').remove();
+							result2 = true;
+						  }
+						}
+						if (current.find('input[type="file"]').length > 0) {
+						  var fileInput = current.find('input[type="file"]');
+						  var file = fileInput[0].files[0];
+
+						  if (file === undefined) {
+							if (current.find('input[type="file"] ~ .wpepError').length === 0) {
+							  jQuery(wpepError).insertAfter(fileInput);
+							}
+							result2 = false;
+						  } else {
+							var allowedExtensions = ['.gif', '.jpg', '.png', '.doc', '.pdf'];
+							var fileExtension = file.name.split('.').pop();
+
+							if (allowedExtensions.indexOf('.' + fileExtension.toLowerCase()) === -1) {
+							  if (current.find('input[type="file"] ~ .wpepError').length === 0) {
+								jQuery(wpepError).insertAfter(fileInput);
+							  }
+							  jQuery('.wpepError').text('Invalid file type. Allowed types: GIF, JPG, PNG, DOC, PDF');
+							  result2 = false;
+							} else {
+							  wpepError = '';
+							  current.find('.wpepError').remove();
+							  result2 = true;
+							}
+						  }
 						}
 
 						if (current.find( 'input[type="password"]' ).length > 0) {

@@ -13,8 +13,6 @@
 			 * @package WP_Easy_Pay
 			 */
 
-			?>
-			<?php
 			$wpep_donation_goal_amount   = floatval( $wpep_donation_goal_amount );
 			$wpep_donation_goal_achieved = floatval( $wpep_donation_goal_achieved );
 			$percentage                  = 0.00;
@@ -40,9 +38,13 @@
 				?>
 				<?php echo esc_attr( $square_currency ) . esc_attr( number_format( $wpep_donation_goal_achieved, 2 ) ); ?> <small>of <?php echo esc_attr( $square_currency ) . esc_attr( number_format( $wpep_donation_goal_amount, 2 ) ); ?>  raised</small>
 				<?php
-			} else {
+			} elseif ( 'code' === $currency_symbol_type ) {
 				?>
 				<?php echo esc_attr( number_format( $wpep_donation_goal_achieved, 2 ) ) . ' ' . esc_attr( $square_currency ); ?> <small>of <?php echo esc_attr( number_format( $wpep_donation_goal_amount, 2 ) ) . ' ' . esc_attr( $square_currency ); ?> raised</small>
+				<?php
+			} else {
+				?>
+				<?php echo esc_attr( number_format( $wpep_donation_goal_achieved, 2 ) ); ?> <small>of <?php echo esc_attr( number_format( $wpep_donation_goal_amount, 2 ) ); ?> raised</small>
 				<?php
 			}
 			?>

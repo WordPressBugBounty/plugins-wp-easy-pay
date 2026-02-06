@@ -6,9 +6,6 @@
  * @package WP_Easy_Pay
  */
 
-?>
-<?php
-
 	$current_post_id = get_the_ID();
 
 	$firstname                 = get_post_meta( $current_post_id, 'wpep_first_name', true );
@@ -21,6 +18,7 @@
 	$discount_amount           = get_post_meta( $current_post_id, 'wpep_square_discount', true );
 	$taxes                     = get_post_meta( $current_post_id, 'wpep_square_taxes', true );
 	$transaction_status        = get_post_meta( $current_post_id, 'wpep_transaction_status', true );
+	$transaction_source        = get_post_meta( $current_post_id, 'wpep_transaction_source', true );
 	$transaction_id            = get_the_title( $current_post_id );
 	$transaction_type          = get_post_meta( $current_post_id, 'wpep_transaction_type', true );
 	$form_id                   = get_post_meta( $current_post_id, 'wpep_form_id', true );
@@ -49,7 +47,7 @@ if ( '' !== $wpep_refund_amount && false !== $wpep_refund_amount ) {
 }
 
 if ( $charge_amount_no_currency === $wpep_refund_amount ) {
-	true === $full_refunded;
+	$full_refunded = true;
 }
 
 
@@ -77,9 +75,53 @@ jQuery(document).ready(function() {
 		<h3>Payment Details</h3>
 		<table>
 		<tbody>
+
+		<?php
+		if ( wepp_fs()->is__premium_only() ) {
+			if ( 'Failed' !== $transaction_status ) {
+				?>
+		<tr>
+			<th>Refund Now</th>
+			<td>
+				<?php
+				if ( false !== $wpep_refund_id && isset( $wpep_refund_id ) && ! empty( $wpep_refund_id ) && true === $full_refunded ) {
+
+					echo '<button disabled> Refunded </button>';
+
+				} else {
+
+					$available_refund = $charge_amount_no_currency - $refund_amount;
+					?>
+				<p> <strong><?php echo esc_html( $available_refund ); ?> <span><?php echo esc_html( $charge_currency ); ?></span> </strong> available to refund </p>
+				<p> <strong><?php echo esc_html( $refund_amount ); ?><span> <?php echo esc_html( $charge_currency ); ?></span></strong> has been refunded </p>
+				<input type="text" id="wpep_refund_amount" placeholder="Refund Amount" pattern="[0-9]+" 
+					<?php
+					if ( 0 === $available_refund ) {
+						echo 'disabled';}
+					?>
+				/>
+				<p> <button id="give_refund_button" class="give_refund_button" data-postid="<?php echo esc_attr( $current_post_id ); ?>" data-amount="<?php echo esc_attr( $charge_amount ); ?>" data-transactionid="<?php echo esc_attr( $transaction_id ); ?>" 
+					<?php
+					if ( 0 === $available_refund ) {
+						echo 'disabled';}
+					?>
+				> Refund <span id="wpep_refund_number"> 0.00 </span> <span> <?php echo esc_html( $charge_currency ); ?> </span></button>		</p>
+					<?php
+				}
+				?>
+			</td>
+		</tr>
+				<?php
+			}
+		}
+		?>
 			<tr>
 			<th>Payment type</th>
 			<td><?php echo esc_html( $transaction_type ); ?></td>
+			</tr>
+			<tr>
+			<th>Payment Method</th>
+			<td><?php echo esc_html( $transaction_source ); ?></td>
 			</tr>
 			<tr>
 			<th>Transaction ID</th>
@@ -121,9 +163,13 @@ jQuery(document).ready(function() {
 					}
 				}
 			}
-			?>
-		
-		  
+			if ( wepp_fs()->is__premium_only() ) {
+				?>
+			<tr>
+			<th>Discount</th>
+			<td><?php echo esc_html( $discount_amount ); ?></td>
+			</tr>
+		<?php } ?>
 			<tr>
 			<th>Payments Status</th>
 			<td><?php echo esc_html( $transaction_status ); ?></td>
@@ -155,8 +201,67 @@ jQuery(document).ready(function() {
 			<th>User Email</th>
 			<td><?php echo esc_html( $email ); ?></td>
 			</tr>
-
+		<?php if ( wepp_fs()->is__premium_only() ) { ?>
+			<tr>
+				<th>Refund ID</th>
+				<td><?php echo esc_html( $wpep_refund_id ); ?></td>
+			</tr>
+		<?php } ?>
 		</tbody>
 		</table>
 	</div>
+
+
+	<?php
+	if ( wepp_fs()->is__premium_only() ) {
+		if ( isset( $form_values ) && ! empty( $form_values ) ) {
+
+			echo '<div class="reportDetails">
+		<h3>Form Field</h3>
+		<table>
+		  <tbody>';
+
+			foreach ( $form_values as $key => $value ) {
+
+				echo '<tr>';
+				if ( isset( $value['label'] ) ) {
+
+					$label = esc_html( ucfirst( str_replace( '_', ' ', $value['label'] ) ) );
+
+					echo '<th scope="col">' . esc_html( $label ) . '</th>';
+
+				}
+
+				if ( isset( $value['label'] ) ) {
+
+					if ( 'Uploaded File URL' === $value['label'] ) {
+						$uploaded_file_link = "<a target='_blank' href='" . $value['value'] . "'> Click to see uploaded file </a>";
+						echo '<td scope="col">' . esc_html( $uploaded_file_link ) . '</td>';
+					} elseif ( 'Line Items' === $value['label'] ) {
+
+						$json = json_decode( $value['value'], true );
+						echo '<td scope="col">';
+						echo '<ol>';
+						foreach ( $json as $key => $value ) {
+							echo '<li class="prodData"> Label: ' . esc_html( $value['label'] ) . '<br> Quantity: ' . esc_html( $value['quantity'] ) . '<br> Price: ' . esc_html( $value['price'] ) . '<br> Cost: ' . esc_html( $value['cost'] ) . '</div>';
+						}
+						echo '</ol>';
+						echo '</td>';
+					} elseif ( isset( $value['value'] ) ) {
+							echo '<td scope="col">' . esc_html( $value['value'] ) . '</td>';
+					}
+				}
+
+
+				echo '</tr>';
+
+
+			}
+
+			echo '</tbody>
+		</table>
+	  </div>';
+		}
+	}
+	?>
 	</div>

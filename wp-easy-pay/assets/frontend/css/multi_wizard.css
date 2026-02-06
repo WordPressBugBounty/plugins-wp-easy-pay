@@ -234,6 +234,7 @@ input[type="number"] {
   font-size: 16px;
   font-weight: bold;
   border-radius: 4px;
+  border: none;
   transition: all 0.2s ease-in-out;
   text-decoration: none !important;
   cursor: pointer;
@@ -920,11 +921,11 @@ input[type="number"] {
 }
 
 .multipage .inc.btnqty {
-  float: left;
+  float: right;
 }
 
 .multipage .dec.btnqty {
-  float: right;
+  float: left;
 }
 
 .multipage .basket-tbl .headCol.pDetails {
@@ -1263,12 +1264,12 @@ input[type="number"] {
 .multipage ul.wpep_tabs li {
   background: none;
   color: #777 !important;
-  display: table-cell;
+  display: inline-block;
   padding: 15px 20px 15px 20px;
   margin: 0px;
   cursor: pointer;
   position: relative;
-  /* display: flex; */
+  vertical-align: top;
 }
 
 .multipage ul.wpep_tabs li img {
@@ -2388,6 +2389,22 @@ span.fieldReq {
   height: 40px;
   margin-left: 15px;
   padding: 0;
+}
+.multipage .wpep-single-form-submit-btn {
+  background-color: var(--wpep-theme-color);
+  color: #ffffff;
+  display: inline-block;
+  min-width: 100px;
+  min-width: 120px;
+  padding: 10px 20px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 4px;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none !important;
+  cursor: pointer;
+  border: 1px solid var(--wpep-theme-color);
 }
 .multipage .wpep-alert-success {
   color: #155724;

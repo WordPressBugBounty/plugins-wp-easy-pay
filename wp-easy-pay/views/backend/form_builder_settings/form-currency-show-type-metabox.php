@@ -33,4 +33,15 @@ endif;
 				> Currency Symbol
 		(e.x: $)
 	</label>
+	</label><br><br>
+	<label for="no-code">
+		<input type="radio" class="currencySymbolType" name="currencySymbolType" id="no-code"
+				value="no-code" 
+				<?php
+				if ( 'no-code' === $currency_symbol_type ) :
+					echo 'checked';
+endif;
+				?>
+				> No code/Symbol
+	</label>
 </div>

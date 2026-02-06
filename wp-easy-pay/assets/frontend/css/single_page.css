@@ -948,11 +948,11 @@ ol {
 }
 
 .singlepage .inc.btnqty {
-  float: left;
+  float: right;
 }
 
 .singlepage .dec.btnqty {
-  float: right;
+  float: left;
 }
 
 .singlepage .basket-tbl .headCol.pDetails {
@@ -1223,6 +1223,10 @@ ol {
 .singlepage .orderCompleted {
   text-align: center;
   display: none;
+}
+
+.singlepage .orderCompleted div {
+    text-align: center !important;
 }
 
 .singlepage .orderCompleted h2 {
@@ -2329,7 +2333,7 @@ span.fieldReq {
   height: 40px;
   border: 1px solid #b3b3b3;
   border-radius: 4px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .singlepage .file-upload-wrapper:after {
@@ -2344,15 +2348,15 @@ span.fieldReq {
   width: calc(100% - 160px);
   pointer-events: none;
   z-index: 20;
-  height: 20px;
-  line-height: 20px;
+  height: 0px;
+  line-height: 18px;
   color: #2f2f37;
   border-radius: 5px 10px 10px 5px;
   font-weight: 400;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  min-height: 100%;
+  min-height: 40%;
 }
 
 .singlepage .file-upload-wrapper:before {
@@ -2531,6 +2535,8 @@ span.fieldReq {
   .apple-pay-button {
       display: inline-block;
       -webkit-appearance: -apple-pay-button;
+      width:100%; 
+      padding:20px;
   }
   .apple-pay-button-black {
       -apple-pay-button-style: black;
@@ -2621,6 +2627,7 @@ span.fieldReq {
 .mleft30 {
   margin-left: -30px;
 }
+
 .loader {
   border: 4px solid #f3f3f3; /* light gray border */
   border-top: 4px solid #3498db; /* blue border */
@@ -2634,4 +2641,183 @@ span.fieldReq {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); } /* rotate the loader for 360 degrees */
+}
+
+.wp-square-wallet, .wp-square-wallet-ach {
+    width: 241px;
+    margin: 0 auto;
+}
+
+.wp-square-wallet button {
+    width: 100%!important;
+}
+
+.wp-square-wallet button {
+    width: 100%!important;
+    font-size: 16px;
+    background-color: transparent;
+}
+
+.wp-square-wallet-ach button {
+    width: 100%!important;
+    font-size: 16px;
+    padding: 7px 0;
+    background-color: transparent;
+    border-radius: 4px;
+}
+
+.wp-square-wallet-ach button img {
+    width: 22px!important;
+    vertical-align: bottom;
+}
+
+.wp-square-wallet div#cash_app_pay_v1_element {
+    background-color: black;
+    margin: 0 auto;
+    border-radius: 4px;
+    text-align: center;
+    display: inline-table;
+    padding: 0px 24px 0px 22px;
+}
+.wpep_coupon_applied{
+	display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+    height: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #484848;
+}
+.wpep_coupon_applied_text i {
+    color: #5D97FF; /* Icon color */
+    font-size: 24px; /* Adjust icon size */
+    margin-right: 8px; /* Space between icon and text */
+}
+span.wpep_coupon_applied_text {
+    font-size: 14px;
+    color: #333;
+    padding-left: 15px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+button.wpep_coupon_remove_btn {
+    background-color: #5D97FF;
+    color: white;
+    border: none;
+    width: 100px;
+    height: 100%;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 1px solid #ccc;
+}
+.wpep_coupon_remove_btn:hover {
+	background-color: #85aff9;
+}
+.quantityCouponAlert{
+  display: none;
+}
+.pStock{
+	display: none;
+    padding: 8px;
+    text-align: center;
+    background: #f8d7da;
+    color: #ca1818;
+    margin-top: -24px;
+    margin-bottom: 16px;
+}
+.subscrition_cycle_box {
+  display: flex; /* Use flexbox for alignment */
+  align-items: center; /* Align items in a single line */
+  gap: 8px; /* Space between icon and text */
+  border: 1px solid #4A90E2;
+  background: #E8F3FF;
+  color: #007BFF;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  margin: 15px 0px;
+  max-width: fit-content; /* Prevents unnecessary stretching */
+  flex-wrap: wrap; /* Ensures wrapping on smaller screens */
+  justify-content: center; /* Center align in small screens */
+  text-align: center;
+}
+
+/* Main Text */
+.subscrition_cycle_box .title {
+  font-weight: 600;
+  color: #007BFF;
+  font-size: 18px !important;
+  height: 24px !important;
+  padding: 0px !important;
+  border: none !important;
+}
+
+/* Subtext */
+.subscrition_cycle_box .subtext {
+  font-size: 12px;
+  color: #777;
+  padding-top: 5px;
+}
+
+/* ✅ Responsive Adjustments */
+@media (max-width: 768px) {
+  .subscrition_cycle_box {
+    flex-direction: column; /* Stack icon, text, and subtext vertically */
+    gap: 5px;
+    padding: 12px; /* Increase padding for better spacing */
+    width: 100%; /* Full width on smaller screens */
+    text-align: center;
+  }
+
+  .subscrition_cycle_box .title {
+    font-size: 16px !important; /* Adjust font size */
+    height: auto !important;
+  }
+
+  .subscrition_cycle_box .subtext {
+    font-size: 11px; /* Adjust subtext size */
+    padding-top: 3px;
+  }
+}
+
+@media (max-width: 480px) {
+  .subscrition_cycle_box {
+    padding: 10px;
+    gap: 4px;
+  }
+
+  .subscrition_cycle_box .title {
+    font-size: 14px !important;
+  }
+
+  .subscrition_cycle_box .subtext {
+    font-size: 10px;
+  }
+}
+.no_product_found{
+  padding: 20px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+span.valueCheckWpep {
+    color: #ff0000;
+    font-size: 12px;
+}
+span.couponAmountError {
+    color: #ff0000;
+    font-size: 12px;
 }
