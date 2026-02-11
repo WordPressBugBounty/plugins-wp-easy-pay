@@ -368,6 +368,9 @@ Currently, WP EasyPay is available for businesses in the U.S., Canada, the U.K.,
 
 Yes! WP EasyPay includes a sandbox mode, allowing you to test all functionalities before going live. This feature ensures that you can optimize your setup without any risk to real transactions.
 
+**Where do I report security bugs found in this plugin?**
+
+Please report security bugs found in the source code of the undefined plugin through the [Patchstack Vulnerability Disclosure  Program](https://patchstack.com/database/vdp/5002e257-bd11-4757-842d-e3a43483948a). The Patchstack team will assist you with verification, CVE assignment, and notify the developers of this plugin.
 
 == Changelog ==
 
