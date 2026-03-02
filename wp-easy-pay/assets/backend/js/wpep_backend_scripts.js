@@ -1646,7 +1646,7 @@ jQuery( '#wpep_reset_donation_goal' ).on('click', function(e){
 		var data = {
 			action: 'wpep_reset_donation_goal',
 			form_id: jQuery(this).data('id'),
-			donation_goal_nonce: jQuery('.donation_goal_nonce').val()
+			donation_goal_nonce: jQuery('#donation_goal_nonce').val()
 		};
 
 		jQuery.post(ajaxurl, data, function (response) {

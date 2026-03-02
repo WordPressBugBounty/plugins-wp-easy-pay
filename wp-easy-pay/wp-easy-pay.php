@@ -8,7 +8,7 @@
  * without coding it yourself or hiring a developer. Skip setting up a complex shopping cart system.
  * Author: WP Easy Pay
  * Author URI: https://wpeasypay.com/
- * Version: 4.2.11
+ * Version: 4.2.12
  * Text Domain: wp_easy_pay
  * License: GPLv2 or later
  *

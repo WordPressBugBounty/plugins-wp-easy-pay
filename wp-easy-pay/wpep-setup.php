@@ -41,21 +41,31 @@ function wpep_post_edit_form_tag() {
 /**
  * Resets the donation goal achieved status for a specified form.
  *
- * This function checks for a valid nonce and form ID in the request, and if both are valid,
- * it updates the donation goal status (`wpep_donation_goal_achieved`) for the specified form ID to 0.
+ * Validates nonce and form ID; then updates wpep_donation_goal_achieved to 0.
  *
- * @return void Outputs 'done' and terminates script execution if successful.
+ * @return void Sends 'done' on success or exits with error status on failure.
  */
 function wpep_reset_donation_goal() {
 
-	if ( isset( $_POST['donation_goal_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['donation_goal_nonce'] ) ), 'donation-goal-nonce' ) ) {
-		exit;
+	// Require nonce (prevents bypass by omitting donation_goal_nonce parameter).
+	if (
+		! isset( $_POST['donation_goal_nonce'] ) || // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in wp_verify_nonce() below.
+		! wp_verify_nonce(
+			sanitize_text_field( wp_unslash( $_POST['donation_goal_nonce'] ) ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized by sanitize_text_field().
+			'donation-goal-nonce'
+		)
+	) {
+		wp_die( 'Invalid nonce', 403 );
 	}
 
-	if ( isset( $_POST['form_id'] ) && ! empty( $_POST['form_id'] ) ) {
-		update_post_meta( sanitize_text_field( wp_unslash( $_POST['form_id'] ) ), 'wpep_donation_goal_achieved', 0 );
-		wp_die( 'done' );
+	$form_id = isset( $_POST['form_id'] ) ? absint( $_POST['form_id'] ) : 0; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- Validated via absint().
+	if ( 0 === $form_id ) {
+		wp_die( 'Missing form ID', 400 );
 	}
+
+	update_post_meta( $form_id, 'wpep_donation_goal_achieved', 0 );
+
+	wp_die( 'done' );
 }
 
 /**

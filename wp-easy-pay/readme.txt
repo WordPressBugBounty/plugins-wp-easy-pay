@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=pay@obje
 Tags: square, cash app, payment form, donation, square payments
 Requires at least: 5.2
 Tested up to: 6.9
-Stable tag: 4.2.11
+Stable tag: 4.2.12
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -368,11 +368,13 @@ Currently, WP EasyPay is available for businesses in the U.S., Canada, the U.K.,
 
 Yes! WP EasyPay includes a sandbox mode, allowing you to test all functionalities before going live. This feature ensures that you can optimize your setup without any risk to real transactions.
 
-**Where do I report security bugs found in this plugin?**
-
-Please report security bugs found in the source code of the undefined plugin through the [Patchstack Vulnerability Disclosure  Program](https://patchstack.com/database/vdp/5002e257-bd11-4757-842d-e3a43483948a). The Patchstack team will assist you with verification, CVE assignment, and notify the developers of this plugin.
 
 == Changelog ==
+
+= 4.2.12 - 02/03/2025
+
+Improvements - Enhanced security measures 
+Fixed - Minor support-related fixes and improvements.
 
 = 4.2.11 - 12/09/2025 =
 Update – Tested with WordPress version 6.9
