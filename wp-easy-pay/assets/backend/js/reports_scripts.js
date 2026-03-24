@@ -108,3 +108,26 @@ jQuery( 'document' ).ready(
 
 	}
 );
+
+jQuery(document).ready(function(jQuery) {
+    // Check if we're on reports detail page
+    if (jQuery('body').hasClass('post-type-wpep_reports') && jQuery('body').hasClass('post-php')) {
+		
+        // Back button URL - adjust according to your WordPress installation
+        var backUrl = '/wp-admin/edit.php?post_type=wpep_reports';
+        
+        // Or use full URL if needed
+        // var backUrl = window.location.origin + '/wp-admin/edit.php?post_type=wpep_reports';
+        
+        // Create back button
+        var backButton = '<a href="' + backUrl + '" class="wpep-back-button page-title-action">← Back to Reports</a>';
+        console.log(backButton, 'hello');
+        // Add button after Edit Report button
+        if (jQuery('.page-title-action').length > 0) {
+            jQuery('.page-title-action').first().after(backButton);
+        } else {
+            // Fallback: add after page title
+            jQuery('.wp-heading-inline').after(backButton);
+        }
+    }
+});

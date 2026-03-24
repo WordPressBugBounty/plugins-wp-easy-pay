@@ -67,7 +67,7 @@ $wpep_btn_label        = get_post_meta( get_the_ID(), 'wpep_payment_btn_label', 
 
 	<div class="form-group">
 
-		<label class="lbltitle">Activate Shadow</label>
+		<label class="lbltitle">Activate shadow</label>
 
 		<label><input type="checkbox" name="wpep_show_shadow" id="formType2" 
 		<?php
@@ -82,7 +82,7 @@ $wpep_btn_label        = get_post_meta( get_the_ID(), 'wpep_payment_btn_label', 
 
 	<div class="form-group">
 
-		<label class="lbltitle">Button Style</label>
+		<label class="lbltitle">Button style</label>
 		<label><input type="checkbox" name="wpep_btn_theme" id="formType2" 
 		<?php
 		if ( 'on' === $wpep_btn_theme ) {
@@ -96,7 +96,7 @@ $wpep_btn_label        = get_post_meta( get_the_ID(), 'wpep_payment_btn_label', 
 
 	<div class="form-group">
 
-		<label class="lbltitle">Pay Button Label</label>
+		<label class="lbltitle">Pay button label</label>
 		<label><input type="text" name="wpep_payment_btn_label" placeholder="Pay Now" value="<?php echo ! empty( $wpep_btn_label ) ? esc_html( trim( $wpep_btn_label ) ) : ''; ?>" id="formType2"/></label>
 	
 	</div>

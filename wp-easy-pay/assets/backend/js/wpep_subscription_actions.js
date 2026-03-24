@@ -1,5 +1,35 @@
 jQuery(document).ready(function(){
 
+	var $originalSearchBox = jQuery('#posts-filter .search-box');
+	var originalSearchBoxHTML = $originalSearchBox.length ? $originalSearchBox.html() : null;
+
+	function putSearchBoxInTablenav() {
+		var $secondActions = jQuery('.post-type-wpep_subscriptions #posts-filter .tablenav .alignleft.actions').eq(1);
+		if ($secondActions.length === 0) {
+			var $topTablenav = jQuery('.post-type-wpep_subscriptions .tablenav.top');
+			var $firstActions = $topTablenav.find('.alignleft.actions').first();
+			if ($firstActions.length > 0) {
+				$secondActions = jQuery('<div class="alignleft actions"></div>');
+				$firstActions.after($secondActions);
+			}
+		}
+		if ($secondActions.length > 0) {
+			if ($secondActions.find('input#post-search-input').length === 0 && originalSearchBoxHTML) {
+				$secondActions.append(originalSearchBoxHTML);
+			}
+			$originalSearchBox.hide();
+		}
+	}
+
+	var $secondActions = jQuery('.post-type-wpep_subscriptions #posts-filter .tablenav .alignleft.actions').eq(1);
+	if ($secondActions.length > 0) {
+		$secondActions.append($originalSearchBox.children().clone());
+		$originalSearchBox.hide();
+	} else {
+		putSearchBoxInTablenav();
+	}
+	setTimeout(putSearchBoxInTablenav, 150);
+
 	jQuery( '.wpep_subscription_action' ).click(
 		function() {
 	

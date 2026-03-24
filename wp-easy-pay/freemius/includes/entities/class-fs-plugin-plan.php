@@ -13,6 +13,7 @@
 	/**
 	 * Class FS_Plugin_Plan
 	 *
+	 * @property FS_Pricing[] $pricing
 	 */
 	class FS_Plugin_Plan extends FS_Entity {
 
@@ -75,12 +76,10 @@
 		 * @var string Support phone.
 		 */
 		public $support_phone;
-        /**
-         * @var string Support skype username.
-         *
-         * @deprecated 2.12.1
-         */
-        public $support_skype = '';
+		/**
+		 * @var string Support skype username.
+		 */
+		public $support_skype;
 		/**
 		 * @var bool Is personal success manager supported with the plan.
 		 */
@@ -139,6 +138,7 @@
 		 */
 		function has_technical_support() {
 			return ( ! empty( $this->support_email ) ||
+			     ! empty( $this->support_skype ) ||
 			     ! empty( $this->support_phone ) ||
 			     ! empty( $this->is_success_manager )
 			);

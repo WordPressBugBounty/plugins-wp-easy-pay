@@ -99,16 +99,16 @@ if ( 'on' === $ach_debit ) {
 	<div class="paymentsBlocks-<?php echo esc_attr( $wpep_current_form_id ); ?>">
 		<ul class="wpep_tabs wpep_tabs-<?php echo esc_attr( $wpep_current_form_id ); ?>">
 			<li class="tab-link current" data-tab="creditCard-<?php echo esc_attr( $wpep_current_form_id ); ?>">
-				<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/frontend/img/creditcard.svg' ); ?>" alt="Avatar" width="45"
+				<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/frontend/img/Debit-Card.png' ); ?>" alt="Avatar" width="45"
 					class="doneorder" alt="Credit Card">
 				<!-- <h4 class="">Credit Card</h4> -->
-				<span>Payment Card</span>
+				<span>Credit/Debit Card</span>
 			</li>
 			<?php
 			if ( 'on' === $gpay && true === $gpay_available && 'subscription' !== $payment_type && 'donation_recurring' !== $payment_type ) {
 				?>
 				<li class="tab-link" data-tab="googlePay-<?php echo esc_attr( $wpep_current_form_id ); ?>">
-					<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/frontend/img/googlepay.svg' ); ?>" alt="Avatar" width="45"
+					<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/frontend/img/googlepay.png' ); ?>" alt="Avatar" width="45"
 						class="doneorder" alt="Google Pay">
 					<span>Google Pay</span>
 				</li>
@@ -119,7 +119,7 @@ if ( 'on' === $ach_debit ) {
 			if ( 'on' === $applepay && true === $applepay_available && 'subscription' !== $payment_type && 'donation_recurring' !== $payment_type ) {
 				?>
 				<li class="tab-link" data-tab="applePayfather-<?php echo esc_attr( $wpep_current_form_id ); ?>">
-					<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/frontend/img/apple_pay.svg' ); ?>" alt="Avatar" width="45"
+					<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/frontend/img/apply-pay.png' ); ?>" alt="Avatar" width="45"
 						class="doneorder" alt="Google Pay">
 					<span>Apple Pay</span>
 				</li>
@@ -170,7 +170,7 @@ if ( 'on' === $ach_debit ) {
 			if ( 'on' === $ach_debit && true === $ach_debit_available && 'subscription' !== $payment_type && 'donation_recurring' !== $payment_type ) {
 				?>
 				<li class="tab-link" data-tab="achdebit-<?php echo esc_attr( $wpep_current_form_id ); ?>">
-					<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/frontend/img/plaid.png' ); ?>" alt="Avatar" width="45"
+					<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/frontend/img/ach-pay.png' ); ?>" alt="Avatar" width="45"
 						class="doneorder" alt="Cash App">
 					<span> ACH Debit </span>
 				</li>

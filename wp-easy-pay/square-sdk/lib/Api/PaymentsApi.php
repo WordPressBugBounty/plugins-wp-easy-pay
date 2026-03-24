@@ -592,7 +592,7 @@ class PaymentsApi
             $headerParams['Accept'] = $_header_accept;
         }
         $headerParams['Content-Type'] = ApiClient::selectHeaderContentType(array('application/json'));
-        $headerParams['Square-Version'] = "2021-03-17";
+        $headerParams['Square-Version'] = "2019-08-14";
 
         // query params
         if ($begin_time !== null) {

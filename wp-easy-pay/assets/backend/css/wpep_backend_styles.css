@@ -1,5 +1,27 @@
 @charset "UTF-8";
 @import url("https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css");
+
+#tabs-list li.active-tab label.panel-label {
+  background-color: white;
+  color: #2065e0;
+}
+/* All tabs specific active state - blue border and text */
+#tabs-list #li-for-panel-1.active-tab label.panel-label,
+#tabs-list #li-for-panel-2.active-tab label.panel-label,
+#tabs-list #li-for-panel-3.active-tab label.panel-label,
+#tabs-list #li-for-panel-4.active-tab label.panel-label,
+#tabs-list #li-for-panel-5.active-tab label.panel-label,
+#tabs-list #li-for-panel-6.active-tab label.panel-label {
+  border-bottom: 2px solid #2065e0 !important;
+  color: #2065e0 !important;
+}
+#tabs-list li.active-tab label.panel-label::after {
+  height: 1px;
+  content: '';
+  display: block;
+  background: #2065e0;
+}
+
 .post-type-wp_easy_pay .easypayblock * {
   box-sizing: border-box;
 } 
@@ -85,9 +107,9 @@ label.panel-label:hover {
 }
 
 
-  #wpfooter {
+  /* #wpfooter {
 	position: relative !important;
-  }
+  } */
 
 #panel-2 {
   position: relative;
@@ -312,9 +334,10 @@ label.panel-label:hover {
 	transform: translate3d(0, 0px, 0);
 	box-shadow: none;
   }
-  #panel-1-ctrl:checked ~ #tabs-list #li-for-panel-1 label.panel-label {
-	background-color: white;
-	color: #2065e0;
+  #panel-1-ctrl:checked ~ #tabs-list #li-for-panel-1 label.panel-label,
+  #tabs-list #li-for-panel-1.active-tab label.panel-label {
+	border-bottom: 2px solid #2065e0 !important;
+	color: #2065e0 !important;
   }
   #panel-1-ctrl:checked ~ #tabs-list #li-for-panel-1 label.panel-label::after {
 	height: 1px;
@@ -326,9 +349,10 @@ label.panel-label:hover {
 	box-shadow: none;
 	border-right: none;
   }
-  #panel-2-ctrl:checked ~ #tabs-list #li-for-panel-2 label.panel-label {
-	background-color: white;
-	color: #2065e0;
+  #panel-2-ctrl:checked ~ #tabs-list #li-for-panel-2 label.panel-label,
+  #tabs-list #li-for-panel-2.active-tab label.panel-label {
+	border-bottom: 2px solid #2065e0 !important;
+	color: #2065e0 !important;
   }
   #panel-2-ctrl:checked ~ #tabs-list #li-for-panel-2 label.panel-label::after {
 	height: 1px;
@@ -339,9 +363,10 @@ label.panel-label:hover {
 	transform: translate3d(0, 0px, 0);
 	box-shadow: none;
   }
-  #panel-3-ctrl:checked ~ #tabs-list #li-for-panel-3 label.panel-label {
-	background-color: white;
-	color: #2065e0;
+  #panel-3-ctrl:checked ~ #tabs-list #li-for-panel-3 label.panel-label,
+  #tabs-list #li-for-panel-3.active-tab label.panel-label {
+	border-bottom: 2px solid #2065e0 !important;
+	color: #2065e0 !important;
   }
   #panel-3-ctrl:checked ~ #tabs-list #li-for-panel-3 label.panel-label::after {
 	height: 1px;
@@ -352,9 +377,10 @@ label.panel-label:hover {
 	transform: translate3d(0, 0px, 0);
 	box-shadow: none;
   }
-  #panel-4-ctrl:checked ~ #tabs-list #li-for-panel-4 label.panel-label {
-	background-color: white;
-	color: #2065e0;
+  #panel-4-ctrl:checked ~ #tabs-list #li-for-panel-4 label.panel-label,
+  #tabs-list #li-for-panel-4.active-tab label.panel-label {
+	border-bottom: 2px solid #2065e0 !important;
+	color: #2065e0 !important;
   }
   #panel-4-ctrl:checked ~ #tabs-list #li-for-panel-4 label.panel-label::after {
 	height: 1px;
@@ -365,21 +391,30 @@ label.panel-label:hover {
 	transform: translate3d(0, 0px, 0);
 	box-shadow: none;
   }
-  #panel-5-ctrl:checked ~ #tabs-list #li-for-panel-5 label.panel-label {
-	background-color: white;
-	color: #2065e0;
+  #panel-5-ctrl:checked ~ #tabs-list #li-for-panel-5 label.panel-label,
+  #tabs-list #li-for-panel-5.active-tab label.panel-label {
+	border-bottom: 2px solid #2065e0 !important;
+	color: #2065e0 !important;
   }
   #panel-5-ctrl:checked ~ #tabs-list #li-for-panel-5 label.panel-label::after {
 	height: 1px;
   }
+  #panel-6-ctrl:checked ~ #tabs-list #li-for-panel-6 label.panel-label,
+  #tabs-list #li-for-panel-6.active-tab label.panel-label {
+	border-bottom: 2px solid #2065e0 !important;
+	color: #2065e0 !important;
+  }
   #panel-6-ctrl:checked ~ #tabs-list #li-for-panel-6 label.panel-label::after {
 	height: 1px;
   }
+  
   ul#tabs-list {
 	text-align: left;
 	border-bottom: 1px solid #ebedf2;
 	background: #fff;
 	padding: 0px;
+  width: 100%;
+  margin-bottom: 20px;
   }
   ul#tabs-list li {
 	display: inline-block;
@@ -395,6 +430,8 @@ label.panel-label:hover {
 	width: auto;
 	letter-spacing: 0.56px;
 	color: #8e8e8e;
+  font-family: Figtree;
+  font-size: 12px;
   }
   ul#tabs-list li label.panel-label::after {
 	content: "";
@@ -409,6 +446,34 @@ label.panel-label:hover {
   }
   ul#tabs-list li label.panel-label:hover::after {
 	height: 1px;
+  }
+  /* All tabs active state - blue border and text */
+  #panel-1-ctrl:checked ~ .createFormTabs #tabs-list #li-for-panel-1 label.panel-label,
+  #panel-1-ctrl:checked ~ #tabs-list #li-for-panel-1 label.panel-label,
+  #tabs-list #li-for-panel-1.active-tab label.panel-label,
+  #tabs-list #li-for-panel-1 label.panel-label.active-tab,
+  #panel-2-ctrl:checked ~ .createFormTabs #tabs-list #li-for-panel-2 label.panel-label,
+  #panel-2-ctrl:checked ~ #tabs-list #li-for-panel-2 label.panel-label,
+  #tabs-list #li-for-panel-2.active-tab label.panel-label,
+  #tabs-list #li-for-panel-2 label.panel-label.active-tab,
+  #panel-3-ctrl:checked ~ .createFormTabs #tabs-list #li-for-panel-3 label.panel-label,
+  #panel-3-ctrl:checked ~ #tabs-list #li-for-panel-3 label.panel-label,
+  #tabs-list #li-for-panel-3.active-tab label.panel-label,
+  #tabs-list #li-for-panel-3 label.panel-label.active-tab,
+  #panel-4-ctrl:checked ~ .createFormTabs #tabs-list #li-for-panel-4 label.panel-label,
+  #panel-4-ctrl:checked ~ #tabs-list #li-for-panel-4 label.panel-label,
+  #tabs-list #li-for-panel-4.active-tab label.panel-label,
+  #tabs-list #li-for-panel-4 label.panel-label.active-tab,
+  #panel-5-ctrl:checked ~ .createFormTabs #tabs-list #li-for-panel-5 label.panel-label,
+  #panel-5-ctrl:checked ~ #tabs-list #li-for-panel-5 label.panel-label,
+  #tabs-list #li-for-panel-5.active-tab label.panel-label,
+  #tabs-list #li-for-panel-5 label.panel-label.active-tab,
+  #panel-6-ctrl:checked ~ .createFormTabs #tabs-list #li-for-panel-6 label.panel-label,
+  #panel-6-ctrl:checked ~ #tabs-list #li-for-panel-6 label.panel-label,
+  #tabs-list #li-for-panel-6.active-tab label.panel-label,
+  #tabs-list #li-for-panel-6 label.panel-label.active-tab {
+	border-bottom: 2px solid #2065e0 !important;
+	color: #2065e0 !important;
   }
   #open-nav-label,
   #close-nav-label {
@@ -616,8 +681,8 @@ pre {
 
 .swtichWrap {
   position: absolute;
-  right: 0px;
-  top: 0px;
+  right: 30px;
+  top: 60px;
 }
 
 .swtichWrap .switch-input {
@@ -626,6 +691,19 @@ pre {
 
 .swtichHold {
   float: right;
+}
+
+.post-type-wp_easy_pay .form-group {
+  margin-top: 10px;
+  margin-bottom: 13px;
+}
+.post-type-wp_easy_pay span.openPopupTxt{
+  font-size: 14px;
+  color: #647179;
+  font-weight: 600;
+  margin-bottom: 5px;
+  display: inline-block;
+  font-family: Figtree;
 }
 
 /* custom bootstrap */
@@ -637,17 +715,62 @@ pre {
 .wpeasyPay .form-control {
   display: block;
   width: 100%;
-  height: 50px;
+  height: 35px;
   padding: 0px 15px;
   font-size: 14px;
-  line-height: 50px;
+  line-height: 35px;
   color: #495057;
-  background-color: #fff;
+  background-color: #cce0ff40;
   background-clip: padding-box;
-  border: 1px solid #e2e5ec;
-  border-radius: 4px;
+  border: 1px solid #C6DCFE;
+  border-radius: 2px;
   transition: all 0.3s ease;
-  border-radius: 0px;
+}
+
+
+/* Label wrapper */
+.paymentTypes {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  padding-left: 0px; /* Space for custom circle */
+  margin-right: 20px;
+  font-size: 16px;
+  color: #444;
+}
+
+/* Hide default radio */
+.paymentTypes input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Custom circle */
+.paymentTypes .radio-checkmark {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 18px;
+  width: 18px;
+  background-color: #fff;
+  border: 2px solid #007bff;
+  border-radius: 50%;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+/* Checked state: inner filled dot */
+.paymentTypes input[type="radio"]:checked + .radio-checkmark {
+  background-color: #007bff;
+  box-shadow: inset 0 0 0 4px #fff;
+}
+
+
+input#paymentTypeSimple, input#paymentTypeDonation, input#paymentTypeDonationRecurring, input#paymentTypeSubscription{
+    width: 100%;
 }
 
 .wpeasyPay .form-control:hover,
@@ -693,9 +816,27 @@ pre {
   margin: 0;
   padding: 0;
   font-size: 1.2rem;
-  font-weight: 500;
-  color: #48465b;
+  font-weight: 700;
+  color: #2065E0;
+
 }
+#formPage label {
+  font-size: 14px;
+  color: #647179;
+  font-weight: 700;
+  margin-bottom: 5px;
+  display: inline-block;
+  font-family: Figtree;
+}
+#formPage label.paymentTypes {
+  font-size: 14px;
+  color: #647179;
+  font-weight: 500;
+  margin-bottom: 5px;
+  display: inline-block;
+  font-family: Figtree;
+}
+
 
 h3.sectionTitle {
   margin-bottom: 20px;
@@ -719,14 +860,14 @@ h3.sectionTitle span {
 .titleTags {
   margin: 0;
   padding: 0;
-  font-size: 16px;
-  font-weight: 500;
-  color: #48465b;
-  float: left;
+  font-size: 14px !important;
+  font-family: Figtree;
+  font-weight: 600 !important;
+  color: #48465b !important;
 }
 
 .notificationTitle p {
-  padding-left: 150px;
+  padding-left: 0px;
 }
 
 .wpeasyPay__body {
@@ -736,11 +877,43 @@ h3.sectionTitle span {
 .wpeasyPay label {
   font-size: 14px;
   color: #808080;
+  margin-bottom: 5px;
   display: inline-block;
+  font-family: 'Figtree';
 }
-
+.wizard-form-checkbox-square-connect {
+    margin-bottom: 10px;
+}
+.transactionNoteLabel{
+  font-size: 14px;
+  color: #676767 !important;
+  margin-bottom: 5px;
+  display: inline-block;
+  font-family: 'Figtree';
+  font-weight: 600;
+}
+img.dangerIconNotes {
+    width: 25px;
+}
+img.SquareIconConnect {
+    width: 25px;
+        margin-bottom: -6px;
+}
+button.SquareConnectIndivi{
+  background: transparent;
+    border: none;
+    cursor: pointer;
+}
+.form-control-textarea{
+  font-family: 'Figtree';
+  font-size: 14px;
+}
 .wpeasyPay label.field-label {
   display: inline-block;
+      font-size: 17px !important;
+    font-weight: 600 !important;
+    font-family: 'Figtree';
+    letter-spacing: 0px;
 }
 
 .wpeasyPay .form-text {
@@ -765,9 +938,7 @@ h3.sectionTitle span {
 }
 
 .wpeasyPay .btn-primary {
-  background: #2065e0;
-  border: 1px solid #2065e0;
-  box-shadow: 0px 0px 20px -8px #3475e9;
+  box-shadow: 0px 0px 10px -8px #3475e9;
   color: #fff;
   opacity: 1;
   transition: opacity 0.25s ease-in-out;
@@ -909,8 +1080,9 @@ ul#tabs-list li.last-child.swtichHold {
   text-align: center;
   margin: 0px 0px 25px 0px !important;
   padding: 0px !important;
-  font-size: 28px !important;
-  font-weight: 400;
+  font-size: 26px !important;
+  font-family: Figtree;
+  font-weight: 700;
   text-transform: unset;
   color: #676767;
   border: none !important;
@@ -1010,6 +1182,7 @@ ul#tabs-list li.last-child.swtichHold {
 #formPage,
 #formPopup {
   padding: 30px 25px;
+  font-family: Figtree;
 }
 
 .paymentSelect {
@@ -1058,13 +1231,19 @@ input#otherPayment {
 ul.accordion {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 0 25px 0 25px;
 }
 
 ul.accordion .inner {
-  padding: 10px 25px;
+  padding: 20px 25px;
   overflow: hidden;
   display: none;
+  width: 85%;
+  font-family: Figtree;
+}
+ul.accordion .inner label{
+  color: #585858;
+  font-weight: 600;
 }
 
 ul.accordion li {
@@ -1072,12 +1251,16 @@ ul.accordion li {
 }
 
 ul.accordion li a.toggle {
-  width: 100%;
+  width: 85%;
   display: block;
-  background: #fbfbfb;
+  background: #ffffff;
+  border-bottom: 1px solid #097fff2b;
   color: #494949;
-  padding: 20px 25px;
+  padding: 20px 10px;
   transition: background 0.3s ease;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: Figtree;
 }
 
 ul.accordion li a {
@@ -1085,16 +1268,16 @@ ul.accordion li a {
 }
 
 ul.accordion li a i {
-  float: right;
-  margin: -1px;
-  color: #fff;
-  background: #00a0d2;
-  width: 25px;
-  height: 25px;
-  font-size: 10px;
-  text-align: center;
-  border-radius: 100px;
-  line-height: 27px;
+    float: right;
+    margin: 2px;
+    color: #fff;
+    background: #2065e0;
+    width: 27px;
+    height: 27px;
+    font-size: 14px;
+    text-align: center;
+    border-radius: 100px;
+    line-height: 28px;
 }
 
 ul.accordion li a:hover,
@@ -1116,16 +1299,25 @@ ul.accordion li a.toggle:hover {
   display: inline-block;
   margin-right: 15px;
   margin-bottom: 15px;
-  color: #676767;
+  color: #676767 !important;
+  font-size: 12px;
+  font-family: Figtree;
+  font-weight: 500;
 }
 
 .notificationsWrap span small {
-  background: #f5f5f5;
-  padding: 8px 10px;
+  background: #eef5ff;
+  color: #647179;
+  padding: 8px 10px 10px 10px;
   border-radius: 100px;
-  margin-left: 5px;
+  margin-left: -1px;
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 400;
+  font-family: Figtree;
   position: relative;
   cursor: pointer;
+  display: block;
 }
 
 .wpep_tags::before {
@@ -1149,9 +1341,18 @@ ul.accordion li a.toggle:hover {
 .column-shortcode span.wpep_tags::before {
   top: -34px;
 }
-
+.shortcodeIcon img {
+    width: 18px;
+    height: 18px;
+   margin-bottom: -3px;
+}
+.shortcodeIcon {
+    /* margin-top: -18px;
+    margin-right: 22px; */
+}
+    
 .wpep_tags::after {
-  background: #b8b8b8;
+  /* background: #b8b8b8; */
   content: "";
   height: 10px;
   position: absolute;
@@ -1172,14 +1373,49 @@ ul.accordion li a.toggle:hover {
   opacity: 1;
 }
 
-.note {
-  background: #f5f5f5;
-  padding: 10px 15px;
-  color: #d00000;
+.noteInSquareConnect {
+  background: #a61b1b14;
+  padding: 15px 15px;
+  margin: 0px 70px;
+  color: #A61B1B;
   font-size: 12px;
-  letter-spacing: 1px;
+  font-family: 'Figtree';
+  font-weight: 500;
+  border-left: 2px solid #A61B1B;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  align-items: center;
 }
-
+.noteInSquareConnect img.dangerIconNotes {
+    width: 20px;
+}
+a.connectSquareBtn {
+    background-color: #E0ECFF !important;
+    padding: 7px 30px !important;
+    font-size: 14px !important;
+    font-weight: 600;
+    font-family: 'Figtree';
+    color: #2065E0 !important;
+}
+.note {
+  background: #a61b1b14;
+  padding: 15px 15px;
+  color: #A61B1B;
+  font-size: 14px;
+  font-family: 'Figtree';
+  font-weight: 500;
+  border-left: 2px solid #A61B1B;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  align-items: center;
+}
+.noteText {
+    padding: 3px 15px;
+}
 .settingsIcon {
   display: inline-block;
   vertical-align: sub;
@@ -1206,8 +1442,13 @@ ul.accordion li a.toggle:hover {
 }
 
 h3.titleSquare {
-  padding: 0px;
-  margin-bottom: 20px;
+    font-size: 14px;
+    color: #647179 !important;
+    margin-bottom: 5px;
+    display: inline-block;
+    font-family: 'Figtree';
+    font-weight: 700;
+    margin-top: 8px;
 }
 
 h3.titleSquare .fa.fa-check-square {
@@ -1272,6 +1513,17 @@ h3.titleSquare .fa.fa-check-square {
   min-height: 500px !important;
   padding: 20px;
 }
+.post-type-wp_easy_pay .form-wrap.form-builder .stage-wrap li {
+  border: 1px solid #007bff4a !important;
+}
+.post-type-wp_easy_pay .form-wrap.form-builder .stage-wrap li input,
+.post-type-wp_easy_pay .form-wrap.form-builder .stage-wrap li select,
+.post-type-wp_easy_pay .form-wrap.form-builder .stage-wrap li textarea {
+  border: 1px solid #007bff4a !important;
+    background-color: #cce0ff52 !important;
+    color: #5c5c5c !important;
+}
+
 
 .post-type-wp_easy_pay .form-wrap.form-builder .frmb-control li {
   margin: 0px 0px -2px 0;
@@ -1279,6 +1531,7 @@ h3.titleSquare .fa.fa-check-square {
   border-radius: 0px !important;
   transition: all 0.3s ease;
   box-shadow: inset 0 0 0 1px #ebebeb;
+  border: 1px solid #007bff4a;
 }
 
 .squareConnected {
@@ -1406,7 +1659,9 @@ h3.titleSquare .fa.fa-check-square {
 
 .post-type-wp_easy_pay .form-wrap.form-builder .frmb-control li span {
   font-size: 14px;
-  letter-spacing: 1px;
+  font-weight: 600;
+  font-family: 'Figtree';
+  letter-spacing: 0px;
 }
 
 .post-type-wp_easy_pay .form-wrap.form-builder .frmb-control li .control-icon {
@@ -1751,13 +2006,32 @@ table.widefat {
   font-size: 14px;
   line-height: normal;
   vertical-align: middle;
-  border-top: 1px solid #f0f3ff;
-  height: 60px;
+  border-top: 1px solid #d9d9d9;
+  height: 53px;
 }
 
 #posts-filter #post-search-input {
   border: 1px solid #e2e5ec;
   border-radius: 0px;
+}
+.post-type-wp_easy_pay input#post-search-input {
+    border: 1px solid #bed5fb !important;
+    color: #4c4c4c !important;
+    font-size: 13px;
+    font-family: 'Figtree';
+    padding: 2px 10px;
+    margin-left: 8px;
+    border-radius: 2px !important;
+}
+.post-type-wp_easy_pay input#post-search-input::placeholder {
+   color: #B1CFFF !important;
+}
+.post-type-wp_easy_pay input#search-submit {
+    background: #E0ECFF !important;
+    font-size: 13px !important;
+    font-family: 'Figtree';
+    margin: 1px 5px;
+    border-radius: 2px !important;
 }
 
 #posts-filter #search-submit {
@@ -1791,8 +2065,11 @@ table.widefat {
 .widefat tfoot td.check-column,
 .widefat thead td.check-column {
   padding: 0px 40px 0px 10px;
-  border-top: 1px solid #f0f3ff;
+  border-top: 1px solid #d9d9d9;
   vertical-align: middle;
+}
+.widefat thead td.check-column {
+  border-top: none;
 }
 
 .widefat td,
@@ -1828,13 +2105,15 @@ tfoot {
 }
 
 .tablenav .actions select {
-  font-size: 14px;
-  color: #808080;
-  border-color: #f0f3ff;
-  padding: 0px 15px 0px 15px;
-  /* text-align: center; */
-  background: #f0f3ff;
-  /* height: 40px; */
+  font-size: 13px;
+  font-family: 'Figtree';
+  border-color: #E0ECFF;
+ padding: 8px 20px 8px 10px;
+  background: #fff url(data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%206l5%205%205-5%202%201-7%207-7-7%202-1z%22%20fill%3D%22%23555%22%2F%3E%3C%2Fsvg%3E) no-repeat right 5px top 55%;
+  background-size: 13px 13px;
+  cursor: pointer;
+  color: #2065E0;
+  line-height: 15px !important;
 }
 
 .tablenav .actions select:focus {
@@ -1889,59 +2168,51 @@ tfoot {
 }
 
 .simple {
-  color: #fff;
-  background: #ff4200;
-  padding: 0px 15px;
-  height: 20px;
+  border-radius: 30px;
   line-height: 20px;
-  margin: 0;
-  border-radius: 50px;
-  font-size: 11px;
-  display: inline-block;
+  font-size: 14px;
+  font-family: 'Figtree';
   text-transform: capitalize;
   vertical-align: middle;
+  border: 1px solid #FDCD72;
+  padding: 5px 15px 6px 16px;
+  color: #AC7000;
 }
 
 .donation {
-  color: #fff;
-  background: #fd397a;
-  padding: 0px 15px;
-  height: 20px;
+  border-radius: 30px;
   line-height: 20px;
-  margin: 0;
-  border-radius: 50px;
-  font-size: 11px;
-  display: inline-block;
+  font-size: 14px;
+  font-family: 'Figtree';
   text-transform: capitalize;
   vertical-align: middle;
+  border: 1px solid #2065E0;
+  padding: 5px 15px 6px 16px;
+  color: #113679;
 }
 
 .subscription {
-  color: #fff;
-  background: #5d78ff;
-  padding: 0px 15px;
-  height: 20px;
+  border-radius: 30px;
   line-height: 20px;
-  margin: 0;
-  border-radius: 50px;
-  font-size: 11px;
-  display: inline-block;
+  font-size: 14px;
+  font-family: 'Figtree';
   text-transform: capitalize;
+  vertical-align: middle;
+  border: 1px solid #51DFDF;
+  padding: 5px 15px 6px 16px;
+  color: #147C7C;
 }
 
 .donation_recurring {
-  color: #fff;
-  background: #a254f9;
-  padding: 3px 15px;
-  height: auto;
-  line-height: normal;
-  margin: 0;
-  border-radius: 50px;
-  font-size: 11px;
-  display: inline-block;
+  border-radius: 30px;
+  line-height: 20px;
+  font-size: 14px;
+  font-family: 'Figtree';
   text-transform: capitalize;
   vertical-align: middle;
-  text-align: center;
+  border: 1px solid #51DFDF;
+  padding: 5px 15px 6px 16px;
+  color: #147C7C;
 }
 
 .products {
@@ -1959,23 +2230,43 @@ tfoot {
 }
 
 .post-type-wp_easy_pay #posts-filter {
-  position: relative;
+  /* position: relative; */
 }
-
+.post-type-wp_easy_pay a.hideThisAction{
+  display: none !important;
+}
 .post-type-wp_easy_pay #posts-filter p.search-box {
-  float: none;
-  position: absolute;
+  float: left;
+  /* position: absolute; */
   right: 0px;
-  top: -48px;
+  top: 0px;
 }
 
 .post-type-wp_easy_pay .subsubsub {
-  font-size: 13px;
+  background: white;
+  padding: 10px 10px;
   float: none;
   color: #666;
   display: inline-block;
-  margin-top: 30px;
+  float: right;
+     margin-top: 70px;
+    margin-bottom: -55px;
 }
+.post-type-wp_easy_pay .subsubsub li{
+    color: white;
+}
+.post-type-wp_easy_pay .subsubsub li:has(> a.current) {
+	background: #e0ecff;
+  padding: 4px 8px 4px 8px;
+  color: #e0ecff;
+}
+.post-type-wp_easy_pay .subsubsub a {
+    color: #424D55 !important;
+}
+.post-type-wp_easy_pay .subsubsub a.current {
+    color: #2065E0 !important;
+}
+
 
 body.post-type-wp_easy_pay,
 body.post-type-wpep_subscriptions,
@@ -2031,7 +2322,7 @@ td.actions.column-actions a:hover {
 }
 
 .deleteIcon::before {
-  background: url(../img/trash.svg);
+  background: url(../img/trash-icon.png);
   background-repeat: no-repeat;
   width: 16px;
   height: 16px;
@@ -2063,26 +2354,10 @@ td.actions.column-actions a:hover {
 }
 
 .editIcon::before {
-  background: url(../img/edit.svg);
+  background: url(../img/all-forms-edit.png);
   background-repeat: no-repeat;
   width: 16px;
   height: 16px;
-  content: "";
-  display: inline-block;
-  background-size: 100%;
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.restoreIcon {
-  position: relative;
-}
-
-.restoreIcon::before {
-  background: url(../img/restore.png);
-  background-repeat: no-repeat;
-  width: 20px;
-  height: 20px;
   content: "";
   display: inline-block;
   background-size: 100%;
@@ -2168,7 +2443,23 @@ tr.inline-edit-row td {
   cursor: pointer;
 }
 
-.post-type-wp_easy_pay .wrap .wp-heading-inline + .page-title-action,
+.post-type-wp_easy_pay .wrap .wp-heading-inline + .page-title-action{
+    border-style: dashed !important;
+    border-width: 2px 2px !important;
+    border: 1px solid #81afff;
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    align-content: space-between;
+    padding: 40px 40px 40px 40px;
+    font-size: 16px;
+    font-family: Figtree;
+    font-weight: 700;
+    color: #2065E0;
+    background: white;
+}
+
+/* .post-type-wp_easy_pay .wrap .wp-heading-inline + .page-title-action,
 .post-type-wpep_reports .wrap .wp-heading-inline + .page-title-action,
 .post-type-wpep_subscriptions .wrap .wp-heading-inline + .page-title-action {
   background: #fff;
@@ -2179,20 +2470,35 @@ tr.inline-edit-row td {
   margin-left: 15px;
   position: relative;
   color: #888888;
-}
+} */
 
 .post-type-wp_easy_pay .wrap .wp-heading-inline + .page-title-action::before,
 .post-type-wpep_reports .wrap .wp-heading-inline + .page-title-action::before,
 .post-type-wpep_subscriptions .wrap .wp-heading-inline + .page-title-action::before {
   display: inline-block;
   content: "";
-  width: 14px;
-  height: 14px;
-  background: url(../img/plus.svg);
+  width: 40px;
+  height: 40px;
+  background: url(../img/create-form-icon.png);
   background-repeat: no-repeat;
   background-size: 100%;
   vertical-align: text-bottom;
   margin-right: 10px;
+}
+.post-type-wp_easy_pay #posts-filter #search-submit.search-icon-btn {
+  background-image: url(../img/search-normal.png) !important;
+  background-repeat: no-repeat !important;
+  background-position: 8px center !important;
+  background-size: 16px 16px !important;
+  padding-left: 30px;
+  color: #2065e0;
+}
+.post-type-wp_easy_pay #posts-filter .tablenav input#doaction{
+  background: #E0ECFF;
+  font-size: 13px;
+  font-family: Figtree;
+  padding: 1px 20px;
+  opacity: 1;
 }
 
 .post-type-wp_easy_pay .wrap,
@@ -2211,7 +2517,51 @@ tr.inline-edit-row td {
   border-color: #f0f3ff !important;
   background: #f0f3ff !important;
 }
+h3.AllPaymentFormHeading {
+    font-family: Figtree;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 100%;
+    color: #2065E0;
+}
 
+tbody#the-list td.colspanchange {
+    text-align: center;
+    color: #000000;
+    font-family: 'Figtree';
+}
+.post-type-wp_easy_pay .tablenav.top{
+  width: 37%;
+}
+.post-type-wp_easy_pay .tablenav.bottom {
+  background: none;
+  box-shadow: none;
+  padding: 0;
+}
+.post-type-wp_easy_pay .wpep-forms-count-display{
+  margin-left: 10px; 
+  line-height: 28px;
+  color:#2D6EE2;
+   font-family: Figtree;
+   font-size: 12px;
+    font-weight: 500;
+}
+.post-type-wp_easy_pay .tablenav.bottom .alignleft.actions.bulkactions{
+  display: none;
+}
+.post-type-wp_easy_pay .tablenav.top {
+    background: #fff;
+    padding: 10px 20px 10px 10px !important; 
+}
+.post-type-wp_easy_pay .tablenav .one-page .displaying-num{
+  display: none;
+}
+.post-type-wp_easy_pay .tablenav select#filter-by-date {
+    display: none;
+}
+.post-type-wp_easy_pay .tablenav input#post-query-submit {
+    display: none;
+}
 .tablenav .tablenav-pages .button,
 .tablenav .tablenav-pages .tablenav-pages-navspan {
   border-radius: 0px !important;
@@ -2244,34 +2594,34 @@ tr.inline-edit-row td {
 }
 
 .paymentSelectB .selection input {
-  background: #fff;
+  background-color: #cce0ff40;
   border: 1px solid #e2e5ec;
-  text-align: left;
-  padding-left: 55px;
+  text-align: center;
   max-width: 155px;
   font-size: 14px;
+  font-family: Figtree;
 }
 
-.paymentSelectB .selection::before {
-  content: "$";
+/* .paymentSelectB .selection::before {
+  content: "";
   position: absolute;
   left: 0;
   top: 0px;
-  height: 50px;
+  height: 35px;
   width: 40px;
   color: #fff;
   background: #bbbbbb;
   text-align: center;
-  line-height: 50px;
+  line-height: 35px;
   font-size: 12px;
-}
+} */
 
 .paymentSelectB .wpep-form-full input {
   width: 100%;
   max-width: unset;
 }
 
-.wpep_currency_USD.code .paymentSelectB .selection::before {
+/* .wpep_currency_USD.code .paymentSelectB .selection::before {
   content: "USD";
 }
 
@@ -2309,7 +2659,7 @@ tr.inline-edit-row td {
 
 .wpep_currency_GBP.symbol .paymentSelectB .selection::before {
   content: "£";
-}
+} */
 
 .paymentSelectB .selection.not-empty::before {
   background: #5d97ff;
@@ -2384,16 +2734,16 @@ tr.inline-edit-row td {
   position: absolute;
   top: 0;
   right: 0;
-  color: #5489e7;
-  height: 50px;
-  width: 20px;
+  color: #2065E0;
+  height: 40px;
+  width: 25px;
   text-align: center;
-  line-height: 50px;
-  font-size: 20px;
+  line-height: 36px;
+  font-size: 25px;
 }
 
 .inputWrapper .add {
-  right: 30px;
+  right: 32px;
 }
 
 .inputElement {
@@ -2463,6 +2813,8 @@ tr.inline-edit-row td {
 .paymentint label.title {
   display: block;
   margin-bottom: 10px;
+  font-family: 'Figtree';
+  font-weight: 700;
 }
 
 .paymentint .wizard-form-checkbox label {
@@ -2480,7 +2832,7 @@ tr.inline-edit-row td {
 .paymentint select:disabled + label,
 .paymentint textarea.disabled + label,
 .paymentint textarea:disabled + label {
-  opacity: 1;
+  opacity: 0.7;
 }
 
 /* .paymentint input.disabled + label::after,
@@ -2525,7 +2877,7 @@ tr.inline-edit-row td {
 
 .reportDetails table {
   border: 1px solid #333;
-  border-collapse: collapse;
+  /* border-collapse: collapse; */
 }
 
 .reportDetails thead {
@@ -2609,8 +2961,90 @@ tr.inline-edit-row td {
   top: 25px;
   right: 25px;
   height: max-content;
-  flex-direction: column;
+  /* flex-direction: row-reverse; */
+      gap: 5px;
 }
+
+
+
+/* 
+.formTypeWrapContainer {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+  font-family: sans-serif;
+} */
+
+.formTypeWrapContainer label {
+  position: relative;
+  padding-left: 48px;
+  cursor: pointer;
+  color: #64748b;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  font-family: Figtree;
+}
+
+/* Hide default checkbox */
+.formTypeWrapContainer input[type="checkbox"] {
+  opacity: 0;
+  position: absolute;
+  left: 0;
+  top: 50%;
+ width: 35px;
+    height: 20px;
+  transform: translateY(-50%);
+  margin: 0;
+  z-index: 3;
+  cursor: pointer;
+}
+
+/* Create switch background */
+.formTypeWrapContainer label::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 35px;
+    height: 20px;
+  border: 2px solid #d1e3ff;
+  border-radius: 999px;
+  background-color: white;
+  box-sizing: border-box;
+  transition: all 0.25s ease-in-out;
+}
+
+/* Create slider dot */
+.formTypeWrapContainer label::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  background-color: #cbd5e1;
+  border-radius: 50%;
+  transition: all 0.25s ease-in-out;
+  z-index: 2;
+}
+
+/* When checked - blue dot + move right + blue border */
+.formTypeWrapContainer input[type="checkbox"]:checked + label::before {
+  border-color: #2065e075;
+}
+
+.formTypeWrapContainer input[type="checkbox"]:checked + label::after {
+  background-color: #2065e0c7;
+  transform: translateY(-50%) translateX(16px);
+}
+
+
+
+
+
 
 .wpep_container {
   width: 100%;
@@ -3190,7 +3624,7 @@ select.wpep-form-control {
 }
 
 .formFlexTime {
-  max-width: 150px;
+  /* max-width: 150px; */
 }
 
 .formFlex {
@@ -3203,7 +3637,7 @@ select.wpep-form-control {
 }
 
 .formFlexAllow {
-  max-width: 150px;
+  /* max-width: 150px; */
 }
 
 .wpeasyPay input.disabled,
@@ -3213,7 +3647,7 @@ select.wpep-form-control {
 .wpeasyPay textarea.disabled,
 .wpeasyPay textarea:disabled {
   background: #f3f3f3;
-  border: 1px solid #a8a8a8;
+  border: 1px solid #f3f3f3;
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -3231,7 +3665,7 @@ select.wpep-form-control {
 .wpeasyPay textarea.disabled:hover,
 .wpeasyPay textarea:disabled:hover {
   background: #f3f3f3;
-  border: 1px solid #a8a8a8;
+  border: 1px solid #f3f3f3;
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -3404,7 +3838,7 @@ a.connectSquarePop:focus {
 }
 
 .saveCardFeature {
-  margin: 0px 0px 10px 0px;
+  margin: 0px 0px 0px 0px;
 }
 
 .saveCardFeature label {
@@ -3443,8 +3877,6 @@ a.connectSquarePop:focus {
   border: none;
   cursor: pointer;
   border-radius: 100px;
-  width: 18px;
-  height: 20px;
   font-weight: 700;
   font-size: 14px;
   box-shadow: none;
@@ -3455,7 +3887,7 @@ a.connectSquarePop:focus {
   vertical-align: top;
   position: absolute;
   right: 0px;
-  top: 15px;
+  top: 4px;
   background-size: 100% !important;
   background-repeat: no-repeat !important;
 }
@@ -3471,12 +3903,16 @@ a.connectSquarePop:focus {
 .inputWrapperCus .btnplus {
   right: 30px;
   background: transparent url(../img/plus.png);
+  width: 30px;
+  height: 30px;
 }
 
 .inputWrapperCus .btnminus {
   margin-left: 6px;
   font-size: 19px;
   background: transparent url(../img/minus.png);
+  width: 29px;
+  height: 29px;
 }
 
 .inputWrapperCus .tqtufield {
@@ -3876,8 +4312,7 @@ a#wpep_reset_donation_goal {
 	margin: 15% auto;
 	padding: 20px;
 	border: 1px solid #888;
-	width: 60%;
-	text-align: center;
+	width: 28%;
 	border-radius: 5px;
 }
 div#confirmation-dialog {
@@ -3911,20 +4346,6 @@ div#confirmation-dialog {
 }
 .draft-button {
     color: green;
-}
-
-.delete-button {
-    color: red;
- margin-right: 10px;
-}
-
-.green-button {
-    color: green;
- margin-right: 10px;
-}
-.wpep-modal-content {
-    display: flex;
-    align-items: center;
 }
 
 .column {
@@ -3978,21 +4399,21 @@ div#confirmation-dialog {
 .modal {
   background-color: #fff;
   padding: 20px;
-  max-width: 600px;
+  max-width: 520px;
   width: 100%;
   border-radius: 5px;
   display: none;
 }
 
 .modal-header {
-  text-align: center;
-  margin-bottom: 20px;
+  /* text-align: center; */
+  /* margin-bottom: 20px; */
 }
 
 .modal-content {
-  display: flex;
+  /* display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: center; */
 }
 
 .column {
@@ -4481,7 +4902,7 @@ p.recaptcha_text {
     font-weight: 500;
     color: #3F5580;
 }
-.integration_button {
+button.integration_button {
     /* padding: 12px 50px; */
     padding: 12px 50px;
     font-weight: 700;
@@ -4734,22 +5155,23 @@ label.paymentTypes {
     margin-right: 20px;
 }
 span.pro_tag {
-    padding: 3px 12px 5px 12px;
-    background: #F8C630;
+    padding: 3px 8px;
+    background: linear-gradient(90deg, #2065E0 0%, #11377A 100%);
     margin-left: 10px;
     border-radius: 5px;
-    font-weight: 500;
-    color: #000000;
-    text-decoration: none !important;
+    color: #FFFFFF;
+    font-family: Figtree;
 }
-span.pro_tag_gateway {
-    padding: 3px 12px 6px 12px;
-    background: #F8C630;
-    margin-left: 20px;
+span.pro_tag.show_multi_pro {
+    padding: 3px 8px;
+    background: linear-gradient(90deg, #2065E0 0%, #11377A 100%);
+    margin: -3px 0px 3px 0px !important;
     border-radius: 5px;
-    font-weight: 500;
-    color: #000000;
-    text-decoration: none !important;
+    color: #FFFFFF;
+    font-family: Figtree;
+}
+.squareAccountScreen{
+  padding: 30px 25px;
 }
 /* Button style */
   #openPopupBtn {
@@ -4764,7 +5186,7 @@ span.pro_tag_gateway {
   .pre-modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
+    z-index: 2; /* Sit on top */
     left: 0;
     top: 0;
     width: 100%; /* Full width */
@@ -4778,35 +5200,28 @@ span.pro_tag_gateway {
     margin: 15% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 40%;
+    width: 35%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
-    background: linear-gradient(to bottom, color1, color2, ...);
-    background: linear-gradient(180deg, #2065E0, #5189ed);
+    background: linear-gradient(90deg, #2065E0, #11377A);
+    border-radius: 15px;
 }
 
   /* Close button */
   .pre-close {
     color: white;
     float: right;
-    font-size: 28px;
-  }
-
-  .pre-close:hover,
-  .pre-close:focus {
-    color: black;
-    text-decoration: none;
+    font-size: 23px;
     cursor: pointer;
-  }
+    border: 1px solid;
+    border-radius: 20px;
+    padding: 0px 3px 3px 3px;
+}
+
   .premium_popup_content {
-    padding: 50px;
+    padding: 35px;
 }
-.premium_popup_content p {
-    color: white;
-    font-size: 18px;
-    font-family: 'circular';
-    margin-top: 30px;
-}
+
 @media screen and (max-width: 600px) {
 	.pre-modal-content {
 	  width: 100%; /* Full width on smaller screens */
@@ -5457,4 +5872,1053 @@ button.apple_verify_domain:disabled, button.apple_verify_domain_test:disabled {
   #wpep-download-now {
       width: 100%;
   }
+}
+
+.formStatus{
+    text-transform: capitalize !important;
+    font-size: 14px;
+    font-family: Figtree;
+}
+
+table.table-view-list th {
+    font-family: Figtree;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+table.table-view-list td {
+    font-family: Figtree;
+    font-size: 14px;
+}
+
+table.table-view-list .column-formsTitle a.wpep_tags{
+  font-family: Figtree;
+  font-size: 14px;
+  color: #2065E0;
+}
+
+.allFormsScreen .mainModalHeader {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.allFormsScreen .mainDeleteContent {
+    display: flex;
+    flex-direction: row;
+    cursor: pointer;
+    background: #FEF8F8;
+    padding: 20px;
+    margin: 20px 20px 10px 20px;
+    border: 1px solid #B5BBC1;
+    border-radius: 10px;
+}
+.allFormsScreen .mainDraftContent {
+    display: flex;
+    flex-direction: row;
+    cursor: pointer;
+    padding: 20px;
+    margin: 20px 20px 10px 20px;
+    border: 1px solid #B5BBC1;
+    border-radius: 10px;
+}
+.allFormsScreen .mainModalHeader .child1{
+    padding: 0px 10px 0px 20px;
+}
+.allFormsScreen .deletePopupTxt{
+  padding: 0px 0px 0px 20px;
+  font-size: 14px;
+  font-family: Figtree;
+  margin: 0px 0px;
+}
+.allFormsScreen .deletePermenantTxt{
+  padding: 0px 0px 0px 20px;
+  font-size: 14px;
+  font-family: Figtree;
+  margin: 0px 0px;
+}
+.allFormsScreen .draftPermenantTxt{
+  padding: 0px 0px 0px 20px;
+  font-size: 14px;
+  font-family: Figtree;
+  margin: 0px 0px;
+}
+.allFormsScreen .mainModalHeader .child1 img{
+    width: 40px;
+    height: 40px;
+}
+.allFormsScreen .mainModalHeader .child2 h4{
+    font-size: 17px;
+    font-family: Figtree;
+}
+.allFormsScreen .mainDeleteContent .contentChild1 img{
+    width: 60px;
+    height: 60px;
+}
+.allFormsScreen .mainDeleteContent .contentChild2 h4{
+    font-size: 18px;
+    font-family: Figtree;
+    margin: 5px 20px 10px 20px;
+}
+.allFormsScreen .mainDraftContent .contentChild1 img{
+    width: 60px;
+    height: 60px;
+}
+.allFormsScreen .mainDraftContent .contentChild2 h4{
+    font-size: 18px;
+    font-family: Figtree;
+    margin: 10px 20px 10px 20px;
+}
+
+.deleteConfirmation .confirmationDeletePopupTxt{
+  padding: 0px 0px 0px 20px;
+  font-size: 14px;
+  font-family: Figtree;
+  margin: 0px 0px;
+}
+.deleteConfirmation .mainModalHeader {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.deleteConfirmation .mainModalHeader .child1 img{
+    width: 40px;
+    height: 40px;
+}
+.deleteConfirmation .mainModalHeader .child2 h4{
+    font-size: 17px;
+    font-family: Figtree;
+}
+.deleteConfirmation .mainModalHeader .child1{
+    padding: 0px 10px 0px 20px;
+}
+.deleteConfirmation .mainModalHeaderBtns {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0px 13px;
+}
+.deleteConfirmation .mainModalHeaderBtns .child1, .deleteConfirmation .mainModalHeaderBtns .child2{
+  width: 50%;
+  margin: 0px 5px;
+}
+.deleteConfirmation .mainModalHeaderBtns .child1 .delete-button {
+    border: 1px solid #E2E8F1;
+    font-size: 14px;
+    font-family: Figtree;
+    font-weight: 700;
+    padding: 10px 15px;
+    border-radius: 6px;
+    background: #DC2626;
+    color: white;
+    width: 100%;
+}
+.deleteConfirmation .mainModalHeaderBtns .child2 .green-button {
+    border: 1px solid #E2E8F1;
+    font-size: 14px;
+    font-family: Figtree;
+    font-weight: 700;
+    padding: 10px 15px;
+    border-radius: 6px;
+    width: 100%;
+}
+
+.createFormTabs{
+  /* display: flex;
+  gap: 20px; */
+}
+.createFormTabs .child1{
+  width: 100%;
+}
+.createFormTabs .child2{
+  width: 100%;
+}
+
+.post-type-wp_easy_pay #publishing-action input#publish {
+    background: #E1ECFF;
+    color: #2065E0;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: Figtree;
+    padding: 1px 25px;
+}
+
+
+
+
+.wizard-form-checkbox {
+  position: relative;
+  display: grid;
+  align-items: center;
+  font-family: Figtree, sans-serif;
+  font-size: 14px;
+  color: #64748b;
+  justify-content: space-between;
+}
+
+.wizard-form-checkbox input[type="checkbox"] {
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 35px;
+  height: 20px;
+  transform: translateY(-50%);
+  margin: 0;
+  z-index: 3;
+  cursor: pointer;
+}
+
+.wizard-form-checkbox label::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 35px;
+  height: 18px;
+  border: 2px solid #d1e3ff;
+  border-radius: 999px;
+  background-color: white;
+  box-sizing: border-box;
+  transition: all 0.25s ease-in-out;
+}
+
+.wizard-form-checkbox label::after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  background-color: #cbd5e1;
+  border-radius: 50%;
+  transition: all 0.25s ease-in-out;
+  z-index: 2;
+}
+
+.wizard-form-checkbox input[type="checkbox"]:checked + label::before {
+  border-color: #2065e075;
+}
+
+.wizard-form-checkbox input[type="checkbox"]:checked + label::after {
+  background-color: #2065e0c7;
+  transform: translateY(-50%) translateX(16px);
+}
+
+.wizard-form-checkbox label {
+  padding-right: 48px;
+  padding-left: 0;
+  cursor: pointer;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+
+
+#formPage input.form-control{
+  height: 35px;
+}
+#formPage select#paymentDrop {
+    height: 35px;
+    line-height: 35px;
+}
+
+.post-type-wp_easy_pay input[type=radio]:checked::before{
+      background-color: #007bff !important;
+}
+.post-type-wp_easy_pay input[type=radio]{
+      border: 2px solid #007bff !important;
+      padding: 1px !important;
+      width: 1.1rem !important;
+      min-width: 1.1rem !important;    
+      height: 1.1rem !important;
+}
+.post-type-wp_easy_pay input[type=radio]:checked::before {
+    margin: 3px 3px;
+    width: .399rem;
+    height: .399rem;
+}
+
+.post-type-wp_easy_pay .wizard-form-checkbox label.enableOtherAmount {
+  padding-right: 26px;
+  padding-left: 0;
+  cursor: pointer;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+.post-type-wp_easy_pay .wizard-form-checkbox label.enableSaveCard {
+  padding-right: 26px;
+  padding-left: 0;
+  cursor: pointer;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+
+.post-type-wp_easy_pay div#payment_custom {
+    margin-bottom: 5px;
+}
+
+.post-type-wp_easy_pay div#wpep_form_shortcode_metabox, 
+.post-type-wp_easy_pay div#wpep_form_currency_show_type_metabox, 
+.post-type-wp_easy_pay div#wpep_form_style_box, 
+.post-type-wp_easy_pay div#postimagediv,
+.post-type-wp_easy_pay div#postbox-container-1{
+  font-family: Figtree;
+}
+.post-type-wp_easy_pay div#wpep_form_shortcode_metabox h2, 
+.post-type-wp_easy_pay div#wpep_form_currency_show_type_metabox h2, 
+.post-type-wp_easy_pay div#wpep_form_style_box h2, 
+.post-type-wp_easy_pay div#postimagediv h2,
+.post-type-wp_easy_pay div#postbox-container-1 h2{
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0px;
+  color: #647179;
+}
+
+.post-type-wp_easy_pay div#wpep_form_shortcode_metabox span.wpep_tags h4{
+  color: #647179;
+}
+
+.post-type-wp_easy_pay .easypayblock li.ui-sortable-handle:before{
+  content: '' !important;
+  display: inline-block !important;
+  width: 19px !important;
+  height: 19px !important;
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+}
+.post-type-wp_easy_pay .easypayblock .icon-checkbox-group:before {
+    background-image: url(../img/checkbox-field-icon.png); 
+}
+.post-type-wp_easy_pay .easypayblock .icon-date:before{
+  background-image: url(../img/data-field-icon.png); 
+}
+.post-type-wp_easy_pay .easypayblock .icon-file:before{
+  background-image: url(../img/file-upload-icon.png); 
+}
+.post-type-wp_easy_pay .easypayblock .icon-number:before{
+  background-image: url(../img/number-field-icon.png); 
+}
+.post-type-wp_easy_pay .easypayblock .input-control-14:before{
+  background-image: url(../img/telephone-icon.png); 
+}
+.post-type-wp_easy_pay .easypayblock .input-control-14 span.control-icon{
+  display: none !important;
+}
+.post-type-wp_easy_pay .easypayblock .icon-radio-group:before{
+  background-image: url(../img/radio-group-icon.png); 
+}
+.post-type-wp_easy_pay .easypayblock .icon-select:before{
+  background-image: url(../img/select-field-icon.png); 
+}
+.post-type-wp_easy_pay .easypayblock .icon-text:before{
+  background-image: url(../img/text-field-icon.png); 
+}
+.post-type-wp_easy_pay .easypayblock .input-control-15:before{
+  background-image: url(../img/url-icon.png); 
+}
+.post-type-wp_easy_pay .easypayblock .input-control-15 span.control-icon{
+  display: none !important;
+}
+.post-type-wp_easy_pay .easypayblock .icon-textarea:before{
+  background-image: url(../img/text-area-icon.png); 
+}
+
+
+.post-type-wp_easy_pay .easypayblock #wpep_additional_charges .innerMultiInput{
+  margin: 0px !important;
+}
+.post-type-wp_easy_pay .easypayblock #wpep_additional_charges .multiInput{
+  border: 1px solid #CCE0FF;
+  padding: 20px;
+  margin-bottom: 20px !important;
+}
+
+.post-type-wp_easy_pay .easypayblock #wpep_additional_charges select {
+    color: #2065e0;
+}
+.post-type-wp_easy_pay .easypayblock #wpep_additional_charges .inputWrapperCus .cusblock1{
+    display: flex;
+    padding-right: 60px;
+    align-items: center;
+    justify-content: space-evenly;
+}
+.post-type-wp_easy_pay .easypayblock #wpep_additional_charges .inputWrapperCus .tamountfield{
+ max-width: 50%;
+}
+.post-type-wp_easy_pay .easypayblock #wpep_additional_charges .inputWrapperCus .cusblock1 .form-control{
+  margin-left: 0px;
+}
+div#wpep_additional_charges {
+    width: 80%;
+}
+
+#toplevel_page_edit-post_type-wp_easy_pay ul.wp-submenu-wrap li:nth-child(10) a {
+    color: white !important;
+    font-weight: 500;
+	  background: linear-gradient(90deg, #2065E0 0%, #11377A 100%);
+	font-size: 14px;
+      padding-top: 0px;
+}
+/* Get Pro submenu star gradient */
+#adminmenu a[href*="page=get_pro_menu"]::before {
+	content: "★";
+	margin-right: 6px;
+	font-size: 20px;
+	font-weight: bold;
+	background: linear-gradient(90deg, #51DFDF 30%, #2065E0 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+	color: transparent;
+}
+
+.FieldProTag {
+    display: flex;
+    align-items: center;
+}
+.FieldHeading{
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 1.2rem !important;
+  font-family: Figtree;
+  font-weight: 700;
+  color: #2065E0;
+}
+.FieldImg{
+   margin-top: 15px;
+}
+.FieldImg img {
+    width: 100%;
+    opacity: 0.5;
+}
+.pagesHeading{
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 25px !important;
+  font-family: Figtree;
+  font-weight: 700;
+  color: #2065E0;
+}
+.subscriptionImgOne{
+   margin-top: 15px;
+}
+.subscriptionImgOne img {
+    width: 100%;
+    opacity: 0.8;
+    background: white;
+}
+.subscriptionImgTwo{
+   margin-top: 15px;
+}
+.subscriptionImgTwo img {
+    width: 25%;
+    opacity: 0.8;
+    background: white;
+}
+.proLockImg {
+  width: 40%;
+}
+.pro_tag_lock {
+    padding: 3px 8px;
+    background: linear-gradient(90deg, #2065E0 0%, #11377A 100%);
+    margin-left: 10px;
+    border-radius: 5px;
+    color: #FFFFFF;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    width: 4%;
+    font-weight: 600;
+    font-family: Figtree;
+    font-size: 14px;
+}
+.couponImg{
+   margin-top: 15px;
+}
+.couponImg img {
+    width: 100%;
+    opacity: 0.4;
+    background: white;
+}
+.integrationImg{
+   margin-top: 15px;
+}
+.integrationImg img {
+    width: 100%;
+    opacity: 0.5;
+    background: white;
+}
+.integrationPageHeading{
+    padding: 2vw 0vw;
+}
+
+.proPopHeading{
+    font-size: 26px !important;
+    color: white !important;
+    font-family: Figtree;
+    line-height: 32px;
+    margin: 1em 0 !important;
+}
+
+.featuresListPopup .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+}
+.featuresListPopup .row .col-6 {
+    width: 50%;
+}
+.featuresListPopup ul li{
+   display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.featuresListPopup ul li img{
+    width: 10%;
+    padding: 0px 5px;
+}
+.featuresListPopup ul li p{
+     font-size: 18px;
+    font-family: Figtree;
+    color: white;
+    font-weight: 500;
+    margin: 0px;
+    padding: 0px;
+}
+.upgradeBtn{
+  padding: 11px 35px;
+  font-weight: 600;
+  font-size: 16px;
+  font-family: Figtree;
+  color: white;
+  background: linear-gradient(270deg, #2065e07d 0%, #000645 42%);
+  border: none;
+  border-radius: 22px;
+  cursor: pointer;
+}
+.upgradeBtn img{
+  width: 20%;
+  margin: 0px 0px -3px 0px;
+}
+
+.post-type-wp_easy_pay .subsubsub {
+  background: white;
+  padding: 10px 10px;
+  float: none;
+  color: #666;
+  display: inline-block;
+  float: right;
+     margin-top: 70px;
+    margin-bottom: -55px;
+}
+.post-type-wp_easy_pay .subsubsub li{
+    color: white;
+}
+.post-type-wp_easy_pay .subsubsub li:has(> a.current) {
+	background: #e0ecff;
+  padding: 4px 8px 4px 8px;
+  color: #e0ecff;
+}
+.post-type-wp_easy_pay .subsubsub a {
+    color: #424D55 !important;
+}
+.post-type-wp_easy_pay .subsubsub a.current {
+    color: #2065E0 !important;
+}
+
+.post-type-wpep_reports .subsubsub, 
+.post-type-wpep_subscriptions .subsubsub,
+.post-type-wpep_coupons .subsubsub {
+  float: none;
+  color: #666;
+  display: inline-block;
+  margin-top: 0px;
+  margin-bottom: -0px;
+  width: 100%;
+}
+.post-type-wpep_reports .subsubsub li, 
+.post-type-wpep_subscriptions .subsubsub li, 
+.post-type-wpep_coupons .subsubsub li{
+  color: white;
+  background: white;
+  padding: 10px 10px;
+  margin-left: -5px;
+}
+.post-type-wpep_reports .subsubsub a, 
+.post-type-wpep_subscriptions .subsubsub a, 
+.post-type-wpep_coupons .subsubsub a {
+    color: #424D55 !important;
+}
+.post-type-wpep_reports .subsubsub a.current, 
+.post-type-wpep_subscriptions .subsubsub a.current, 
+.post-type-wpep_coupons .subsubsub a.current {
+  color: #2065E0 !important;
+  background: #e0ecff;
+  padding: 8px 10px;
+  border-radius: 4px;
+}
+.post-type-wpep_reports .subsubsub a#wpep-export-transactions{
+  color: #2065E0 !important;
+  background: #e0ecff;
+  padding: 8px 10px;
+  border-radius: 4px;      
+  border: 1px solid #2065E0;
+}
+.post-type-wpep_reports .subsubsub li.import{
+  float: inline-end;
+}
+.post-type-wpep_reports p.search-box{
+  display: none;
+}
+.post-type-wp_easy_pay #posts-filter .tablenav input#doaction{
+  background: #E0ECFF;
+  font-size: 13px;
+  font-family: Figtree;
+  padding: 1px 20px;
+  opacity: 1;
+}
+.post-type-wpep_reports input#doaction, 
+.post-type-wpep_reports input#post-query-submit , 
+.post-type-wpep_reports input#delete_all, 
+.post-type-wpep_reports input#doaction2{
+  background: #E0ECFF;
+  font-size: 13px;
+  font-family: Figtree;
+  padding: 1px 20px;
+  opacity: 1;
+}
+.wrap h1.wp-heading-inline {
+    margin: 0px 0px 20px 0px;
+    padding: 0px;
+    font-family: Figtree;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 100%;
+    color: #2065E0;
+}
+div#wporg_box_id h2.hndle.ui-sortable-handle {
+    font-size: 20px !important;
+    font-family: 'Figtree';
+    color: #2065E0;
+}
+h3.detailsTableTitle {
+    padding: 10px 20px 0px 20px;
+    font-family: 'Figtree';
+    font-size: 18px;
+    color: #2065E0;
+    font-weight: 600;
+}
+
+.reportDetails .detailsTable {
+    padding: 0px 15px !important;
+    text-align: left;
+}
+
+.detailsTable tr th {
+    padding: 7px 7px;
+    color: #7B7E81;
+    font-size: 14px;
+    font-family: 'Figtree';
+}
+
+.reportDetails th, .reportDetails td {
+    border: 1px solid #f2f2f2;
+    box-sizing: border-box;
+    padding: 15px 10px;
+    min-width: 140px;
+    text-align: left;
+}
+
+.contentWrap.wpeasyPay {
+    margin: 0px 0px 0px -25px;
+}
+.contentWrapGlobal.wpeasyPay {
+    margin: 20px 35px 20px 20px;
+    background-color: white;
+    /* background-image: url(../img/connect-bg.png) !important;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: bottom center; */
+}
+.contentWrapGlobalbg.wpeasyPay {
+    margin: 20px 35px 20px 20px;
+    background-color: white;
+}
+.contentHeader {
+    display: flex;
+    background: white;
+    padding: 20px 30px;
+    gap: 20px;
+	position: sticky;
+	align-items: center;
+}
+.contentHeaderGlobal {
+    display: flex;
+    background: white;
+    padding: 20px 30px;
+    gap: 20px;
+    position: sticky;
+    align-items: center;
+}
+.squareEmailFieldGlobal{
+    display: block;
+    width: 80%;
+    height: 35px;
+    padding: 0px 15px !important;
+    margin: 0px 20px;
+    font-size: 14px;
+    line-height: 35px !important;
+    color: #647179 !important;
+    background-color: #cce0ff40 !important;
+    background-clip: padding-box;
+    border: 1px solid #B8D3FF !important;
+    border-radius: 2px !important;
+    transition: all 0.3s 
+ease;
+}
+.emailNotificationLabel{
+  font-size: 14px;
+  color: #647179 !important;
+  margin-bottom: 5px;
+  display: inline-block;
+  font-family: 'Figtree';
+  font-weight: 700;
+  margin-top: 8px;
+}
+.toggle--off.wpep_global_mode_switch{
+  font-size: 14px;
+  color: #647179 !important;
+  font-family: 'Figtree';
+  font-weight: 700;
+}
+.toggle--on.wpep_global_mode_switch{
+  font-size: 14px;
+  font-family: 'Figtree';
+  font-weight: 700;
+}
+.wpeasyPay .btnDisconnect {
+    background: #E0ECFF;
+    border: 1px solid #2065E0;
+    padding: 3px 25px 3px 25px;
+    margin-top: 10px;
+    color: #2065E0;
+    border-radius: 2px;
+    font-family: 'Figtree';
+}
+.saveSettingSquareConnectionBtn{
+    background: #2065E0 !important;
+    border: 1px solid #2065E0 !important;
+    padding: 3px 25px 3px 25px !important;
+    margin-top: 10px;
+    color: #E0ECFF !important;
+    border-radius: 2px;
+    font-family: 'Figtree';
+}
+.noteInSquareConnect {
+  background: #a61b1b14;
+  padding: 15px 15px;
+  margin: 0px 70px;
+  color: #A61B1B;
+  font-size: 12px;
+  font-family: 'Figtree';
+  font-weight: 500;
+  border-left: 2px solid #A61B1B;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  align-items: center;
+}
+.noteInSquareConnect img.dangerIconNotes {
+    width: 20px;
+}
+
+.noteInSquareConnectGlobal {
+   background: #a61b1b14;
+    padding: 15px 15px;
+    width: 65%;
+    color: #A61B1B;
+    font-size: 12px;
+    font-family: 'Figtree';
+    font-weight: 500;
+    border-left: 2px solid #A61B1B;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    align-items: center;
+    margin: 20px auto;
+    justify-content: center;
+}
+.noteInSquareConnectGlobal img.dangerIconNotes {
+    width: 20px;
+}
+
+.squareSubscriptionNoticeGlobal {
+  background: #a61b1b14;
+    padding: 12px 15px;
+    width: 55%;
+    color: #A61B1B;
+    font-size: 12px;
+    font-family: 'Figtree';
+    font-weight: 500;
+    border-left: 2px solid #A61B1B;
+    border-radius: 6px;
+    display: flex;
+    margin: 5px 0px;
+}
+.squareSubscriptionNoticeGlobal img.dangerIconNotes {
+    width: 20px;
+}
+.squareSubscriptionNoticeIndividual {
+  background: #a61b1b14;
+    padding: 12px 15px;
+    width: 75%;
+    color: #A61B1B;
+    font-size: 12px;
+    font-family: 'Figtree';
+    font-weight: 500;
+    border-left: 2px solid #A61B1B;
+    border-radius: 6px;
+    display: flex;
+    margin: 5px 0px;
+}
+.squareSubscriptionNoticeIndividual img.dangerIconNotes {
+    width: 25px;
+}
+.locationHeading{
+  font-family: 'Figtree';
+    font-weight: 700;
+}
+.note {
+  background: #a61b1b14;
+  padding: 15px 15px;
+  color: #A61B1B;
+  font-size: 14px;
+  font-family: 'Figtree';
+  font-weight: 500;
+  border-left: 2px solid #A61B1B;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  align-items: center;
+}
+.noteText {
+    padding: 3px 15px;
+}
+.settingsIcon {
+  display: inline-block;
+  vertical-align: sub;
+  margin-left: 5px;
+  outline: none;
+}
+
+.contentHeaderGlobal h3.blocktitle {
+    margin: 20px 0px 0px 5px;
+    padding: 0px;
+    font-family: Figtree;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 100%;
+    color: #2065E0;
+}
+
+.settingBlockGlobal {
+  display: flex;
+  vertical-align: bottom;
+}
+
+.squareSettingsGlobal {
+    padding: 30px 25px 0px 25px;
+    width: -webkit-fill-available;
+}
+.contentBlockGlobal {
+    background: transparent;
+    box-shadow: 0px 0px 30px -25px #8a8a8a;
+    padding: 0px 12px;
+}
+.countryCurrencySquare {
+    display: block;
+    width: 80%;
+    height: 35px;
+    padding: 0px 15px !important;
+    /* font-size: 14px; */
+    line-height: 35px !important;
+    color: #647179 !important;
+    background-color: #cce0ff40 !important;
+    background-clip: padding-box;
+    border: 1px solid #B8D3FF !important;
+    border-radius: 2px !important;
+    transition: all 0.3s ease;
+}
+
+.extraSpacing{
+  margin-bottom: 15px !important;
+}
+
+div.SquareConnectIndivi {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #2065E0;
+    font-weight: 700;
+    font-size: 16px;
+    font-family: 'Figtree';
+}
+
+span.subtitle {
+    padding: 0px;
+    color: #2065E0;
+    font-family: 'Figtree';
+    display: block;
+    margin-top: 1vw;
+}
+span.subtitle strong {
+    font-weight: 600;
+}
+
+.post-type-wp_easy_pay div#submitpost{
+    display: flex;
+}
+.post-type-wp_easy_pay.post-status-draft div#major-publishing-actions {
+    display: flex;
+    flex-direction: column-reverse;
+    padding: 9px 15px;
+}
+.post-type-wp_easy_pay.post-status-draft #delete-action {
+    padding: 3px 5px 3px 5px;
+}
+.post-type-wp_easy_pay.post-status-publish div#major-publishing-actions {
+    display: flex;
+    flex-direction: row-reverse;
+    padding: 9px 15px;
+}
+.post-type-wp_easy_pay.post-status-publish #delete-action {
+    padding: 3px 5px 3px 5px;
+}
+.post-type-wp_easy_pay.post-new-php div#major-publishing-actions {
+    display: flex;
+    flex-direction: column;
+    padding: 9px 15px;
+}
+.post-type-wp_easy_pay #publishing-action span.spinner {
+    display: none;
+}
+.post-type-wp_easy_pay #minor-publishing-actions #save-action input#save-post {
+    background: #E1ECFF;
+    color: #2065E0;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: Figtree;
+    padding: 1px 20px;
+}
+.post-type-wp_easy_pay #publishing-action input#publish {
+    background: #2065E0;
+    color: #E1ECFF;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: Figtree;
+    padding: 0px 25px;
+    margin: 0px 0px 0px -15px;
+}
+a.submitdelete.deletion {
+    padding: 0px 7px;
+}
+
+.post-status-trash.post-type-wp_easy_pay .tablenav.top {
+    width: 39% !important;
+}
+.post-status-trash.post-type-wp_easy_pay input#delete_all {
+    display: none;
+}
+.post-type-wp_easy_pay.post-status-draft div#major-publishing-actions {
+    display: flex;
+    flex-direction: row-reverse;
+    padding: 9px 15px;
+    width: 80%;
+}
+.post-type-wp_easy_pay.post-status-draft input#save-post {
+    display: none;
+}
+.post-type-wp_easy_pay.post-status-draft div#minor-publishing {
+    display: none;
+}
+
+button#wpep-save-draft-btn {
+    background: #2065E0;
+    color: #E1ECFF;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: Figtree;
+    padding: 1px 25px;
+}
+button#wpep-cancel-btn {
+     background: #E1ECFF;
+    color: #2065E0;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: Figtree;
+    padding: 1px 20px;
+}
+.savePopupHeading{
+  margin: 0px 0px -5px 0px;
+  padding: 0px;
+  font-family: Figtree;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 100%;
+  color: #2065E0;
+}
+.savePopupDescrip{
+     margin: 15px 0 20px;
+    color: #313131;
+}
+
+.wpep-back-button{
+  display: inline-block !important;
+  background: #E1ECFF !important;
+  color: #2065E0 !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  font-family: Figtree !important;
+  padding: 1px 25px !important;
+  margin: 0px 10px !important;
+} 
+
+.tablenav.top .tablenav-pages{
+    display: none;
+}
+
+.restoreIcon::before {
+  background: url(../img/restore.png);
+  background-repeat: no-repeat;
+  width: 17px;
+  height: 17px;
+  content: "";
+  display: inline-block;
+  background-size: 100%;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.refundIdWrap{
+  overflow-wrap: anywhere;
+}
+
+td.actions.column-actions {
+    text-align: center;
+}
+th#actions {
+    text-align: center;
 }

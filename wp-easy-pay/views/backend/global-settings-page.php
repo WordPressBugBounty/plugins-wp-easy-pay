@@ -15,8 +15,10 @@ if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_fiel
 	exit;
 }
 
+$get = array_map( 'sanitize_text_field', wp_unslash( $_GET ) );
+
 if ( isset( $_POST ) && ! empty( $_POST ) ) {
-	$post_custom            = $_POST;
+	$post_custom            = wp_unslash( $_POST ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	$payment_mode           = 0;
 	$wpep_square_google_pay = 0;
 	$wpep_square_apple_pay  = 0;
@@ -248,12 +250,36 @@ if ( isset( $live_token ) && ! empty( $live_token ) ) {
 		}
 	}
 }
+$wpep_square_test_token = get_option( 'wpep_square_test_token_global' );
+$wpep_square_live_token = get_option( 'wpep_live_token_upgraded' );
+
 ?>
 
 <form class="wpeasyPay-form" method="post" action="#">
-	<div class="contentWrap wpeasyPay">
-	<div class="contentHeader">
+	<div class="contentWrapGlobal wpeasyPay">
+	<div class="contentHeaderGlobal">
 		<h3 class="blocktitle">Square Connect</h3>
+		<?php
+		$wpep_square_test_token = get_option( 'wpep_square_test_token_global' );
+		$wpep_square_live_token = get_option( 'wpep_live_token_upgraded' );
+		
+		if ( ( 'on' === $wpep_square_payment_mode_global && ! empty( $wpep_square_live_token ) ) || 
+			( 'on' !== $wpep_square_payment_mode_global && ! empty( $wpep_square_test_token ) ) ) {
+			if ( 'on' === $wpep_square_payment_mode_global ) {
+				$disconnect_url = get_option( 'wpep_square_disconnect_url', false );
+			} else {
+				$disconnect_url = get_option( 'wpep_square_test_disconnect_url', false );
+			}
+			if ( $disconnect_url ) {
+				?>
+				<div class="disconnect-btn-header">
+					<a href="<?php echo esc_url( $disconnect_url ); ?>" class="btn btnDisconnect btn-sm">Disconnect Square</a>
+				</div>
+				<?php
+			}
+		}
+		?>
+		
 		<div class="swtichWrap">
 		<input type="checkbox" id="on-off" name="wpep_square_payment_mode_global" class="switch-input" 
 		<?php
@@ -264,28 +290,28 @@ if ( isset( $live_token ) && ! empty( $live_token ) ) {
 			<span class="toggle--on toggle--option wpep_global_mode_switch" data-mode="live">Live Payment</span>
 			<span class="toggle--off toggle--option wpep_global_mode_switch" data-mode="test">Test Payment</span>
 		</label>
-		</div>
 	</div>
-	<div class="contentBlock">
-		<div class="squareSettings">
-		<div class="settingBlock">
-			<label>Notifications Email</label>
-			<input type="text" class="form-control" name="wpep_email_notification" value="<?php echo esc_attr( $wpep_email_notification ); ?>" placeholder="abc@domain.com">
+</div>
+	<div class="contentBlockGlobal">
+		<div class="squareSettingsGlobal">
+		<div class="settingBlockGlobal">
+			<label class="emailNotificationLabel">Notifications email</label>
+			<input type="text" class="squareEmailFieldGlobal" name="wpep_email_notification" value="<?php echo esc_attr( $wpep_email_notification ); ?>" placeholder="abc@domain.com">
 		</div>
 		</div>
 
 		<div class="testPayment paymentView" id="wpep_spmgt">
 		<?php
-			$wpep_square_test_token = get_option( 'wpep_square_test_token_global' );
+			
 
 		if ( false === $wpep_square_test_token ) {
+			$disconnect_btn = false;
 			?>
 			<div class="squareConnect">
 				<div class="squareConnectwrap">
 				<h2>Connect your square (sandbox) account now!</h2>
 				
 				<?php
-					$get = $_GET;
 				if ( isset( $get['type'] ) && 'bad_request.missing_parameter' === $get['type'] ) {
 					?>
 
@@ -294,21 +320,27 @@ if ( isset( $live_token ) && ! empty( $live_token ) ) {
 					<?php
 				}
 				?>
-				<div class="center-container">
-					<div class="custom-notification">
-						<div class="notification-icon">
-							<span class="noti-icon">&#9432;</span>
-						</div>
-						<div class="notification-content">
-							<p class="notification-text">
-								Make sure to launch <a class="wpep-highlight" href="https://developer.squareup.com/console/en/sandbox-test-accounts">seller test account</a> in the same browser from developer dashboard before connecting your Square Sandbox account.
-							</p>
-						</div>
+				<div class="noteInSquareConnectGlobal">
+					<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/danger.png' ); ?>" class="dangerIconNotes" alt="Warning Icon">
+					<div class="noteText">
+						Make sure to launch 
+						<a class="wpep-highlight" href="https://developer.squareup.com/console/en/sandbox-test-accounts">seller test account</a> 
+						in the same browser from developer dashboard before connecting your Square Sandbox account.
 					</div>
 				</div>
-				<a href="<?php echo esc_url( $wpep_create_connect_sandbox_url ); ?>" class="btn btn-primary btn-square">Connect Square (sandbox)</a>
+				<a href="<?php echo esc_url( $wpep_create_connect_sandbox_url ); ?>" class="btn btn-primary connectSquareBtn">
+					<div class="SquareConnectIndivi">
+						<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/square-btn-icon.png' ); ?>" class="SquareIconConnect" alt="Warning Icon"> 
+						Connect Square (Sandbox)
+					</div>
+				</a>
 
-				<p><small> The sandbox OAuth is for testing purpose by connecting and activating this you will be able to make test transactions and to see how your form will work for the customers.  </small></p>
+				<div> 
+					<p class="sandboxAuthMsg">
+						The sandbox OAuth is for testing purpose by connecting and activating this you 
+						will be able to make test transactions and to see how your form will work for the customers.
+					</p>  
+				</div>
 
 				</div>
 			</div>
@@ -318,54 +350,54 @@ if ( isset( $live_token ) && ! empty( $live_token ) ) {
 			?>
 
 			<div class="squareConnected">
-				<h3 class="titleSquare">Square is Connected <i class="fa fa-check-square" aria-hidden="true"></i></h3>
+				<h3 class="titleSquare">Square is connected <i class="fa fa-check-square" aria-hidden="true"></i></h3>
 				<div class="wpeasyPay__body">
 
 			<?php
 			if ( false !== get_option( 'wpep_square_currency_test', false ) ) {
 				?>
 				<div class="form-group">
-					<label>Country Currency</label>
-					<select name="wpep_square_test_currency_new" class="form-control" disabled="disabled">
+					<label class="locationHeading">Country currency</label>
+					<select name="wpep_square_test_currency_new" class="form-control countryCurrencySquare" disabled="disabled">
 						<option value="USD" 
 						<?php
 						if ( ! empty( get_option( 'wpep_square_currency_test' ) ) && 'USD' === get_option( 'wpep_square_currency_test' ) ) :
-							echo esc_html( "selected='selected'" );
+							echo 'selected="selected"';
 endif;
 						?>
 						>USD</option>
 						<option value="CAD" 
 						<?php
 						if ( ! empty( get_option( 'wpep_square_currency_test' ) ) && 'CAD' === get_option( 'wpep_square_currency_test' ) ) :
-							echo esc_html( "selected='selected'" );
+							echo 'selected="selected"';
 endif;
 						?>
 						>CAD</option>
 						<option value="AUD" 
 						<?php
 						if ( ! empty( get_option( 'wpep_square_currency_test' ) ) && 'AUD' === get_option( 'wpep_square_currency_test' ) ) :
-							echo esc_html( "selected='selected'" );
+							echo 'selected="selected"';
 endif;
 						?>
 						>AUD</option>
 						<option value="JPY" 
 						<?php
 						if ( ! empty( get_option( 'wpep_square_currency_test' ) ) && 'JPY' === get_option( 'wpep_square_currency_test' ) ) :
-							echo esc_html( "selected='selected'" );
+							echo 'selected="selected"';
 endif;
 						?>
 						>JPY</option>
 						<option value="GBP" 
 						<?php
 						if ( ! empty( get_option( 'wpep_square_currency_test' ) ) && 'GBP' === get_option( 'wpep_square_currency_test' ) ) :
-							echo esc_html( "selected='selected'" );
+							echo 'selected="selected"';
 endif;
 						?>
 						>GBP</option>
 						<option value="EUR" 
 						<?php
 						if ( ! empty( get_option( 'wpep_square_currency_test' ) ) && 'EUR' === get_option( 'wpep_square_currency_test' ) ) :
-							echo esc_html( "selected='selected'" );
+							echo 'selected="selected"';
 endif;
 						?>
 						>EUR</option>
@@ -375,9 +407,9 @@ endif;
 
 				<?php $all_locations = get_option( 'wpep_test_location_data', false ); ?>
 				<div class="form-group">
-					<label>Location:</label>
+					<label class="locationHeading">Location:</label>
 					<select class="form-control" name="wpep_square_test_location_id_global">
-					<option>Select Location</option>
+					<option>Select location</option>
 					<?php
 					if ( isset( $all_locations ) && ! empty( $all_locations ) && false !== $all_locations ) {
 
@@ -419,7 +451,7 @@ endif;
 									$selected = 'selected';
 								}
 							}
-							echo "<option value='" . esc_attr( $location_id ) . "'" . esc_html( $selected ) . '>' . esc_html( $location_name ) . '</option>';
+							echo "<option value='" . esc_attr( $location_id ) . "' " . esc_attr( $selected ) . '>' . esc_html( $location_name ) . '</option>';
 						}
 					}
 
@@ -429,9 +461,9 @@ endif;
 				</div>
 
 				<div class="paymentint">
-				<label class="title">Other Payment Options</label>
+				<label class="title">Other payment options</label>
 				<?php if ( wepp_fs()->is__premium_only() ) { ?>
-				<div class="wizard-form-checkbox">
+				<div class="wizard-form-checkbox-square-connect">
 				<input id="googlePayTest" name="wpep_square_test_google_pay_global" value="on" type="checkbox"
 					<?php
 					if ( 'on' === $wpep_square_test_google_pay_global ) {
@@ -442,7 +474,7 @@ endif;
 					<label for="googlePayTest">Google Pay</label>
 
 				</div>
-				<div class="wizard-form-checkbox">
+				<div class="wizard-form-checkbox-square-connect">
 					<div class="apple_pay_verification">
 						<input id="applePayTest" class="applePayEnableTest" name="wpep_square_test_apple_pay" value="on" type="checkbox" 
 						<?php
@@ -458,7 +490,7 @@ endif;
 					</div>
 				</div>
 				<?php } ?>
-				<div class="wizard-form-checkbox ">
+				<div class="wizard-form-checkbox-square-connect">
 					<input id="afterPayTest" name="wpep_square_test_after_pay" value="on" type="checkbox"
 					<?php
 					if ( 'on' === $wpep_square_test_after_pay ) {
@@ -468,7 +500,7 @@ endif;
 					>
 					<label for="afterPayTest">After Pay</label>
 				</div>
-				<div class="wizard-form-checkbox">
+				<div class="wizard-form-checkbox-square-connect">
 					<input id="cashAppTest" name="wpep_square_test_cash_app" value="on" type="checkbox" 
 					<?php
 					if ( 'on' === $wpep_square_test_cash_app ) {
@@ -479,7 +511,7 @@ endif;
 					<label for="cashAppTest">Cash App</label>
 				</div>
 				<?php if ( wepp_fs()->is__premium_only() ) { ?>
-				<div class="wizard-form-checkbox">
+				<div class="wizard-form-checkbox-square-connect">
 					<input id="giftcard-test" name="wpep_square_test_giftcard" value="on" type="checkbox" 
 					<?php
 					if ( 'on' === $wpep_square_test_giftcard ) {
@@ -490,7 +522,7 @@ endif;
 					<label for="giftcard-test">Square Gift Card</label>
 				</div>
 				<?php } ?>
-				<div class="wizard-form-checkbox">
+				<div class="wizard-form-checkbox-square-connect">
 					<input id="achDebitTest" name="wpep_square_test_ach_debit" value="on" type="checkbox" 
 					<?php
 					if ( 'on' === $wpep_square_test_ach_debit ) {
@@ -501,29 +533,32 @@ endif;
 					<label for="achDebitTest">ACH Debit</label>
 				</div>
 				<?php if ( ! wepp_fs()->is__premium_only() ) { ?>
-					<div class="wizard-form-checkbox">
-						<input id="googlePayTest" name="wpep_square_test_google_pay" value="on" type="checkbox" disabled>
-						<label class="googlePayTest" for="googlePayTest">
-							Google Pay
-						</label>
-						<input id="applePayTest" name="wpep_square_test_apple_pay" value="on" type="checkbox" disabled>
-						<label class="applePayTest" for="applePayTest">
-							Apple Pay
-						</label>
-						<input id="giftcardTest" name="wpep_square_test_giftcard" value="on" type="checkbox" disabled>
-						<label class="giftcard" for="giftcard">
-							Gift Card
-							<a href="https://wpeasypay.com/pricing/?utm_source=plugin&utm_medium=payment_options&utm_campaign=plugin" style="text-decoration: none !important;">
-								<span class="pro_tag_gateway" id="pro_tag">Get Pro</span>
-							</a>
-						</label>
-					</div>	
+					<div class="wizard-form-checkbox-square-connect extraSpacing">
+						<input id="googlePayTest" name="wpep_square_test_google_pay" value="on" type="checkbox" checked disabled>
+						<label class="googlePayTest" for="googlePayTest">Google Pay</label>
+						<span class="pro_tag" id="pro_tag">Pro</span>
+					</div>
+					<div class="wizard-form-checkbox-square-connect extraSpacing">
+						<input id="applePayTest" name="wpep_square_test_apple_pay" value="on" type="checkbox" checked disabled>
+						<label class="applePayTest" for="applePayTest">Apple Pay</label>
+						<span class="pro_tag" id="pro_tag">Pro</span>
+					</div>
+					<div class="wizard-form-checkbox-square-connect extraSpacing">	
+						<input id="giftcardTest" name="wpep_square_test_giftcard" value="on" type="checkbox" checked disabled>
+						<label class="giftcard" for="giftcard">Square Gift Card</label>
+						<span class="pro_tag" id="pro_tag">Pro</span>
+					</div>
 				<?php } ?>
 				</div>
-				<p style="color: red;"> Note: Disconnecting from Square and Reconnecting with another account can stop your subscription payments. </p>
+				<div class="squareSubscriptionNoticeGlobal">
+					<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/danger.png' ); ?>" class="dangerIconNotes" alt="Warning Icon">
+					<div class="noteText">
+						Note: Disconnecting from square and reconnecting with another account can stop your subscription payments. 
+					</div>
+				</div>
 				<div class="btnFooter d-btn">
-				<button type="submit" class="btn btn-primary"> Save Settings </button>
-				<a href="<?php echo esc_url( get_option( 'wpep_square_test_disconnect_url', false ) ); ?>" class="btn btnDiconnect">Disconnect
+					<button type="submit" class="btn btn-primary saveSettingSquareConnectionBtn"> Save Settings </button>
+					<a href="<?php echo esc_url( get_option( 'wpep_square_test_disconnect_url', false ) ); ?>" class="btn btnDisconnect">Disconnect
 					Square</a>
 				</div>
 			</div>
@@ -551,11 +586,17 @@ endif;
 				<?php
 			}
 			?>
-			<a href="<?php echo esc_url( $wpep_square_connect_url ); ?>" class="btn btn-primary btn-square">Connect Square</a>
 
-			<a class="connectSquarePop" href="https://wpeasypay.com/documentation/#global-settings-live-mode" target="_blank">
+			<a href="<?php echo esc_url( $wpep_square_connect_url ); ?>" class="btn btn-primary connectSquareBtn">
+				<div class="SquareConnectIndivi">
+					<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/square-btn-icon.png' ); ?>" class="SquareIconConnect" alt="Warning Icon"> 
+					Connect Square
+				</div>
+			</a>
 
-			How to Connect Your Live Square Account.
+			<a class="connectSquarePop" href="https://wpeasypay.com/documentation/#global-settings-live-mode" target="_blank" rel="noopener noreferrer">
+
+			How to connect your live square account.
 
 			</a>
 
@@ -567,47 +608,47 @@ endif;
 			?>
 
 		<div class="squareConnected">
-			<h3 class="titleSquare">Square is Connected <i class="fa fa-check-square" aria-hidden="true"></i></h3>
+			<h3 class="titleSquare">Square is connected <i class="fa fa-check-square" aria-hidden="true"></i></h3>
 			<div class="wpeasyPay__body">
 
 			<?php
 			if ( '' !== get_option( 'wpep_square_currency_new' ) ) {
 				?>
 			<div class="form-group">
-				<label>Country Currency</label>
-				<select name="wpep_square_currency_new" class="form-control" disabled="disabled">
+				<label class="locationHeading">Country currency</label>
+				<select name="wpep_square_currency_new" class="form-control countryCurrencySquare" disabled="disabled">
 					<option value="USD" 
 					<?php
 					if ( ! empty( get_option( 'wpep_square_currency_new' ) ) && 'USD' === get_option( 'wpep_square_currency_new' ) ) :
-						echo esc_html( "selected='selected'" );
+						echo 'selected="selected"';
 endif;
 					?>
 					>USD</option>
 					<option value="CAD" 
 					<?php
 					if ( ! empty( get_option( 'wpep_square_currency_new' ) ) && 'CAD' === get_option( 'wpep_square_currency_new' ) ) :
-						echo esc_html( "selected='selected'" );
+						echo 'selected="selected"';
 endif;
 					?>
 					>CAD</option>
 					<option value="AUD" 
 					<?php
 					if ( ! empty( get_option( 'wpep_square_currency_new' ) ) && 'AUD' === get_option( 'wpep_square_currency_new' ) ) :
-						echo esc_html( "selected='selected'" );
+						echo 'selected="selected"';
 endif;
 					?>
 					>AUD</option>
 					<option value="JPY" 
 					<?php
 					if ( ! empty( get_option( 'wpep_square_currency_new' ) ) && 'JPY' === get_option( 'wpep_square_currency_new' ) ) :
-						echo esc_html( "selected='selected'" );
+						echo 'selected="selected"';
 endif;
 					?>
 					>JPY</option>
 					<option value="GBP" 
 					<?php
 					if ( ! empty( get_option( 'wpep_square_currency_new' ) ) && 'GBP' === get_option( 'wpep_square_currency_new' ) ) :
-						echo esc_html( "selected='selected'" );
+						echo 'selected="selected"';
 endif;
 					?>
 					>GBP</option>
@@ -615,7 +656,7 @@ endif;
 					<option value="EUR" 
 					<?php
 					if ( ! empty( get_option( 'wpep_square_currency_new' ) ) && 'EUR' === get_option( 'wpep_square_currency_new' ) ) :
-						echo esc_html( "selected='selected'" );
+						echo 'selected="selected"';
 endif;
 					?>
 					>EUR</option>
@@ -625,9 +666,9 @@ endif;
 
 				<?php $all_locations = get_option( 'wpep_live_location_data', false ); ?>
 			<div class="form-group">
-				<label>Location:</label>
+				<label class="locationHeading">Location:</label>
 				<select class="form-control" name="wpep_square_location_id">
-				<option>Select Location</option>
+				<option>Select location</option>
 
 					<?php
 
@@ -657,6 +698,7 @@ endif;
 									$location_name = $location->name;
 								}
 							}
+
 							$saved_location_id = get_option( 'wpep_square_location_id', false );
 							$selected          = '';
 							if ( false !== $saved_location_id ) {
@@ -667,7 +709,7 @@ endif;
 									$selected = '';
 								}
 							}
-									echo "<option value='" . esc_attr( $location_id ) . "'" . esc_html( $selected ) . '>' . esc_html( $location_name ) . '</option>';
+									echo "<option value='" . esc_attr( $location_id ) . "' " . esc_attr( $selected ) . '>' . esc_html( $location_name ) . '</option>';
 						}
 					}
 
@@ -679,25 +721,25 @@ endif;
 
 
 		<div class="paymentint">
-			<label class="title">Other Payment Options</label>
+			<label class="title">Other payment options</label>
 			<?php if ( wepp_fs()->is__premium_only() ) { ?>
-			<div class="wizard-form-checkbox">
+			<div class="wizard-form-checkbox-square-connect">
 				<input id="googlePayLive" name="wpep_square_google_pay" value="on" type="checkbox"
 					<?php
 					if ( 'on' === $wpep_square_google_pay ) {
-						echo esc_html( 'checked' );
+						echo 'checked';
 					}
 					?>
 					>
 				<label for="googlePayLive">Google Pay</label>
 			</div>
-			<div class="wizard-form-checkbox">
+			<div class="wizard-form-checkbox-square-connect">
 				<div class="apple_pay_verification">
 					<input id="applePayLive" class="applePayEnable" name="wpep_square_apple_pay" value="on" type="checkbox"
 					
 						<?php
 						if ( 'on' === $wpep_square_apple_pay ) {
-							echo esc_html( 'checked' );
+							echo 'checked';
 						}
 						?>
 					
@@ -710,23 +752,23 @@ endif;
 			</div>
 			<?php } ?>
 
-			<div class="wizard-form-checkbox ">
+			<div class="wizard-form-checkbox-square-connect">
 			<input id="afterPayLive" name="wpep_square_after_pay" value="on" type="checkbox"
 			
 			<?php
 			if ( 'on' === $wpep_square_after_pay ) {
-				echo esc_html( 'checked' );
+				echo 'checked';
 			}
 			?>
 			>
 			<label for="afterPayLive">After Pay</label>
 			</div>
-			<div class="wizard-form-checkbox">
+			<div class="wizard-form-checkbox-square-connect">
 			<input id="cashAppLive" name="wpep_square_cash_app" value="on" type="checkbox"
 			
 			<?php
 			if ( 'on' === $wpep_square_cash_app ) {
-				echo esc_html( 'checked' );
+				echo 'checked';
 			}
 			?>
 			
@@ -734,12 +776,12 @@ endif;
 			<label for="cashAppLive">Cash App</label>
 			</div>
 			<?php if ( wepp_fs()->is__premium_only() ) { ?>
-			<div class="wizard-form-checkbox">
+			<div class="wizard-form-checkbox-square-connect">
 				<input id="giftcard-live" name="wpep_square_giftcard" value="on" type="checkbox"
 				
 				<?php
 				if ( 'on' === $wpep_square_giftcard ) {
-					echo esc_html( 'checked' );
+					echo 'checked';
 				}
 				?>
 				
@@ -747,53 +789,51 @@ endif;
 				<label for="giftcard-live">Square Gift Card</label>
 			</div>
 			<?php } ?>
-			<div class="wizard-form-checkbox">
+			<div class="wizard-form-checkbox-square-connect">
 			<input id="achDebitLive" name="wpep_square_ach_debit" value="on" type="checkbox"
 			<?php
 			if ( 'on' === $wpep_square_ach_debit ) {
-				echo esc_html( 'checked' );
+				echo 'checked';
 			}
 			?>
 			>
 			<label for="achDebitLive">ACH Debit</label>
 			</div>
 			<?php if ( ! wepp_fs()->is__premium_only() ) { ?>
-					<div class="wizard-form-checkbox">
-						<input id="googlePayTest" name="wpep_square_test_google_pay" value="on" type="checkbox" disabled>
-						<label class="googlePayTest" for="googlePayTest">
-							Google Pay
-						</label>
-						<input id="applePayTest" name="wpep_square_test_apple_pay" value="on" type="checkbox" disabled>
-						<label class="applePayTest" for="applePayTest">
-							Apple Pay
-						</label>
-						<input id="giftcardTest" name="wpep_square_test_giftcard" value="on" type="checkbox" disabled>
-						<label class="giftcard" for="giftcard">
-							Gift Card
-							<a href="https://wpeasypay.com/pricing/?utm_source=plugin&utm_medium=payment_options&utm_campaign=plugin" style="text-decoration: none !important;">
-								<span class="pro_tag_gateway" id="pro_tag">Get Pro</span>
-							</a>
-						</label>
-					</div>	
+				<div class="wizard-form-checkbox-square-connect extraSpacing">
+					<input id="googlePayTest" name="wpep_square_test_google_pay" value="on" type="checkbox" checked disabled>
+					<label class="googlePayTest" for="googlePayTest">Google Pay</label>
+					<span class="pro_tag" id="pro_tag">Pro</span>
+				</div>
+				<div class="wizard-form-checkbox-square-connect extraSpacing">
+					<input id="applePayTest" name="wpep_square_test_apple_pay" value="on" type="checkbox" checked disabled>
+					<label class="applePayTest" for="applePayTest">Apple Pay</label>
+					<span class="pro_tag" id="pro_tag">Pro</span>
+				</div>
+				<div class="wizard-form-checkbox-square-connect extraSpacing">	
+					<input id="giftcardTest" name="wpep_square_test_giftcard" value="on" type="checkbox" checked disabled>
+					<label class="giftcard" for="giftcard">Square Gift Card</label>
+					<span class="pro_tag" id="pro_tag">Pro</span>
+				</div>
 			<?php } else { ?>
-			<div class="wizard-form-checkbox">
+			<div class="wizard-form-checkbox-square-connect">
 			<input id="TerminalLive" name="wpep_square_terminal" value="on" type="checkbox"
 				<?php
 				if ( 'on' === $wpep_square_terminal ) {
-					echo esc_html( 'checked' );
+					echo 'checked';
 				}
 				?>
 			>
 			<label for="TerminalLive">Terminal Pay</label>
 			<br>
 			<span id="terminalform">
-			<label for="btn_wpep_gen_code" style="margin:0!important">
+			<label for="btn_wpep_gen_code" style="margin:0!important"  class="locationHeading">
 				Generate device code
 				</label>
 				<br>
 				<input type="text" name="wpep_device_code" id="wpep_device_code" value="<?php echo esc_attr( $wpep_device_code ); ?>"  style="padding: 5px; border: 1px solid #ccc; border-radius: 4px;" >
-				<button id="btn_wpep_gen_code" style="padding: 5px 10px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
-				Get Code
+				<button id="btn_wpep_gen_code" style="padding: 5px 10px; background-color: #2065e0; color: white; border: none; border-radius: 4px; cursor: pointer;">
+				Get code
 				</button>
 				<br>
 			 
@@ -809,11 +849,16 @@ endif;
 		<?php } ?>
 
 			<?php if ( 'true' !== $revoked ) { ?>
-		<p style="color: red;"> Note: Disconnecting from Square and Reconnecting with another account can stop your subscription payments. </p>
+		<div class="squareSubscriptionNoticeGlobal">
+			<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/danger.png' ); ?>" class="dangerIconNotes" alt="Warning Icon">
+			<div class="noteText">
+				Note: Disconnecting from square and reconnecting with another account can stop your subscription payments. 
+			</div>
+		</div>
 		<?php } ?>
 		<div class="btnFooter d-btn">
-			<button type="submit" class="btn btn-primary"> Save Settings </button>
-			<a href="<?php echo esc_url( get_option( 'wpep_square_disconnect_url', false ) ); ?>" class="btn btnDiconnect">Disconnect
+			<button type="submit" class="btn btn-primary saveSettingSquareConnectionBtn"> Save Settings </button>
+			<a href="<?php echo esc_url( get_option( 'wpep_square_disconnect_url', false ) ); ?>" class="btn btnDisconnect">Disconnect
 			Square</a>
 		</div>
 			
@@ -824,4 +869,46 @@ endif;
 
 	</div>
 </form>
+</div>
+<div id="pre-popupModal" class="pre-modal">
+	<div class="pre-modal-content">
+		<span class="pre-close">&times;</span>
+		<div class="premium_popup_content">
+			<div class="wp_easypay_logo">
+				<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/Logo_white.png' ); ?>" class="wpep_logo">
+			</div>
+			<h3 class="proPopHeading">Enhance Your Square Payment Forms With Premium Features.</h3>
+			<div class="featuresListPopup">
+				<div class="row">
+					<div class="col-6">
+						<ul>
+							<li><img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/popup-tick.png' ); ?>" class="" /> 
+								<p>5+ Digital Wallets</p>
+							</li>
+							<li><img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/popup-tick.png' ); ?>" class="" /> 
+								<p>Square Product Sync</p>
+							</li>
+						</ul>
+					</div>
+					<div class="col-6">
+						<ul>	
+							<li><img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/popup-tick.png' ); ?>" class="" /> 
+								<p>Square Gift Card</p>
+							</li>
+							<li><img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/popup-tick.png' ); ?>" class="" /> 
+								<p>Manage Subscriptions</p>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="integration_button_div">
+				<a href="https://wpeasypay.com/pricing?utm_source=plugin&utm_medium=payment_options" target="_blank" rel="noopener noreferrer" class="wpep-no-save-popup">
+					<button type="button" class="upgradeBtn">
+						Upgrade Now <img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/upgrade-btn-arrow.png' ); ?>" class="" /> 
+					</button>
+				</a>
+			</div>
+		</div>
+	</div>
 </div>

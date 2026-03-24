@@ -139,28 +139,611 @@ function wpep_create_square_customer( $api_client ) {
  */
 function wpep_weekly_refresh_tokens() {
 
-	$oauth_connect_url    = WPEP_MIDDLE_SERVER_URL;
-	$refresh_access_token = get_option( 'wpep_refresh_token' );
+	$oauth_connect_url = WPEP_MIDDLE_SERVER_URL;
 
-	$args_renew = array(
+	// Check if global connection exists (either live or sandbox)
+	$global_live_refresh_token    = get_option( 'wpep_refresh_token' );
+	$global_sandbox_refresh_token = get_option( 'wpep_refresh_test_token' );
 
-		'body'    => array(
+	// Only process global token refresh if at least one global connection exists
+	if ( ! empty( $global_live_refresh_token ) || ! empty( $global_sandbox_refresh_token ) ) {
 
-			'request_type'  => 'renew_token',
-			'refresh_token' => $refresh_access_token,
-			'oauth_version' => 2,
-			'app_name'      => WPEP_SQUARE_APP_NAME,
+		// Get the global payment mode setting to determine which mode is active
+		$global_payment_mode = get_option( 'wpep_square_payment_mode_global', true );
+		
+		// Determine which mode is active based on the setting, not just token existence
+		$is_global_sandbox = ( 'on' !== $global_payment_mode );
+		
+		// Use the appropriate refresh token based on the active mode
+		if ( $is_global_sandbox ) {
+			$refresh_access_token = $global_sandbox_refresh_token;
+		} else {
+			$refresh_access_token = $global_live_refresh_token;
+		}
+		
+		// Only proceed if we have a valid refresh token for the active mode
+		if ( empty( $refresh_access_token ) ) {
+			return;
+		}
 
-		),
-		'timeout' => 0.01,
+		$args_renew = array(
+			'body'    => array(
+				'request_type'    => 'renew_token',
+				'refresh_token'   => $refresh_access_token,
+				'oauth_version'   => 2,
+				'app_name'        => WPEP_SQUARE_APP_NAME,
+				'sandbox_enabled' => $is_global_sandbox ? 'yes' : 'no',
+			),
+			'timeout' => 10,
+		);
+
+		$oauth_response      = wp_remote_post( $oauth_connect_url, $args_renew );
+		$oauth_response_body = is_wp_error( $oauth_response ) ? null : json_decode( wp_remote_retrieve_body( $oauth_response ) );
+
+		if ( ! is_wp_error( $oauth_response ) && ! empty( $oauth_response_body->access_token ) ) {
+			if ( $is_global_sandbox ) {
+				update_option( 'wpep_square_test_token_global', sanitize_text_field( $oauth_response_body->access_token ) );
+				update_option( 'wpep_refresh_test_token', $oauth_response_body->refresh_token );
+				update_option( 'wpep_token_test_expires_at', $oauth_response_body->expires_at );
+			} else {
+				update_option( 'wpep_live_token_upgraded', sanitize_text_field( $oauth_response_body->access_token ) );
+				update_option( 'wpep_refresh_token', $oauth_response_body->refresh_token );
+				update_option( 'wpep_token_expires_at', $oauth_response_body->expires_at );
+			}
+		}
+
+		$mode     = $is_global_sandbox ? 'Sandbox' : 'Live';
+		$request  = $args_renew['body'];
+		$response = is_wp_error( $oauth_response ) ? $oauth_response->get_error_message() : wp_remote_retrieve_body( $oauth_response );
+
+		// Use smart status determination based on response
+		$status = wpep_determine_connection_status( $oauth_response, $oauth_response_body );
+
+		wpep_insert_connection_log( $mode, $request, $response, $status, null );
+	}
+	// NEW: refresh tokens for individual forms and log with form_id
+	$forms = get_posts(
+		array(
+			'post_type'      => 'wp_easy_pay',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+		)
 	);
 
-	$oauth_response      = wp_remote_post( $oauth_connect_url, $args_renew );
-	$oauth_response_body = json_decode( $oauth_response['body'] );
+	foreach ( $forms as $form_id ) {
 
-	update_option( 'wpep_live_token_upgraded', sanitize_text_field( $oauth_response_body->access_token ) );
-	update_option( 'wpep_refresh_token', $oauth_response_body->refresh_token );
-	update_option( 'wpep_token_expires_at', $oauth_response_body->expires_at );
+		// Skip forms that use Global Settings
+		$uses_global = get_post_meta( $form_id, 'wpep_individual_form_global', true );
+		if ( 'on' === $uses_global ) {
+			continue;
+		}
+
+		// Decide live/test mode for this form
+		$form_mode  = get_post_meta( $form_id, 'wpep_payment_mode', true ); // 'on' => live, else sandbox
+		$is_sandbox = ( 'on' === $form_mode ) ? false : true;
+
+		// Pick the right refresh token meta for the form
+		$form_refresh_token = $is_sandbox
+			? get_post_meta( $form_id, 'wpep_test_refresh_token', true )
+			: get_post_meta( $form_id, 'wpep_refresh_token', true );
+
+		if ( empty( $form_refresh_token ) ) {
+			continue;
+		}
+
+		$form_args = array(
+			'body'    => array(
+				'request_type'    => 'renew_token',
+				'refresh_token'   => $form_refresh_token,
+				'oauth_version'   => 2,
+				'app_name'        => WPEP_SQUARE_APP_NAME,
+				'sandbox_enabled' => $is_sandbox ? 'yes' : 'no',
+			),
+			'timeout' => 10,
+		);
+
+		$form_resp      = wp_remote_post( $oauth_connect_url, $form_args );
+		$form_resp_body = is_wp_error( $form_resp ) ? null : json_decode( wp_remote_retrieve_body( $form_resp ) );
+
+		if ( ! is_wp_error( $form_resp ) && ! empty( $form_resp_body->access_token ) ) {
+			if ( $is_sandbox ) {
+				update_post_meta( $form_id, 'wpep_square_test_token', sanitize_text_field( $form_resp_body->access_token ) );
+				update_post_meta( $form_id, 'wpep_test_refresh_token', $form_resp_body->refresh_token );
+				update_post_meta( $form_id, 'wpep_token_test_expires_at', $form_resp_body->expires_at );
+			} else {
+				update_post_meta( $form_id, 'wpep_live_token_upgraded', sanitize_text_field( $form_resp_body->access_token ) );
+				update_post_meta( $form_id, 'wpep_refresh_token', $form_resp_body->refresh_token );
+				update_post_meta( $form_id, 'wpep_token_expires_at', $form_resp_body->expires_at );
+			}
+		}
+
+		$form_mode_label = $is_sandbox ? 'Individual - Sandbox' : 'Individual - Live';
+		$form_response   = is_wp_error( $form_resp ) ? $form_resp->get_error_message() : wp_remote_retrieve_body( $form_resp );
+
+		// Use smart status determination based on response
+		$form_status = wpep_determine_connection_status( $form_resp, $form_resp_body );
+
+		wpep_insert_connection_log(
+			$form_mode_label,
+			$form_args['body'],
+			$form_response,
+			$form_status,
+			$form_id
+		);
+	}
+}
+
+/**
+ * Send email for log alerts.
+ *
+ * @return void
+ */
+function wpep_send_log_email_alert( $log_data ) {
+
+	require_once WPEP_ROOT_PATH . 'modules/square-logs/logs-formatting.php';
+
+	$alerts_enabled = get_option( 'logAlertEmail', 0 );
+	if ( ! $alerts_enabled ) {
+		return;
+	}
+
+	$recipient = get_option( 'my_alert_email' );
+
+	if ( empty( $recipient ) ) {
+		$recipient = get_bloginfo( 'admin_email' );
+	}
+	$headers = array(
+		'Content-Type: text/html; charset=UTF-8',
+	);
+
+	// Determine if connection is successful or failed
+	$is_success = ( isset( $log_data['status'] ) && 'Success' === $log_data['status'] );
+
+	// Determine Form ID or Global
+	$form_display = 'Global';
+	if ( ! empty( $log_data['form_id'] ) && is_numeric( $log_data['form_id'] ) ) {
+		$form_display = esc_html( $log_data['form_id'] );
+	}
+
+	// Set subject and colors based on status
+	if ( $is_success ) {
+		$subject      = 'Square Connection Alert - Connection Successful';
+		$status_color = '#F4FCF7';
+		$status_text  = 'Connection Successful';
+		$message_text = '<span style="font-weight: 600;">Your Square API connection has been established </span><br>The connection has been verified and is now active.';
+		$header_bg    = '#47B388';
+		$border_color = '#F4FCF7';
+	} else {
+		$subject      = 'Square Connection Alert - Connection Failed';
+		$status_color = '#FEF8F3';
+		$status_text  = 'Connection Failed';
+		$message_text = '<span style="font-weight: 600;">Unable to establish connection with Square API </span><br>The connection attempt failed. please review the details below.';
+		$header_bg    = '#FC605B';
+		$border_color = '#FEF8F3';
+	}
+
+	// Email body template - Success
+	if ( $is_success ) {
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
+		$request_details = print_r( wpep_format_request_body_for_display( $log_data['request'] ), true );
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
+		$response_details = print_r( wpep_format_response_body_for_display( $log_data['response'] ), true );
+		
+		// Check if user has active valid license (Pro version)
+		// Only show marketing if user doesn't have valid license (Free version)
+		$marketing_html = '';
+		if ( ! function_exists( 'wepp_fs' ) || ! wepp_fs()->has_active_valid_license() ) {
+			// phpcs:disable Generic.Formatting.MultipleStatementAlignment -- HTML string with style attributes, not PHP assignments
+			$marketing_html = '
+					<div style="margin-top:20px;padding: 20px;background: #B8D3FF4D;border-radius:8px;font-size:13px;border: 1px solid #B8D3FF4D;display: flex;">
+    					<div style="width:50%;">
+							<h2 style="color: #000645;font-weight: 600;">Upgrade to WP EasyPay Pro — Unlock 20+ Powerful Features</h2>
+							<ul style="padding: 0px 0px;list-style: none;margin: 0px;color: #000645;">
+								<li style="padding: 0px 0px 6px 0px;line-height: 20px;">
+									<img src="' . esc_url( WPEP_ROOT_URL . 'assets/backend/img/upgrade-pin.png' ) . '" alt="TickIcon" style="max-width:21px;margin:0px 3px -5px 0px;">	
+									Real-time Square Product Sync
+								</li>
+								<li style="padding: 0px 0px 6px 0px;line-height: 20px;">
+									<img src="' . esc_url( WPEP_ROOT_URL . 'assets/backend/img/upgrade-pin.png' ) . '" alt="TickIcon" style="max-width:21px;margin:0px 3px -5px 0px;">	
+									Square Gift Cards Redemption
+								</li>
+								<li style="padding: 0px 0px 6px 0px;line-height: 20px;">
+									<img src="' . esc_url( WPEP_ROOT_URL . 'assets/backend/img/upgrade-pin.png' ) . '" alt="TickIcon" style="max-width:21px;margin:0px 3px -5px 0px;">	
+									Accept Google Pay, Apply Pay, Cash App, and more.
+								</li>
+							</ul>
+							<p style="color: #000645;font-size: 12px;margin: 0px;padding: 0px 0px 6px 0px;">
+								All that for less than your monthly coffee budget. 🙂
+							</p>
+							<a href="https://wpeasypay.com/pricing?utm_source=plugin&utm_medium=payment_options" target="_blank" rel="noopener noreferrer">
+								<button type="button" style="background-color: #000645;text-decoration: none;padding: 15px 30px;margin: 6px 0px;color: white;border-radius: 25px;">
+									Upgrade Now <img src="' . esc_url( WPEP_ROOT_URL . 'assets/backend/img/arrow-icon.png' ) . '" alt="TickIcon" style="max-width:23px;margin:0px -5px -2px 5px;">
+								</button>
+							</a>
+						</div>
+						<div style="width:50%;text-align: right;">
+							<img src="' . esc_url( WPEP_ROOT_URL . 'assets/backend/img/upgrade-icon.png' ) . '" alt="TickIcon" style="max-width:90%;margin-top:12px;">
+						</div>
+					</div>';
+			// phpcs:enable
+		}
+		
+		// phpcs:disable Generic.Formatting.MultipleStatementAlignment
+		$body = '
+			<!DOCTYPE html>
+		<html>
+		<head>
+			<style>
+				@import url(\'https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap\');
+
+				@font-face {
+				font-family: \'Sora\';
+				src: url(data:font/woff2;base64,AAA....) format(\'woff2\');
+				font-weight:400;
+				font-style: normal;
+				}
+			</style>
+		</head>
+		<body>
+			<div style="max-width:750px;margin:0 auto;font-family: \'Sora\', Arial, Helvetica, sans-serif;background:#f5f7fa;padding:20px;">
+				
+				<div style="background:white;border-radius:10px;padding:25px;border:2px solid ' . $border_color . ';">
+					
+					<div style="padding-bottom:20px;margin-bottom:0px;background:' . $header_bg . ';padding:20px;border-radius:8px 8px 0 0;margin:-25px -25px 20px -25px;">
+						<table style="width:100%;font-size:14px;margin-top:10px;border-collapse:collapse;">
+							<tr>
+								<td style="color:#666;padding:8px 0;">
+									<div style="display: flex">
+										<div>
+											<img src="' . esc_url( WPEP_ROOT_URL . 'assets/backend/img/header-white-icon.png' ) . '" alt="TickIcon" style="max-width: 40px;margin: 5px 10px;">
+										</div>
+										<div>
+											<h2 style="color:' . $status_color . ';margin:0;font-size:18px;font-weight:600;">Square Connection Alert</h2>
+											<p style="color:' . $status_color . ';margin:0px 0px;font-size:15px;font-weight:500;">' . $status_text . '</p>
+										</div>
+									</div>
+								</td>
+								<td style="color:#000;font-weight:600;padding:8px 0;">
+								<img src="' . esc_url( WPEP_ROOT_URL . 'assets/backend/img/white-logo.png' ) . '" alt="WP EasyPay" style="filter: brightness(999);max-width:140px;margin-bottom:10px;">
+								</td>
+							</tr>
+						</table>
+					</div>
+					<div style="padding: 10px 10px;background: #F4FCF7;">
+						<p style="font-size:14px;color:#444;line-height:1.6">
+												' . $message_text . '
+						</p>
+					</div>
+					<h3 style="font-size:16px;margin-top:25px;color:#222;">Connection Details</h3>
+
+					<table style="width:100%;font-size:14px;margin-top:10px;border-collapse:collapse;">
+						<tr>
+							<td style="color:#666;padding:8px 0;">Square Mode:</td>
+							<td style="color:#000;font-weight:600;padding:8px 0;text-align:center;">
+								<span style="border: 1px solid black;padding: 7px 15px;border-radius: 30px;font-size: 13px;">
+								' . esc_html( $log_data['mode'] ) . '
+								</span>
+							</td>
+						</tr>
+						<tr>
+							<td style="color:#666;padding:8px 0;">Form ID:</td>
+							<td style="color:#000;font-weight:600;padding:8px 0;text-align:center;">' . $form_display . '</td>
+						</tr>
+						<tr>
+							<td style="color:#666;padding:8px 0;">Date & Time:</td>
+							<td style="color:#000;font-weight:600;padding:8px 0;text-align:center;">' . esc_html( $log_data['datetime'] ) . '</td>
+						</tr>
+						<tr>
+							<td style="color:#666;padding:8px 0;">Connection Status:</td>
+							<td style="color:' . $header_bg . ';font-weight:600;padding:8px 0;text-align: center;">
+							<img src="' . esc_url( WPEP_ROOT_URL . 'assets/backend/img/green-icon.png' ) . '" alt="TickIcon" style="max-width: 23px; margin: 0px 3px -3px 0px;"> Connected
+							</td>
+						</tr>
+					</table>
+
+					' . $marketing_html . '
+				</div>
+			</div>
+			</body>
+			</html>
+		';
+		// phpcs:enable
+	} else {
+		// Email body template - Failed
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
+		$request_details = print_r( wpep_format_request_body_for_display( $log_data['request'] ), true );
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
+		$response_details = print_r( wpep_format_response_body_for_display( $log_data['response'] ), true );
+		// phpcs:disable Generic.Formatting.MultipleStatementAlignment
+		$body = '
+			<!DOCTYPE html>
+		<html>
+		<head>
+			<style>
+				@import url(\'https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap\');
+
+				@font-face {
+				font-family: \'Sora\';
+				src: url(data:font/woff2;base64,AAA....) format(\'woff2\');
+				font-weight:400;
+				font-style: normal;
+				}
+			</style>
+		</head>
+		<body>
+			<div style="max-width:750px;margin:0 auto;font-family: \'Sora\', Arial, Helvetica, sans-serif;background:#f5f7fa;padding:20px;">
+				
+				<div style="background:white;border-radius:10px;padding:25px;border:2px solid ' . $border_color . ';">
+					
+					<div style="padding-bottom:20px;margin-bottom:0px;background:' . $header_bg . ';padding:20px;border-radius:8px 8px 0 0;margin:-25px -25px 20px -25px;">
+						<table style="width:100%;font-size:14px;margin-top:10px;border-collapse:collapse;">
+							<tr>
+								<td style="color:#666;padding:8px 0;">
+									<div style="display: flex">
+										<div>
+											<img src="' . esc_url( WPEP_ROOT_URL . 'assets/backend/img/header-white-icon.png' ) . '" alt="TickIcon" style="max-width: 40px;margin: 5px 10px;">
+										</div>
+										<div>
+											<h2 style="color:' . $status_color . ';margin:0;font-size:18px;font-weight:600;">Square Connection Alert</h2>
+											<p style="color:' . $status_color . ';margin:0px 0px;font-size:15px;font-weight:500;">' . $status_text . '</p>
+										</div>
+									</div>
+								</td>
+								<td style="color:#000;font-weight:600;padding:8px 0;">
+								<img src="' . esc_url( WPEP_ROOT_URL . 'assets/backend/img/white-logo.png' ) . '" alt="WP EasyPay" style="filter: brightness(999);max-width:140px;margin-bottom:10px;">
+								</td>
+							</tr>
+						</table>
+					</div>
+					<div style="padding: 10px 10px;background: #FEF8F3;">
+						<p style="font-size:14px;color:#444;line-height:1.6">
+												' . $message_text . '
+						</p>
+					</div>
+					<h3 style="font-size:16px;margin-top:25px;color:#222;">Connection Details</h3>
+
+					<table style="width:100%;font-size:14px;margin-top:10px;border-collapse:collapse;">
+						<tr>
+							<td style="color:#666;padding:8px 0;">Square Mode:</td>
+							<td style="color:#000;font-weight:600;padding:8px 0;text-align:center;">
+								<span style="border: 1px solid black;padding: 7px 15px;border-radius: 30px;font-size: 13px;">
+								' . esc_html( $log_data['mode'] ) . '
+								</span>
+							</td>
+						</tr>
+						<tr>
+							<td style="color:#666;padding:8px 0;">Form ID:</td>
+							<td style="color:#000;font-weight:600;padding:8px 0;text-align:center;">' . $form_display . '</td>
+						</tr>
+						<tr>
+							<td style="color:#666;padding:8px 0;">Date & Time:</td>
+							<td style="color:#000;font-weight:600;padding:8px 0;text-align:center;">' . esc_html( $log_data['datetime'] ) . '</td>
+						</tr>
+						<tr>
+							<td style="color:#666;padding:8px 0;">Connection Status:</td>
+							<td style="color:' . $header_bg . ';font-weight:600;padding:8px 0;text-align: center;">
+							<img src="' . esc_url( WPEP_ROOT_URL . 'assets/backend/img/cross-red.png' ) . '" alt="TickIcon" style="max-width: 21px;margin: 0px 3px -5px 0px;"> Disconnected
+							</td>
+						</tr>
+					</table>
+
+					<div style="margin-top:20px;padding: 20px;background: #FFF0EA;border-radius:8px;font-size:13px;">
+						<ul style="padding: 0px 0px;list-style: none;margin: 0px;color: #000645;">
+							<li style="padding: 0px 0px 6px 0px;line-height: 20px;">
+								<div style="display: flex;">
+									<img src="' . esc_url( WPEP_ROOT_URL . 'assets/backend/img/action-icon.png' ) . '" alt="ActionIcon" style="max-width: 30px;max-height: 30px;margin: 0px 5px 0px 0px;">
+									<h2 style="color: #3E4348;font-weight: 600;margin: 5px 5px;">Action Required</h2>	
+								</div>
+								<ul>
+									<li style="padding: 10px 0px 5px 0px;font-size: 15px;">Verify your Square API Credentials</li>
+									<li style="padding: 5px 0px;font-size: 15px;">
+										Try reconnecting Square. 
+										<a href="https://wpeasypay.com/documentation/free-version-documentation/connect-square-account/" target="_blank" style="color:#A61B1B;text-decoration: underline;">How to reconnect Square with WP Easy Pay</a>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+
+				</div>
+			</div>
+			</body>
+			</html>
+		';
+		// phpcs:enable
+	}
+
+	wp_mail( $recipient, $subject, $body, $headers );
+}
+
+/**
+ * Inserts Connection log in table.
+ *
+ * @return void
+ */
+function wpep_insert_connection_log( $mode, $request, $response, $status, $form_id = null ) {
+
+	$log_data = array(
+		'mode'     => $mode,
+		'datetime' => current_time( 'mysql' ),
+		'status'   => $status,
+		'request'  => $request,
+		'response' => $response,
+		'form_id'  => $form_id,
+	);
+
+	wpep_send_log_email_alert( $log_data );
+
+	global $wpdb;
+	$wpep_log_table_name = $wpdb->prefix . 'wpep_square_logs';
+
+	$wpdb->insert(
+		$wpep_log_table_name,
+		array(
+			'mode'     => $mode,
+			'datetime' => current_time( 'mysql' ),
+			'request'  => maybe_serialize( $request ),
+			'response' => maybe_serialize( $response ),
+			'status'   => $status,
+			'form_id'  => $form_id,
+		),
+		array( '%s', '%s', '%s', '%s', '%s' )
+	);
+}
+
+/**
+ * Smartly determine connection status based on API response
+ *
+ * @param mixed $response WP_Error or array response from wp_remote_post
+ * @param mixed $response_body Decoded JSON response body (object or array)
+ * @return string 'Success' or 'Failed'
+ */
+function wpep_determine_connection_status( $response, $response_body = null ) {
+
+	// Check for WP_Error first
+	if ( is_wp_error( $response ) ) {
+		return 'Failed';
+	}
+
+	// Get HTTP response code
+	$response_code = wp_remote_retrieve_response_code( $response );
+
+	// Check for HTTP error codes (4xx, 5xx are failures)
+	if ( $response_code >= 400 ) {
+		return 'Failed';
+	}
+
+	// If response body is not provided, try to decode it
+	if ( is_null( $response_body ) ) {
+		$response_raw = wp_remote_retrieve_body( $response );
+		// Check if response is empty
+		if ( empty( $response_raw ) ) {
+			return 'Failed';
+		}
+		$response_body = json_decode( $response_raw );
+		// Check if JSON decode failed
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			return 'Failed';
+		}
+	}
+
+	// If response_body is still null after decoding, it's a failure
+	if ( is_null( $response_body ) ) {
+		return 'Failed';
+	}
+
+	// List of error codes that indicate disconnection
+	$error_codes = array(
+		'UNAUTHORIZED',
+		'ACCESS_TOKEN_REVOKED',
+		'INVALID_ACCESS_TOKEN',
+		'EXPIRED_TOKEN',
+		'INVALID_REFRESH_TOKEN',
+		'REFRESH_TOKEN_EXPIRED',
+		'BAD_REQUEST',
+		'FORBIDDEN',
+		'NOT_FOUND',
+	);
+
+	// Check if response body has errors (handle both object and array formats)
+	if ( is_object( $response_body ) ) {
+		// Check for errors array in object - ANY error means failure
+		if ( isset( $response_body->errors ) && is_array( $response_body->errors ) && ! empty( $response_body->errors ) ) {
+			foreach ( $response_body->errors as $error ) {
+				if ( is_object( $error ) && isset( $error->code ) ) {
+					// If it's a known error code, definitely failed
+					if ( in_array( $error->code, $error_codes, true ) ) {
+						return 'Failed';
+					}
+					// Even if not in our list, if there's an error code, it's likely a failure
+					if ( ! empty( $error->code ) ) {
+						return 'Failed';
+					}
+				} elseif ( is_array( $error ) && isset( $error['code'] ) ) {
+					if ( in_array( $error['code'], $error_codes, true ) ) {
+						return 'Failed';
+					}
+					if ( ! empty( $error['code'] ) ) {
+						return 'Failed';
+					}
+				}
+			}
+		}
+
+		// Check for direct error code in object
+		if ( isset( $response_body->code ) && ! empty( $response_body->code ) ) {
+			if ( in_array( $response_body->code, $error_codes, true ) ) {
+				return 'Failed';
+			}
+			// Any error code means failure
+			return 'Failed';
+		}
+
+		// Check for error message (indicates failure)
+		if ( isset( $response_body->error ) || isset( $response_body->message ) ) {
+			// If there's an error or message field and no access_token, it's likely a failure
+			if ( ! isset( $response_body->access_token ) ) {
+				return 'Failed';
+			}
+		}
+
+		// Check if access_token exists (successful token refresh)
+		if ( isset( $response_body->access_token ) && ! empty( $response_body->access_token ) ) {
+			return 'Success';
+		}
+	} elseif ( is_array( $response_body ) ) {
+		// Check for errors array - ANY error means failure
+		if ( isset( $response_body['errors'] ) && is_array( $response_body['errors'] ) && ! empty( $response_body['errors'] ) ) {
+			foreach ( $response_body['errors'] as $error ) {
+				if ( isset( $error['code'] ) ) {
+					if ( in_array( $error['code'], $error_codes, true ) ) {
+						return 'Failed';
+					}
+					// Even if not in our list, if there's an error code, it's likely a failure
+					if ( ! empty( $error['code'] ) ) {
+						return 'Failed';
+					}
+				}
+			}
+		}
+
+		// Check for direct error code
+		if ( isset( $response_body['code'] ) && ! empty( $response_body['code'] ) ) {
+			if ( in_array( $response_body['code'], $error_codes, true ) ) {
+				return 'Failed';
+			}
+			// Any error code means failure
+			return 'Failed';
+		}
+
+		// Check for error message (indicates failure)
+		if ( isset( $response_body['error'] ) || isset( $response_body['message'] ) ) {
+			// If there's an error or message field and no access_token, it's likely a failure
+			if ( ! isset( $response_body['access_token'] ) ) {
+				return 'Failed';
+			}
+		}
+
+		// Check if access_token exists (successful token refresh)
+		if ( isset( $response_body['access_token'] ) && ! empty( $response_body['access_token'] ) ) {
+			return 'Success';
+		}
+	}
+
+	// If we got here and response code is 200, check if we have access_token
+	// If no access_token in 200 response, it might still be a failure
+	if ( 200 === $response_code ) {
+		// If response is empty or doesn't have access_token, it's suspicious
+		if ( empty( $response_body ) ) {
+			return 'Failed';
+		}
+		// If we have a 200 but no access_token, default to success (might be other API responses)
+		return 'Success';
+	}
+
+	// Default to failed if we can't determine
+	return 'Failed';
 }
 
 /**

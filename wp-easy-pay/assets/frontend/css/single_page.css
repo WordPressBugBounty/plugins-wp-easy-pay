@@ -51,6 +51,7 @@ input[type="number"] {
 
 .singlepage label {
   font-weight: normal;
+  font-family: 'Figtree';
 }
 
 .singlepage a:hover,
@@ -124,12 +125,13 @@ ol {
 
 .singlepage .s_ft h2 {
   font-size: 20px;
-  font-weight: 400;
-  margin: 0px 0px 20px 0px;
+ font-weight: 500;
+    margin: 0px 0px 10px 0px;
   padding: 0px;
   letter-spacing: normal;
   text-transform: none;
   color: #333 !important;
+  font-family: 'Figtree';
 }
 
 .singlepage .s_ft h2::before {
@@ -239,7 +241,7 @@ ol {
   margin: 0 15px;
   display: inline-block;
   color: #333 !important;
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .singlepage .form-wizard .form-wizard-header {
@@ -264,6 +266,7 @@ ol {
   text-decoration: none !important;
   cursor: pointer;
   border: 1px solid var(--wpep-theme-color);
+  font-family: 'Figtree';
 }
 
 .singlepage .form-wizard .form-wizard-next-btn:hover, .singlepage .form-wizard .form-wizard-next-btn:focus, .singlepage .form-wizard .form-wizard-next-btn:active,
@@ -283,6 +286,7 @@ ol {
   box-shadow: none;
   outline: none;
   border: 1px solid var(--wpep-theme-color);
+  font-family: 'Figtree';
 }
 
 .singlepage .form-wizard-next-btn small {
@@ -318,18 +322,18 @@ ol {
   font-weight: 400;
   padding: 0px 15px;
   color: #2f2f37;
-  background-color: #fff;
+  background-color: #F1F3F5;
   border: none;
   width: 100%;
   max-width: 100%;
   height: 40px;
   line-height: 40px;
-  border: 1px solid #b3b3b3;
   border-radius: 4px;
   font-size: 14px;
   box-shadow: none;
   margin: 0px;
   min-height: 100%;
+  font-family: 'Figtree';
 }
 
 .singlepage .form-wizard .form-control:focus {
@@ -356,7 +360,7 @@ ol {
   top: 9.5px;
   transition: 0.2s linear all;
   font-size: 15px;
-  color: #2f2f37 !important;
+  color: #848D99;
   padding: 0px;
   margin: 0px;
   pointer-events: none;
@@ -364,6 +368,7 @@ ol {
   font-size: 14px;
   line-height: normal;
   z-index: 1;
+  font-family: 'Figtree';
 }
 
 .singlepage .form-wizard .focus-input .wizard-form-text-label {
@@ -622,6 +627,12 @@ ol {
 
 .singlepage label.paynow::before:hover {
   color: #fff;
+  
+}
+label.subscrition_cycle_label {
+    font-family: 'Figtree';
+    font-weight: 600;
+    font-size: 20px;
 }
 
 .singlepage .shopping-cart {
@@ -832,11 +843,13 @@ ol {
   border: none;
   box-shadow: none;
   padding: 0px;
+  font-family: 'Figtree';
 }
 
 @media screen and (max-width: 767px) {
   .singlepage .basket-tbl .headCol.pCost .form-control-em {
 	text-align: center;
+  font-family: 'Figtree';
   }
 }
 
@@ -927,6 +940,7 @@ ol {
   box-shadow: none;
   border: none;
   padding: 0px;
+  font-family: 'Figtree';
 }
 
 .singlepage .basket-tbl .pQty .btnqty[class*="btn"] i {
@@ -1018,6 +1032,7 @@ ol {
 
 .singlepage .wpItem:last-child {
   border: none;
+  font-family: 'Figtree';
 }
 
 .singlepage .headCol.pReset {
@@ -1285,6 +1300,8 @@ ol {
   border-top: 2px solid #efefef;
   display: block;
   width: 100%;
+background-color: #fbfbfb;
+
 }
 
 .singlepage ul.wpep_tabs li {
@@ -1296,15 +1313,16 @@ ol {
   cursor: pointer;
   position: relative;
   vertical-align: top;
+  font-family: 'Figtree';
 }
 
 .singlepage ul.wpep_tabs li img {
-  -moz-filter: grayscale(100%);
-  filter: grayscale(100%);
-  opacity: 0.4;
+  -moz-filter: grayscale(0%);
+  filter: grayscale(0%);
+  opacity: 1;
   transition: all 0.5s ease;
   vertical-align: middle;
-  width: 28px;
+  width: 20px;
   margin: 0px;
   padding: 0px;
   height: auto;
@@ -1320,8 +1338,9 @@ ol {
 }
 
 .singlepage ul.wpep_tabs li.current {
-  background: #fbfbfb;
+  background: #F1F3F5;
   pointer-events: none;
+  font-family: 'Figtree';
 }
 
 .singlepage ul.wpep_tabs li.current img {
@@ -1329,10 +1348,12 @@ ol {
   filter: grayscale(0%);
   opacity: 1;
   vertical-align: middle;
+      width: 20px;
 }
 
 .singlepage ul.wpep_tabs li span {
   vertical-align: middle;
+  font-family: 'Figtree';
 }
 
 .singlepage ul.wpep_tabs li::before {
@@ -1358,7 +1379,7 @@ ol {
 
 .singlepage .tab-content {
   display: none;
-  background: #fbfbfb;
+  background: #F1F3F5;
   padding: 25px 18px 18px 18px;
   margin-bottom: 15px;
 }
@@ -1507,6 +1528,7 @@ ol {
   padding: 0px 0px 10px 0px;
   display: block;
   color: #333 !important;
+  font-size: 12px;
 }
 
 .singlepage .subscriptionPlan {
@@ -1583,6 +1605,7 @@ ol {
   pointer-events: none !important;
   opacity: 0.75 !important;
   text-decoration: none !important;
+  font-family: 'Figtree';
 }
 
 .singlepage .wpep-alert {
@@ -1842,13 +1865,14 @@ label[data-label-show="no"] {
 	display: block;
   }
   .singlepage .listingHeadWrap {
-	background: #f9f9f9;
+	background: #F1F3F5;
 	padding: 20px 20px;
   }
   .singlepage .listingHead {
 	display: table;
 	font-size: 15px;
 	width: 100%;
+  font-family: 'Figtree';
   }
   .singlepage .listingHead .headCol.pPrice {
 	width: 70px;
@@ -1931,6 +1955,7 @@ label[data-label-show="no"] {
 	background: transparent;
 	border: none;
 	box-shadow: none;
+  font-family: 'Figtree';
   }
 }
 
@@ -2752,6 +2777,7 @@ button.wpep_coupon_remove_btn {
   flex-wrap: wrap; /* Ensures wrapping on smaller screens */
   justify-content: center; /* Center align in small screens */
   text-align: center;
+  font-family: 'Figtree';
 }
 
 /* Main Text */
@@ -2817,6 +2843,7 @@ span.valueCheckWpep {
     color: #ff0000;
     font-size: 12px;
 }
+
 span.couponAmountError {
     color: #ff0000;
     font-size: 12px;

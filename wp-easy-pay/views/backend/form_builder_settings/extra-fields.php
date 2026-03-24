@@ -10,52 +10,60 @@ $form_fields = get_post_meta( get_the_ID(), 'wpep_square_form_builder_fields', t
 ?>
 
 <main>
-	<div class="contentBody">
-		<div class="custom_container_body">
-			<div class="custom_img">
-				<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/cutom_fields.png' ); ?>" class="wpep_logo">
+	<div class="MainDiv">
+		<div class="FieldProTag pro_tag">
+			<h3 class="FieldHeading">Extra Fields</h3>
+			<span class="pro_tag" id="pro_tag">Pro</span>
+		</div>
+		<div class="FieldImg pro_tag">
+			<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/extra-fields.png' ); ?>">
+		</div>
+	</div>	
+</main>
+<div id="pre-popupModal" class="pre-modal">
+	<div class="pre-modal-content">
+		<span class="pre-close">&times;</span>
+		<div class="premium_popup_content">
+			<div class="wp_easypay_logo">
+				<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/Logo_white.png' ); ?>" class="wpep_logo">
 			</div>
-			<div class="custom_content">
-				<h2 class="custom_heading">Custom Fields</h2>
-				<p class="custom_text">Tailor your checkout process with WP EasyPay’s Extra Field/Additional charges feature. Collect specific customer information through customizable fields and enhance your revenue system.</p>
-				<div class="custom_button_div">
-					<a href="https://wpeasypay.com/pricing/?utm_source=plugin&utm_medium=customization_charges" class="custom_button">
-						Upgrade to Premium
-					</a>
+			<h3 class="proPopHeading">Enhance Your Square Payment Forms With Premium Features.</h3>
+			<div class="featuresListPopup">
+				<div class="row">
+					<div class="col-6">
+						<ul>
+							<li><img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/popup-tick.png' ); ?>" class="" /> 
+								<p>5+ Digital Wallets</p>
+							</li>
+							<li><img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/popup-tick.png' ); ?>" class="" /> 
+								<p>Square Product Sync</p>
+							</li>
+						</ul>
+					</div>
+					<div class="col-6">
+						<ul>	
+							<li><img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/popup-tick.png' ); ?>" class="" /> 
+								<p>Square Gift Card</p>
+							</li>
+							<li><img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/popup-tick.png' ); ?>" class="" /> 
+								<p>Manage Subscriptions</p>
+							</li>
+						</ul>
+					</div>
 				</div>
 			</div>
-		</div>
-		<div class="custom_container_body">
-			<div class="custom_content">
-				<h2 class="custom_heading">Additional Charges</h2>
-				<ul class="custom_square-list">
-					<li>Tailor the checkout process to your specific needs by adding extra fields</li>
-					<li>Multiple fields are available to create forms that fit all industries</li>
-					<li>Boost revenue with ease by implementing additional charges for premium services</li>
-					<li>Provide a personalized and efficient purchasing experience.</li>
-				</ul>
-			</div>
-			<div class="custom_img">
-				<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/additional_charges.png' ); ?>" class="wpep_logo">
-			</div>
-		</div>
-	</div>
-	<div class="contentFooter">
-		<div class="custom_footer_container">
-			<div class="custom_footer_table_text">
-				<p>Upgrade to <strong>WP EasyPay Premium</strong> for enhanced features and unparalleled convenience</p>
-			</div>
-			<div class="custom_footer_table_button">
-				<a href="https://wpeasypay.com/pricing/?utm_source=plugin&utm_medium=customization_charges" class="custom_footer_button">
-						Upgrade to Premium
+			<div class="integration_button_div">
+				<a href="https://wpeasypay.com/pricing?utm_source=plugin&utm_medium=extra_fields" target="_blank" rel="noopener noreferrer" class="wpep-no-save-popup">
+					<button type="button" class="upgradeBtn">
+						Upgrade Now <img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/upgrade-btn-arrow.png' ); ?>" class="" /> 
+					</button>
 				</a>
 			</div>
 		</div>
 	</div>
+</div>
 <input type="hidden" id="wpep_form_builder_json" name="wpep_square_form_builder_fields"
 			value='<?php echo esc_attr( $form_fields ); ?>'>
-</main>
-
 <style>
 	.form-wrap.form-builder .frmb-control li {
 		margin: 0px 0px -2px 0;

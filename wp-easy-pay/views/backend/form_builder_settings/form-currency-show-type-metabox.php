@@ -9,7 +9,7 @@
 $currency_symbol_type = ! empty( get_post_meta( get_the_ID(), 'currencySymbolType', true ) ) ? get_post_meta( get_the_ID(), 'currencySymbolType', true ) : 'code';
 ?>
 
-<div class="form-group">
+<div class="">
 	<label for="code">
 		<input type="radio" class="currencySymbolType" name="currencySymbolType" id="code"
 				value="code" 
@@ -18,7 +18,7 @@ $currency_symbol_type = ! empty( get_post_meta( get_the_ID(), 'currencySymbolTyp
 					echo 'checked';
 endif;
 				?>
-				> Currency Code (e.x:
+				> Currency code (e.x:
 		USD)
 	</label><br><br>
 
@@ -30,7 +30,7 @@ endif;
 					echo 'checked';
 endif;
 				?>
-				> Currency Symbol
+				> Currency symbol
 		(e.x: $)
 	</label>
 	</label><br><br>

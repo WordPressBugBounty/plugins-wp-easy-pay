@@ -112,18 +112,36 @@
 					"text-align": 'center'
 				};
 				var divStyle             = {
-					"margin-bottom": "40px"
+					"margin-bottom": "15px"
 				};
 				var wpep_logo            = {
-					filter: "grayscale(100%)",
 					width: "250px"
 				};
+				var wpep_select          = {
+					width: "50%",
+					"font-size": "14px",
+					border: "1px solid #dbdbdb",
+					padding: "5px 15px",
+					"font-family": "Figtree"
+				};
+				var pluginUrl            = typeof wpep_data !== 'undefined' && wpep_data.plugin_url ? wpep_data.plugin_url : '';
+				var wpep_icon            = pluginUrl ? pluginUrl + 'assets/backend/img/wpep-logo-pro.png' : null;
+				var wpep_icon_element    = wpep_icon ? wp.element.createElement(
+					"img",
+					{
+						src: wpep_icon,
+						style: {
+							width: '60px',
+							height: '15px'
+						}
+					}
+				) : 'format-aside';
 				registerBlockType(
 					'wpep/shortcode',
 					{
-						title: 'WPEasyPay Form',
+						title: 'WP Easy Pay Form',
 						description: 'Block to add WP EASY PAY shortcode to the page',
-						icon: 'format-aside',
+						icon: wpep_icon_element,
 						category: 'layout',
 						attributes: {
 							type: {
@@ -131,7 +149,7 @@
 							}
 						},
 						edit: function edit(props) {
-							var p       = wpep_forms.forms;
+							var p       = typeof wpep_forms !== 'undefined' && wpep_forms.forms ? wpep_forms.forms : [];
 							var options = [];
 							options.push(
 								Object( _wordpress_element__WEBPACK_IMPORTED_MODULE_0__["createElement"] )(
@@ -184,6 +202,8 @@
 										);
 							}
 
+							var logoSrc = pluginUrl ? pluginUrl + 'assets/backend/img/wpep-logo-pro.png' : '';
+
 							return Object( _wordpress_element__WEBPACK_IMPORTED_MODULE_0__["createElement"] )(
 								"div",
 								{
@@ -198,7 +218,7 @@
 										"img",
 										{
 											style: wpep_logo,
-											src: 'https://wpeasypay.com/wp-content/uploads/2019/12/Group-270@2x.png'
+											src: logoSrc
 										}
 									),
 									" "
@@ -210,6 +230,7 @@
 									Object( _wordpress_element__WEBPACK_IMPORTED_MODULE_0__["createElement"] )(
 										"select",
 										{
+											style: wpep_select,
 											onChange: wpep_shortcode_change
 										},
 										" ",

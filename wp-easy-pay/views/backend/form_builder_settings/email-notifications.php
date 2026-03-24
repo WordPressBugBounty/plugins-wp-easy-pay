@@ -42,21 +42,22 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 <main>
 	<div class="notificationsWrap clearfix">
 		<div class="notificationTitle">
+			<h3 class="FieldHeading">Notifications</h3><br>
 			<span class="titleTags">Default mail tags</span>
 			<p>
 
 				<span>
-					Transaction ID:
+					Transaction id:
 					<small class="wpep_tags"> [transaction_id] </small>
 				</span>
 
 				<span>
-					First Name:
+					First name:
 					<small class="wpep_tags"> [first_name] </small>
 				</span>
 
 				<span>
-					Last Name:
+					Last name:
 					<small class="wpep_tags"> [last_name] </small>
 				</span>
 				<span>
@@ -65,9 +66,9 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 				</span>
 				<span>
 					Amount:
-				<span>
 					<small class="wpep_tags"> [line_items] </small>
 				</span>
+				<span>
 					<small class="wpep_tags"> [total_amount] </small>
 				</span>
 			</p>
@@ -84,19 +85,19 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 	<div class="clearfix">
 		<ul class="accordion">
 			<li>
-				<a class="toggle" href="#">Admin Email Template
-					<i class="fa fa-chevron-right" aria-hidden="true"></i></a>
+				<a class="toggle" href="#">Admin email template
+					<i class="fa fa-chevron-down" aria-hidden="true"></i></a>
 				<div class="inner">
 					<div class="form-group">
 						<label>To:</label>
 						<input type="email" class="form-control" value="<?php echo esc_attr( $wpep_square_admin_email_to_field ); ?>"
-								name="wpep_square_admin_email_to_field" placeholder="examaple@mail.com"/>
+								name="wpep_square_admin_email_to_field" placeholder="example@mail.com"/>
 					</div>
 
 					<div class="form-group">
 						<label>CC:</label>
 						<input type="email" class="form-control" value="<?php echo esc_attr( $wpep_square_admin_email_cc_field ); ?>"
-								name="wpep_square_admin_email_cc_field" placeholder="examaple@mail.com"/>
+								name="wpep_square_admin_email_cc_field" placeholder="example@mail.com"/>
 
 					</div>
 
@@ -104,7 +105,7 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 						<label>BCC:</label>
 						<input type="email" class="form-control"
 								value="<?php echo esc_attr( $wpep_square_admin_email_bcc_field ); ?>"
-								name="wpep_square_admin_email_bcc_field" placeholder="examaple@mail.com"/>
+								name="wpep_square_admin_email_bcc_field" placeholder="example@mail.com"/>
 
 					</div>
 
@@ -125,7 +126,7 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 					</div>
 
 					<div class="form-group">
-						<label>Message Body:</label>
+						<label>Message body:</label>
 						<textarea id="admin_email" type="text" class="form-control form-control-longtext"
 									placeholder="Please Enter Message" name="wpep_square_admin_email_content_field"
 									style="line-height:1.5"><?php echo '<pre>' . esc_html( $wpep_square_admin_email_content_field ) . '</pre>'; ?></textarea>
@@ -133,19 +134,22 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 					</div>
 
 					<div class="form-group">
-						<label for="exclude">
-							<input type="checkbox" id="exclude"
-									name="wpep_square_admin_email_exclude_blank_tags_lines" 
-									<?php
-									if ( 'on' === $wpep_square_admin_email_exclude_blank_tags_lines ) {
-										echo 'checked';
-									}
-									?>
-							>
-							Exclude lines with blank mail-tags from output
-						</label>
+						<div class="wizard-form-checkbox">
+							
+								<input type="checkbox" id="exclude"
+										name="wpep_square_admin_email_exclude_blank_tags_lines" 
+										<?php
+										if ( 'on' === $wpep_square_admin_email_exclude_blank_tags_lines ) {
+											echo 'checked';
+										}
+										?>
+								>
+							<label for="exclude">	Exclude lines with blank mail-tags from output
+							</label>
+						</div>
 						<br/>
-						<label for="htmltype">
+						<div class="wizard-form-checkbox">
+						
 							<input type="checkbox" id="htmltype"
 									value="<?php echo ! empty( $wpep_square_admin_email_content_type_html ) ? esc_html( $wpep_square_admin_email_content_type_html ) : 'on'; ?>"
 									name="wpep_square_admin_email_content_type_html" 
@@ -155,15 +159,17 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 									}
 									?>
 							>
-							Use HTML content type
-						</label>
+							<label for="htmltype">Use HTML content type
+							</label>
+							
+						</div>
 					</div>
 				</div>
 			</li>
 
 			<li>
-				<a class="toggle" href="#">User Email Template
-					<i class="fa fa-chevron-right" aria-hidden="true"></i></a>
+				<a class="toggle" href="#">User email template
+					<i class="fa fa-chevron-down" aria-hidden="true"></i></a>
 				<div class="inner">
 					<div class="form-group">
 						<label>From:</label>
@@ -182,7 +188,7 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 					</div>
 
 					<div class="form-group">
-						<label>Message Body:</label>
+						<label>Message body:</label>
 						<textarea id="user_email" type="text" class="form-control form-control-longtext"
 									placeholder="Please Enter Message" name="wpep_square_user_email_content_field"
 									style="line-height:1.5"> <?php echo '<pre>' . esc_html( $wpep_square_user_email_content_field ) . '</pre>'; ?> </textarea>
@@ -200,7 +206,7 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 									?>
 							>
 							Exclude lines with blank mail-tags from output
-						</label>
+							</label>
 						<br/>
 						<label for="htmltype">
 							<input type="checkbox" name="wpep_square_user_email_content_type_html"
@@ -212,15 +218,17 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 									?>
 							>
 							Use HTML content type
-						</label>
+							</label>
 					</div>
+
 				</div>
 			</li>
+			
 			<?php $statement = false; ?>
 			<?php if ( $statement ) { ?>
 				<li>
-					<a class="toggle" href="#">Email Summary Report for Admin
-						<i class="fa fa-chevron-right" aria-hidden="true"></i></a>
+					<a class="toggle" href="#">Email summary report for admin
+						<i class="fa fa-chevron-down" aria-hidden="true"></i></a>
 					<div class="inner">
 						<div class="form-group">
 							<label for="exclude"> Enable
@@ -232,18 +240,18 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 										}
 										?>
 								>
-								Get a Payment Summary Report for Your Website
+								Get a payment summary report for your website
 							</label>
 						</div>
 
 						<div class="form-group">
-							<label>Email To:</label>
+							<label>Email to:</label>
 							<input type="email" class="form-control" value="<?php echo esc_attr( $wpep_square_summary_email_to_field ); ?>"
 									name="wpep_square_summary_email_to_field" placeholder="examaple@mail.com"/>
 						</div>
 
 						<div class="form-group">
-							<label>Email From:</label>
+							<label>Email from:</label>
 							<input type="email" class="form-control"
 									value="<?php echo esc_attr( $wpep_square_summary_email_from_field ); ?>"
 									name="wpep_square_summary_email_from_field" placeholder="example@mail.com"/>
@@ -251,14 +259,14 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 						</div>
 
 						<div class="form-group">
-							<label>Email Subject:</label>
+							<label>Email subject:</label>
 							<input type="text" class="form-control"
 									value="<?php echo esc_attr( $wpep_square_summary_email_subject_field ); ?>"
 									name="wpep_square_summary_email_subject_field" placeholder="Please Enter subject"/>
 
 						</div>
 						<div class="form-group">
-							<label>Choose the Frequency:</label>
+							<label>Choose the frequency:</label>
 							<div>
 							<input type="radio" id="wpep_weekly_frequency" name="wpep_square_summary_email_frequency_field" value="weekly" 
 							<?php echo 'weekly' === $wpep_square_summary_email_frequency_field ? 'checked' : ''; ?>

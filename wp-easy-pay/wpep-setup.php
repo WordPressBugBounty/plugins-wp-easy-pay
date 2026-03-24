@@ -22,6 +22,9 @@ add_action( 'post_edit_form_tag', 'wpep_post_edit_form_tag' );
 add_action( 'wp_ajax_wpep_reset_donation_goal', 'wpep_reset_donation_goal' );
 add_filter( 'cron_schedules', 'wpep_email_payment_summary_cron_schedules' );
 add_action( 'wpep_email_payment_summary_cron_job_hook', 'wpep_email_payment_summary_cron_job' );
+add_action( 'wp_ajax_wpep_restore_confirm', 'funct_wpep_restore_confirm' );
+add_action( 'wp_ajax_wpep_delete_confirm', 'funct_wpep_delete_confirm' );
+add_action( 'wp_ajax_wpep_draft_confirm', 'funct_wpep_draft_confirm' );
 
 
 $post_custom = $_POST; // phpcs:ignore
@@ -81,13 +84,13 @@ function wpep_email_payment_summary_cron_schedules( $schedules ) {
 	// Add a weekly interval.
 	$schedules['weekly'] = array(
 		'interval' => 604800, // 1 week in seconds.
-		'display'  => __( 'Once Weekly' ),
+		'display' => __( 'Once Weekly' ),
 	);
 
 	// Add a monthly interval.
 	$schedules['monthly'] = array(
 		'interval' => 2635200, // 1 month in seconds (30.44 days).
-		'display'  => __( 'Once Monthly' ),
+		'display' => __( 'Once Monthly' ),
 	);
 
 	return $schedules;
@@ -258,12 +261,20 @@ if ( ! function_exists( 'wpep_add_submenu' ) ) {
 			'manage_options',           // Capability.
 			'edit.php?post_type=wpep_reports'   // Menu slug (link to custom post type).
 		);
+		add_submenu_page(
+			'edit.php?post_type=wp_easy_pay',    // Parent slug
+			__('Square Connection Logs', 'wp_easy_pay'),    // Page title
+			__('Square Logs', 'wp_easy_pay'),    // Menu title
+			'manage_options',                    // Capability
+			'square-logs',                       // Custom menu slug
+			'render_square_logs_page'            // Callback (your tabs function)
+		);
 		add_submenu_page( 'edit.php?post_type=wp_easy_pay', 'Square Connect', 'Square Connect', 'manage_options', 'wpep-settings', 'wpep_render_global_settings_page' );
 		add_submenu_page( 'edit.php?post_type=wp_easy_pay', 'Integrations', 'Integrations', 'manage_options', 'wpep-integrations', 'wpep_render_integration_page' );
 		add_submenu_page(
 			'edit.php?post_type=wp_easy_pay',
 			'Get Pro',
-			'⭐ Get Pro',
+			'Upgrade',
 			'manage_options',
 			'get_pro_menu',
 			'__return_false',
@@ -271,6 +282,16 @@ if ( ! function_exists( 'wpep_add_submenu' ) ) {
 		);
 	}
 
+}
+
+/**
+ * Renders the Square logs in the admin area.
+ *
+ * This function includes the 'square-logs-admin.php' file, which displays the logs
+ * content on a dedicated logs menu screen.
+ */
+function render_square_logs_page() {
+	include plugin_dir_path(__FILE__) . 'modules/square-logs/square-logs-admin.php';
 }
 
 /**
@@ -301,7 +322,7 @@ function wpep_create_payment_forms_post_type() {
 		'view_item'             => __( 'View Item', 'wp_easy_pay' ),
 		'view_items'            => __( 'View Items', 'wp_easy_pay' ),
 		'search_items'          => __( 'Search Item', 'wp_easy_pay' ),
-		'not_found'             => __( 'Not found', 'wp_easy_pay' ),
+		'not_found'             => __( 'Form doesn\'t exist', 'wp_easy_pay' ),
 		'not_found_in_trash'    => __( 'Not found in Trash', 'wp_easy_pay' ),
 		'featured_image'        => __( 'Featured Image (show on popup only)', 'wp_easy_pay' ),
 		'set_featured_image'    => __( 'Set featured image', 'wp_easy_pay' ),
@@ -446,9 +467,9 @@ function wpep_modify_column_names_reports( $columns ) {
 	unset( $columns['date'] );
 	unset( $columns['title'] );
 	$columns['post_id'] = __( 'ID' );
-	$columns['paid_by'] = __( 'Paid By' );
+	$columns['paid_by'] = __( 'Paid by' );
 	$columns['type']    = __( 'Type' );
-	$columns['method']  = __( 'Payment Method' );
+	$columns['method']  = __( 'Payment method' );
 	$columns['date']    = __( 'Date' );
 	$columns['actions'] = __( 'Actions' );
 
@@ -493,6 +514,7 @@ function wpep_add_columns_data_reports( $column, $post_id ) {
 		case 'actions':
 			echo '<a href="' . esc_url( get_delete_post_link( $post_id ) ) . '" class="deleteIcon" title="Delete report"> Delete </a>';
 			break;
+		
 	}
 }
 
@@ -510,11 +532,12 @@ function wpep_add_columns_data_reports( $column, $post_id ) {
 function wpep_modify_column_names_payment_forms( $columns ) {
 	unset( $columns['title'] );
 	unset( $columns['date'] );
-	$columns['title']     = __( 'Form Title' );
-	$columns['shortcode'] = __( 'Shortcode' );
-	$columns['type']      = __( 'Type' );
-	$columns['date']      = __( 'Date' );
-	$columns['actions']   = __( 'Actions' );
+	$columns['formsTitle'] = __( 'Form title' );
+	$columns['shortcode']  = __( 'Shortcode' );
+	$columns['type']       = __( 'Type' );
+	$columns['status']     = __( 'Status' );
+	$columns['formsDate']  = __( 'Last modified date' );
+	$columns['actions']    = __( 'Actions' );
 
 	return $columns;
 }
@@ -530,26 +553,62 @@ function wpep_modify_column_names_payment_forms( $columns ) {
  * @param int    $post_id The ID of the current post.
  */
 function wpep_add_columns_data_add_form( $column, $post_id ) {
-
 	switch ( $column ) {
 
-		case 'shortcode':
-			echo '<span class="wpep_tags">[wpep-form id="' . esc_attr( $post_id ) . '"]</span>';
+		case 'formsTitle':
+			echo '<a href="' . esc_url( get_edit_post_link( $post_id ) ) . '" class="wpep_tags">' . esc_html( get_the_title( $post_id ) ) . '</a>';
 			break;
+
+		case 'shortcode':
+			echo '
+			<div class="shortcodeIcon">
+				<span class="wpep_tags">
+					[wpep-form id="' . esc_attr( $post_id ) . '"] 
+					<img src="' . esc_url( WPEP_ROOT_URL . 'assets/backend/img/shortcode-copy.png' ) . '" />
+				</span>
+			</div>
+			';
+			break;  
+
+		case 'formsDate':
+			echo '<span>' . esc_html( get_the_modified_date( 'd/m/Y \a\t g:i a', $post_id ) ) . '</span>';
+			break;
+
+		case 'status':
+			$form_status = get_post_status( $post_id );
+			if ( 'publish' === $form_status ) {
+				echo '<span class"formStatus">Published</span>';
+			} else {
+				echo '<span class="formStatus">' . esc_attr( $form_status ) . '</span>';
+			}
+			break;
+
 		case 'type':
 			$form_type = get_post_meta( $post_id, 'wpep_square_payment_type', true );
 			echo "<span class='" . esc_attr( $form_type ) . "'>" . esc_html( str_replace( '_', ' ', $form_type ) ) . '</span>';
 			break;
+
 		case 'actions':
-			$post_status = get_post_status( $post_id );
-			if ( 'trash' === $post_status ) {
-				// If post is in trash, show only restore button
-				$restore_link = wp_nonce_url( admin_url( sprintf( 'post.php?action=untrash&post=%d', $post_id ) ), "untrash-post_{$post_id}" );
-				echo '<a href="' . esc_url( $restore_link ) . '" class="restoreIcon" title="Restore form"> Restore </a>';
-			} else {
-				// If post is not in trash, show edit and delete buttons
-				echo '<a href="' . esc_url( get_edit_post_link( $post_id ) ) . '" class="editIcon" title="Edit form"> Edit </a> <a href="' . esc_url( get_delete_post_link( $post_id ) ) . '" class="deleteIcon" title="Delete form"> Delete </a>';
+			$form_status  = get_post_status( $post_id );
+			$actions_html = '<a href="' . esc_url( get_edit_post_link( $post_id ) ) . '" class="editIcon" title="Edit form"> Edit </a>';
+
+			// Show restore icon for draft forms.
+			if ( 'draft' === $form_status ) {
+				$actions_html .= ' <a href="#" class="restoreIcon" title="Restore to published" onclick="showRestorePopup(' . esc_js( $post_id ) . '); return false;"> Restore </a>';
 			}
+
+			$actions_html .= ' <a href="#" class="deleteIcon" title="Delete form" onclick="showDeletePopup(' . esc_js( $post_id ) . ', \'' . esc_js( $form_status ) . '\'); return false;"> Delete </a>';
+
+			// Allow onclick for admin inline actions.
+			$allowed_actions_html = array(
+				'a' => array(
+					'href'    => true,
+					'class'   => true,
+					'title'   => true,
+					'onclick' => true,
+				),
+			);
+			echo wp_kses( $actions_html, $allowed_actions_html );
 			break;
 	}
 }
@@ -562,6 +621,17 @@ function wpep_add_columns_data_add_form( $column, $post_id ) {
  */
 function wpep_render_global_settings_page() {
 	require_once 'views/backend/global-settings-page.php';
+}
+
+/**
+ * Render the dashboard page.
+ *
+ * Includes the backend dashboard page.
+ *
+ * @return void
+ */
+function wpep_render_dashboard_page() {
+	require_once 'views/backend/dashboard-page.php';
 }
 
 /**
@@ -621,24 +691,43 @@ function wpep_render_road_map_page() {
  */
 function wpep_save_add_form_fields( $post_ID, $post, $update ) {  // phpcs:ignore
 
+	// Skip autosaves and revisions
+	if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || wp_is_post_revision( $post_ID ) ) {
+		return;
+	}
+
+	// Only process if this is a form edit submission (not just a status change via wp_update_post)
+	// Check if any form-specific fields are present - this indicates a real form edit submission
+	$has_form_data = isset( $_POST['wpep_square_payment_type'] ) ||
+		isset( $_POST['wpep_square_amount_type'] ) ||
+		isset( $_POST['wpep_square_form_builder_fields'] ) ||
+		isset( $_POST['wpep_payment_mode'] );
+
+	// If no form data is present, this is likely just a status change - skip to preserve existing data
+	if ( ! $has_form_data ) {
+		return;
+	}
+
+	// Verify nonce if it exists (required for security)
 	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
 		exit;
 	}
 
-	$post_custom  = $_POST;
-	$files_custom = $_FILES;
+	$post_custom  = $_POST; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	$files_custom = $_FILES; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 	if ( isset( $post_custom['wpep_tabular_product_hidden_image'] ) ) {
-
-		$wpep_tabular_product_hidden_image = $post_custom['wpep_tabular_product_hidden_image'];
+		$wpep_tabular_product_hidden_image = is_array( $post_custom['wpep_tabular_product_hidden_image'] )
+			? array_map( 'esc_url_raw', $post_custom['wpep_tabular_product_hidden_image'] )
+			: array();
 
 		if ( isset( $files_custom['wpep_tabular_products_image'] ) ) {
 
 			$upload_overrides = array( 'test_form' => false );
 			$products_url     = array();
-			foreach ( $files_custom['wpep_tabular_products_image']['tmp_name'] as $key => $tmp_name ) {
+			foreach ( $files_custom['wpep_tabular_products_image']['tmp_name'] as $key => $tmp_name ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-				if ( ! empty( $files_custom['wpep_tabular_products_image']['name'][ $key ] ) ) {
+				if ( ! empty( $files_custom['wpep_tabular_products_image']['name'][ $key ] ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 					$file = array(
 						'name'     => $files_custom['wpep_tabular_products_image']['name'][ $key ],
@@ -686,8 +775,8 @@ function wpep_save_add_form_fields( $post_ID, $post, $update ) {  // phpcs:ignor
 
 		if ( isset( $radio_amounts ) && is_array( $radio_amounts ) ) {
 			foreach ( $radio_amounts as $key => $amount_rd ) {
-				$data['amount'] = $amount_rd;
-				$data['label']  = $radio_labels[ $key ];
+				$data['amount'] = (string) floatval( wp_unslash( $amount_rd ) );
+				$data['label']  = isset( $radio_labels[ $key ] ) ? sanitize_text_field( wp_unslash( $radio_labels[ $key ] ) ) : '';
 
 				array_push( $radio_amounts_with_labels, $data );
 			}
@@ -696,22 +785,22 @@ function wpep_save_add_form_fields( $post_ID, $post, $update ) {  // phpcs:ignor
 		if ( isset( $dropdown_amounts ) && is_array( $dropdown_amounts ) ) {
 			foreach ( $dropdown_amounts as $key => $amount_dd ) {
 
-				$data['amount'] = $amount_dd;
-				$data['label']  = $dropdown_labels[ $key ];
+				$data['amount'] = (string) floatval( wp_unslash( $amount_dd ) );
+				$data['label']  = isset( $dropdown_labels[ $key ] ) ? sanitize_text_field( wp_unslash( $dropdown_labels[ $key ] ) ) : '';
 
 				array_push( $dropdown_amounts_with_labels, $data );
 			}
 		}
 
-		if ( $post_custom['wpep_tabular_products_price'] ) {
+		if ( isset( $post_custom['wpep_tabular_products_price'] ) && ! empty( $post_custom['wpep_tabular_products_price'] ) ) {
 			$tabular_product_price = $post_custom['wpep_tabular_products_price'];
 		}
 
-		if ( $post_custom['wpep_tabular_products_label'] ) {
+		if ( isset( $post_custom['wpep_tabular_products_label'] ) && ! empty( $post_custom['wpep_tabular_products_label'] ) ) {
 			$tabular_product_label = $post_custom['wpep_tabular_products_label'];
 		}
 
-		if ( $post_custom['wpep_tabular_products_qty'] ) {
+		if ( isset( $post_custom['wpep_tabular_products_qty'] ) && ! empty( $post_custom['wpep_tabular_products_qty'] ) ) {
 			$tabular_product_qty = $post_custom['wpep_tabular_products_qty'];
 		}
 
@@ -719,10 +808,10 @@ function wpep_save_add_form_fields( $post_ID, $post, $update ) {  // phpcs:ignor
 
 			foreach ( $tabular_product_price as $key => $product_price ) {
 
-				$data['amount']       = $product_price;
-				$data['label']        = $tabular_product_label[ $key ];
-				$data['quantity']     = $tabular_product_qty[ $key ];
-				$data['products_url'] = isset( $products_url[ $key ] ) ? $products_url[ $key ] : '';
+				$data['amount']       = (string) floatval( wp_unslash( $product_price ) );
+				$data['label']        = isset( $tabular_product_label[ $key ] ) ? sanitize_text_field( wp_unslash( $tabular_product_label[ $key ] ) ) : '';
+				$data['quantity']     = isset( $tabular_product_qty[ $key ] ) ? absint( $tabular_product_qty[ $key ] ) : 0;
+				$data['products_url'] = isset( $products_url[ $key ] ) ? esc_url_raw( $products_url[ $key ] ) : '';
 
 				array_push( $tabular_products_with_labels, $data );
 			}
@@ -750,7 +839,7 @@ function wpep_save_add_form_fields( $post_ID, $post, $update ) {  // phpcs:ignor
 		}
 		
 		update_post_meta( $post_ID, 'wpep_square_form_builder_fields', $form_builder_fields );
-
+		
 		update_post_meta( $post_ID, 'wpep_square_user_defined_amount', ( isset( $post_custom['wpep_square_user_defined_amount'] ) ? sanitize_text_field( $post_custom['wpep_square_user_defined_amount'] ) : '' ) );
 		update_post_meta( $post_ID, 'wpep_transaction_notes_box', ( isset( $post_custom['wpep_transaction_notes_box'] ) ? sanitize_text_field( $post_custom['wpep_transaction_notes_box'] ) : '' ) );
 		update_post_meta( $post_ID, 'wpep_square_admin_email_to_field', ( isset( $post_custom['wpep_square_admin_email_to_field'] ) ? sanitize_text_field( $post_custom['wpep_square_admin_email_to_field'] ) : '' ) );
@@ -758,7 +847,7 @@ function wpep_save_add_form_fields( $post_ID, $post, $update ) {  // phpcs:ignor
 		update_post_meta( $post_ID, 'wpep_square_admin_email_bcc_field', ( isset( $post_custom['wpep_square_admin_email_bcc_field'] ) ? sanitize_text_field( $post_custom['wpep_square_admin_email_bcc_field'] ) : '' ) );
 		update_post_meta( $post_ID, 'wpep_square_admin_email_from_field', ( isset( $post_custom['wpep_square_admin_email_from_field'] ) ? sanitize_text_field( $post_custom['wpep_square_admin_email_from_field'] ) : '' ) );
 		update_post_meta( $post_ID, 'wpep_square_admin_email_subject_field', ( isset( $post_custom['wpep_square_admin_email_subject_field'] ) ? sanitize_text_field( $post_custom['wpep_square_admin_email_subject_field'] ) : '' ) );
-		update_post_meta( $post_ID, 'wpep_square_admin_email_content_field', isset( $post_custom['wpep_square_admin_email_content_field'] ) ? $post_custom['wpep_square_admin_email_content_field'] : '' );
+		update_post_meta( $post_ID, 'wpep_square_admin_email_content_field', isset( $post_custom['wpep_square_admin_email_content_field'] ) ? wp_kses_post( wp_unslash( $post_custom['wpep_square_admin_email_content_field'] ) ) : '' );
 		update_post_meta( $post_ID, 'wpep_square_admin_email_exclude_blank_tags_lines', ( isset( $post_custom['wpep_square_admin_email_exclude_blank_tags_lines'] ) ? sanitize_text_field( $post_custom['wpep_square_admin_email_exclude_blank_tags_lines'] ) : '' ) );
 		update_post_meta( $post_ID, 'wpep_square_admin_email_content_type_html', ( isset( $post_custom['wpep_square_admin_email_content_type_html'] ) ? sanitize_text_field( $post_custom['wpep_square_admin_email_content_type_html'] ) : '' ) );
 		update_post_meta( $post_ID, 'wpep_save_card', ( isset( $post_custom['wpep_save_card'] ) ? sanitize_text_field( $post_custom['wpep_save_card'] ) : '' ) );
@@ -773,7 +862,7 @@ function wpep_save_add_form_fields( $post_ID, $post, $update ) {  // phpcs:ignor
 
 		update_post_meta( $post_ID, 'wpep_square_user_email_subject_field', ( isset( $post_custom['wpep_square_user_email_subject_field'] ) ? sanitize_text_field( $post_custom['wpep_square_user_email_subject_field'] ) : '' ) );
 
-		update_post_meta( $post_ID, 'wpep_square_user_email_content_field', isset( $post_custom['wpep_square_user_email_content_field'] ) ? $post_custom['wpep_square_user_email_content_field'] : '' );
+		update_post_meta( $post_ID, 'wpep_square_user_email_content_field', isset( $post_custom['wpep_square_user_email_content_field'] ) ? wp_kses_post( wp_unslash( $post_custom['wpep_square_user_email_content_field'] ) ) : '' );
 		update_post_meta( $post_ID, 'wpep_square_user_email_exclude_blank_tags_lines', ( isset( $post_custom['wpep_square_user_email_exclude_blank_tags_lines'] ) ? sanitize_text_field( $post_custom['wpep_square_user_email_exclude_blank_tags_lines'] ) : '' ) );
 
 		update_post_meta( $post_ID, 'wpep_square_user_email_content_type_html', ( isset( $post_custom['wpep_square_user_email_content_type_html'] ) ? sanitize_text_field( $post_custom['wpep_square_user_email_content_type_html'] ) : '' ) );
@@ -857,7 +946,7 @@ function wpep_save_add_form_fields( $post_ID, $post, $update ) {  // phpcs:ignor
 
 		update_post_meta( $post_ID, 'wpep_signup_fees_label', ( isset( $post_custom['wpep_signup_fees_label'] ) ? sanitize_text_field( $post_custom['wpep_signup_fees_label'] ) : '' ) );
 		update_post_meta( $post_ID, 'wpep_signup_fees_amount', ( isset( $post_custom['wpep_signup_fees_amount'] ) ? sanitize_text_field( $post_custom['wpep_signup_fees_amount'] ) : '' ) );
-		if ( 'simple' === $post_custom['wpep_square_payment_type'] || 'donation' === $post_custom['wpep_square_payment_type'] ) {
+		if ( isset( $post_custom['wpep_square_payment_type'] ) && ( 'simple' === $post_custom['wpep_square_payment_type'] || 'donation' === $post_custom['wpep_square_payment_type'] ) ) {
 			update_post_meta( $post_ID, 'wpep_enable_signup_fees', '' );
 		} else {
 			update_post_meta( $post_ID, 'wpep_enable_signup_fees', ( isset( $post_custom['wpep_enable_signup_fees'] ) ? sanitize_text_field( $post_custom['wpep_enable_signup_fees'] ) : '' ) );
@@ -870,10 +959,10 @@ function wpep_save_add_form_fields( $post_ID, $post, $update ) {  // phpcs:ignor
 
 			foreach ( $post_custom['wpep_service_fees_name'] as $key => $name ) {
 
-				$fees_data['check'][ $key ] = isset( $post_custom['wpep_service_fees_check'][ $key ] ) ? $post_custom['wpep_service_fees_check'][ $key ] : 'no';
-				$fees_data['name'][ $key ]  = isset( $post_custom['wpep_service_fees_name'][ $key ] ) ? $post_custom['wpep_service_fees_name'][ $key ] : '';
-				$fees_data['type'][ $key ]  = isset( $post_custom['wpep_service_charge_type'][ $key ] ) ? $post_custom['wpep_service_charge_type'][ $key ] : '';
-				$fees_data['value'][ $key ] = isset( $post_custom['wpep_fees_value'][ $key ] ) ? $post_custom['wpep_fees_value'][ $key ] : '';
+				$fees_data['check'][ $key ] = isset( $post_custom['wpep_service_fees_check'][ $key ] ) ? sanitize_text_field( $post_custom['wpep_service_fees_check'][ $key ] ) : 'no';
+				$fees_data['name'][ $key ]  = isset( $post_custom['wpep_service_fees_name'][ $key ] ) ? sanitize_text_field( $post_custom['wpep_service_fees_name'][ $key ] ) : '';
+				$fees_data['type'][ $key ]  = isset( $post_custom['wpep_service_charge_type'][ $key ] ) ? sanitize_text_field( $post_custom['wpep_service_charge_type'][ $key ] ) : '';
+				$fees_data['value'][ $key ] = isset( $post_custom['wpep_fees_value'][ $key ] ) ? sanitize_text_field( $post_custom['wpep_fees_value'][ $key ] ) : '';
 			}
 
 			update_post_meta( $post_ID, 'fees_data', $fees_data );
@@ -890,10 +979,10 @@ function wpep_save_add_form_fields( $post_ID, $post, $update ) {  // phpcs:ignor
 			if ( isset( $post_custom['post_content'] ) ) {
 				$post_content = sanitize_text_field( $post_custom['post_content'] );
 			}
-			$update = 'update';
-			$where  = array( 'ID' => $post_ID );
-			$wpdb->$update( $wpdb->posts, array( 'post_title' => $title ), $where );
-			$wpdb->$update( $wpdb->posts, array( 'post_content' => $post_content ), $where );
+			// Fix: Use direct update instead of variable function
+			$where = array( 'ID' => $post_ID );
+			$wpdb->update( $wpdb->posts, array( 'post_title' => $title ), $where );
+			$wpdb->update( $wpdb->posts, array( 'post_content' => $post_content ), $where );
 
 		}
 	}
@@ -1062,7 +1151,7 @@ function add_publish_meta_options( $post_obj ) {
 	$post_type = 'wp_easy_pay'; // If you want a specific post type.
 	$value     = get_post_meta( $post_obj->ID, 'check_meta', true ); // If saving value to post_meta.
 
-	if ( $post_type === $post->post_type ) {
+	if ( isset( $post ) && 'wp_easy_pay' === $post->post_type ) {
 		echo 1;
 	}
 }
@@ -1157,5 +1246,226 @@ function wpep_get_form_currency( $wpep_current_form_id ) {
 	}
 	return $square_currency;
 }
+/**
+ * Force submitdiv meta box to always stay at top for wp_easy_pay post type only
+ */
+function wpep_force_submitdiv_top_priority() {
+	add_filter( 'get_user_option_meta-box-order_wp_easy_pay', 'wpep_reorder_meta_boxes', 10, 3 );
+}
+add_action( 'admin_init', 'wpep_force_submitdiv_top_priority' );
+
+function wpep_reorder_meta_boxes( $result, $option, $user ) {
+	unset( $option, $user );
+	if ( ! is_array( $result ) ) {
+		$result = array();
+	}
+
+	if ( isset( $result['side'] ) ) {
+		$side_boxes = explode( ',', $result['side'] );
+		$side_boxes = array_map( 'trim', $side_boxes );
+		$side_boxes = array_filter( $side_boxes );
+
+		// Remove submitdiv if exists.
+		$side_boxes = array_diff( $side_boxes, array( 'submitdiv' ) );
+
+		// Add submitdiv at the beginning.
+		array_unshift( $side_boxes, 'submitdiv' );
+
+		$result['side'] = implode( ',', $side_boxes );
+	} else {
+		$result['side'] = 'submitdiv';
+	}
+
+	return $result;
+}
+
+/**
+ * Fallback: ensure submit box stays at top in side column for wp_easy_pay edit/add screens.
+ */
+function wpep_move_submitdiv_to_top_js() {
+	$screen = get_current_screen();
+
+	if ( empty( $screen ) || 'wp_easy_pay' !== $screen->post_type ) {
+		return;
+	}
+	?>
+	<script>
+		jQuery( function( $ ) {
+			var $submit = $( '#submitdiv' );
+			var $side   = $( '#side-sortables' );
+			if ( $submit.length && $side.length ) {
+				$submit.prependTo( $side );
+			}
+		} );
+	</script>
+	<?php
+}
+add_action( 'admin_footer-post.php', 'wpep_move_submitdiv_to_top_js' );
+add_action( 'admin_footer-post-new.php', 'wpep_move_submitdiv_to_top_js' );
+
+/**
+ * Add post status class to body tag for wp_easy_pay post type
+ */
+function wpep_add_post_status_body_class( $classes ) {
+	global $post;
+
+	if ( is_admin() && isset( $post ) && 'wp_easy_pay' === $post->post_type ) {
+		$post_status = get_post_status( $post->ID );
+
+		if ( $post_status ) {
+			$classes .= ' post-status-' . $post_status;
+		} else {
+			// New post (not saved yet)
+			$classes .= ' post-status-new';
+		}
+	}
+
+	return $classes;
+}
+add_filter( 'admin_body_class', 'wpep_add_post_status_body_class' );
 
 /* Plugin Activation Processing */
+
+/**
+ * Customize update messages for wp_easy_pay post type
+ * 
+ * @param array $messages Existing post update messages.
+ * @return array Modified messages array.
+ */
+function wpep_custom_post_updated_messages( $messages ) {
+	global $post, $post_ID;
+
+	$revision_id = isset( $_GET['revision'] ) ? absint( wp_unslash( $_GET['revision'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+	$messages['wp_easy_pay'] = array(
+		0  => '', // Unused. Messages start at index 1.
+		1  => __( 'Form updated.', 'wp_easy_pay' ),
+		2  => __( 'Custom field updated.', 'wp_easy_pay' ),
+		3  => __( 'Custom field deleted.', 'wp_easy_pay' ),
+		4  => __( 'Form updated.', 'wp_easy_pay' ),
+		/* translators: %s: date and time of the revision */
+		5  => $revision_id ? sprintf( __( 'Form restored to revision from %s', 'wp_easy_pay' ), wp_post_revision_title( $revision_id, false ) ) : false,
+		6  => __( 'Form published.', 'wp_easy_pay' ),
+		7  => __( 'Form saved.', 'wp_easy_pay' ),
+		8  => __( 'Form submitted.', 'wp_easy_pay' ),
+		9  => sprintf(
+			/* translators: %s: scheduled date */
+			__( 'Form scheduled for: <strong>%1$s</strong>.', 'wp_easy_pay' ),
+			/* translators: Publish box date format, see https://www.php.net/manual/en/datetime.format.php */
+			date_i18n( __( 'M j, Y @ G:i', 'wp_easy_pay' ), strtotime( $post->post_date ) )
+		),
+		10 => __( 'Form draft updated.', 'wp_easy_pay' ),
+	);
+	
+	return $messages;
+}
+add_filter( 'post_updated_messages', 'wpep_custom_post_updated_messages' );
+
+/**
+ * Updates a specified form's post status to 'publish' via AJAX (restore from draft).
+ *
+ * This function verifies a nonce for security, then sets the status of a post (form)
+ * to 'publish' based on the form ID received from the AJAX request. If successful, it
+ * returns a success response; otherwise, it returns an error message.
+ *
+ * @return void Outputs JSON response with success status and message.
+ */
+function funct_wpep_restore_confirm() {
+	global $post_custom;
+	$post_custom = $_POST; // phpcs:ignore
+	if ( isset( $post_custom['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $post_custom['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
+		exit;
+	}
+	$form_id   = isset( $_POST['form_id'] ) ? sanitize_text_field( wp_unslash( $_POST['form_id'] ) ) : '';
+	$post_data = array(
+		'ID'          => $form_id,
+		'post_status' => 'publish',
+	);
+	$result    = wp_update_post( $post_data, true );
+	if ( is_wp_error( $result ) ) {
+		$error_message = $result->get_error_message();
+		$response      = array(
+			'success' => false,
+			'message' => $error_message,
+		);
+	} else {
+		$response = array(
+			'success' => true,
+			'message' => 'Post restored to published.',
+		);
+	}
+	wp_send_json( $response );
+	wp_die();
+}
+
+/**
+ * Permanently deletes a specified form (post) based on the provided form ID via AJAX.
+ *
+ * This function checks the validity of a nonce for security, retrieves the form ID from
+ * the request, and attempts to delete the post with that ID. It returns a JSON response
+ * indicating success or failure, along with an appropriate message.
+ *
+ * @return void Outputs JSON response with success status and message.
+ */
+function funct_wpep_delete_confirm() {
+	if ( isset( $post_custom['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $post_custom['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
+		exit;
+	}
+	$form_id = isset( $_POST['form_id'] ) ? sanitize_text_field( wp_unslash( $_POST['form_id'] ) ) : 0;
+	if ( get_post_status( $form_id ) ) {
+		wp_delete_post( $form_id, true );
+		if ( ! get_post_status( $form_id ) ) {
+			$response = array(
+				'success' => true,
+				'message' => 'Post permanently deleted.',
+			);
+		} else {
+			$response = array(
+				'success' => false,
+				'message' => 'Failed to delete post.',
+			);
+		}
+	} else {
+		$response = array(
+			'success' => false,
+			'message' => 'Invalid post ID or post does not exist.',
+		);
+	}
+	wp_send_json( $response );
+	wp_die();
+}
+
+/**
+ * Updates a specified form's post status to 'draft' via AJAX.
+ *
+ * This function verifies a nonce for security, then sets the status of a post (form)
+ * to 'draft' based on the form ID received from the AJAX request. If successful, it
+ * returns a success response; otherwise, it returns an error message.
+ *
+ * @return void Outputs JSON response with success status and message.
+ */
+function funct_wpep_draft_confirm() {
+	if ( isset( $post_custom['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $post_custom['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
+		exit;
+	}
+	$form_id   = isset( $_POST['form_id'] ) ? sanitize_text_field( wp_unslash( $_POST['form_id'] ) ) : '';
+	$post_data = array(
+		'ID'          => $form_id,
+		'post_status' => 'draft',
+	);
+	$result    = wp_update_post( $post_data, true );
+	if ( is_wp_error( $result ) ) {
+		$error_message = $result->get_error_message();
+		$response      = array(
+			'success' => false,
+			'message' => $error_message,
+		);
+	} else {
+		$response = array(
+			'success' => true,
+			'message' => 'Post sent to draft',
+		);
+	}
+	wp_send_json( $response );
+	wp_die();
+}

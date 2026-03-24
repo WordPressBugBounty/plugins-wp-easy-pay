@@ -3,6 +3,196 @@ var container;
 // Free version file
 jQuery( document ).ready(function() {
 
+	// Admin menu: Upgrade link opens in new tab.
+	jQuery('#toplevel_page_edit-post_type-wp_easy_pay ul.wp-submenu-wrap li:nth-child(10) a').attr('target', '_blank').attr('rel', 'noopener noreferrer');
+
+	jQuery('.post-type-wp_easy_pay #posts-filter').prepend('<h3 class="AllPaymentFormHeading">All Payment Forms</h3>');
+	
+	// Store original search box HTML
+	var $originalSearchBox = jQuery('#posts-filter .search-box');
+	var originalSearchBoxHTML = null;
+	
+	// Store it once
+	if ($originalSearchBox.length > 0) {
+		originalSearchBoxHTML = $originalSearchBox.html();
+	}
+	
+	// Function to restore search box
+	function restoreSearchBox() {
+		var $secondActions = jQuery('#posts-filter .tablenav .alignleft.actions').eq(1);
+		
+		// If second actions div doesn't exist, create it
+		if ($secondActions.length === 0) {
+			var $topTablenav = jQuery('.post-type-wp_easy_pay .tablenav.top');
+			var $firstActions = $topTablenav.find('.alignleft.actions').first();
+			if ($firstActions.length > 0) {
+				$secondActions = jQuery('<div class="alignleft actions"></div>');
+				$firstActions.after($secondActions);
+			}
+		}
+		
+		if ($secondActions.length > 0) {
+			var $searchInput = $secondActions.find('input#post-search-input');
+			
+			// If search box missing, restore it
+			if ($searchInput.length === 0 && originalSearchBoxHTML) {
+				$secondActions.append(originalSearchBoxHTML);
+			}
+		}
+	}
+	
+	// Function to restore bulk actions
+	function restoreBulkActions() {
+		var $topTablenav = jQuery('.post-type-wp_easy_pay .tablenav.top');
+		var $bulkActions = $topTablenav.find('.alignleft.actions.bulkactions');
+		
+		if ($bulkActions.length === 0) {
+			var bulkActionsHTML = '<div class="alignleft actions bulkactions">' +
+				'<label for="bulk-action-selector-top" class="screen-reader-text">Select bulk action</label>' +
+				'<select name="action" id="bulk-action-selector-top">' +
+				'<option value="-1">Bulk actions</option>' +
+				'<option value="edit" class="hide-if-no-js">Edit</option>' +
+				'<option value="trash">Move to Trash</option>' +
+				'</select>' +
+				'<input type="submit" name="bulk_action" id="doaction" class="button action" value="Apply">' +
+				'</div>';
+			
+			var $firstActions = $topTablenav.find('.alignleft.actions').first();
+			if ($firstActions.length > 0) {
+				$firstActions.before(bulkActionsHTML);
+			} else {
+				$topTablenav.prepend(bulkActionsHTML);
+			}
+		}
+	}
+	
+	// Initial move of search box
+	var $searchContents = $originalSearchBox.children().clone();
+	jQuery('#posts-filter .tablenav .alignleft.actions').eq(1).append($searchContents);
+	$originalSearchBox.hide();
+	
+	// Watch and restore when needed
+	jQuery(document).ready(function($) {
+		// Check after page load
+		setTimeout(function() {
+			restoreBulkActions();
+			restoreSearchBox();
+		}, 200);
+		
+		// Check after form submit
+		$('#posts-filter').on('submit', function() {
+			setTimeout(function() {
+				restoreBulkActions();
+				restoreSearchBox();
+			}, 500);
+		});
+		
+		// Periodic check every 1 second
+		setInterval(function() {
+			restoreBulkActions();
+			restoreSearchBox();
+		}, 1000);
+	});
+	
+	jQuery('.post-type-wp_easy_pay #post-search-input').attr('placeholder', 'Search Form');
+	jQuery('.post-type-wp_easy_pay #posts-filter #search-submit').attr('value', 'Search');
+	jQuery('.post-type-wp_easy_pay #posts-filter #search-submit').addClass('search-icon-btn');
+	
+	if (jQuery('.AllPaymentFormHeading').length === 0) {
+		// console.log();
+		jQuery('.post-type-wp_easy_pay a.page-title-action').addClass('hideThisAction');
+    }
+
+	// Check if we're on wp_easy_pay list page and data is available
+	if (typeof wpep_forms_count !== 'undefined' && jQuery('.post-type-wp_easy_pay').length > 0) {
+		function insertCountDisplay() {
+			var $bottomTablenav = jQuery('.post-type-wp_easy_pay .tablenav.bottom');
+			
+			if ($bottomTablenav.length > 0 && $bottomTablenav.find('.wpep-forms-count-display').length === 0) {
+				var displayedCount = wpep_forms_count.displayed_count;
+				var totalCount = wpep_forms_count.total_count;
+				var countText = 'Showing ' + displayedCount + ' of ' + totalCount + ' Forms';
+				var $countDisplay = jQuery('<span class="displaying-num wpep-forms-count-display">' + countText + '</span>');
+				
+				// Insert after bulk actions specifically (bulkactions class wala)
+				var $bulkActions = $bottomTablenav.find('.alignleft.actions.bulkactions');
+				if ($bulkActions.length > 0) {
+					$bulkActions.after($countDisplay);
+				} else {
+					// Fallback: use first .alignleft.actions if bulkactions not found
+					var $firstActions = $bottomTablenav.find('.alignleft.actions').first();
+					if ($firstActions.length > 0) {
+						$firstActions.after($countDisplay);
+					} else {
+						$bottomTablenav.prepend($countDisplay);
+					}
+				}
+			}
+		}
+		
+		// Try immediately
+		insertCountDisplay();
+		
+		// Also try after a short delay in case table loads later
+		setTimeout(insertCountDisplay, 100);
+	}
+	
+jQuery('input.panel-radios').on('change', function() {
+    const selectedId = jQuery(this).attr('id');
+    jQuery('#tabs-list li').removeClass('active-tab');
+    jQuery('#tabs-list li[data-id="' + selectedId + '"]').addClass('active-tab');
+  });
+
+  jQuery('input.panel-radios:checked').trigger('change');
+	// end script
+	// square connections log JS
+	document.querySelectorAll('.toggle-button').forEach(button => {
+		button.addEventListener('click', () => {
+			const targetId = button.getAttribute('data-target');
+			const targetContent = document.querySelector(targetId);
+
+			if (!targetContent) {return};
+
+			targetContent.classList.toggle('expanded');
+			button.textContent = targetContent.classList.contains('expanded') ? 'Hide' : 'View';
+		});
+	});
+
+	jQuery('#wpep-clear-logs-btn').on('click', function(e) {
+		e.preventDefault();
+		
+		if (confirm('Are you sure you want to delete all logs? This action cannot be undone.\n\nClick "OK" to confirm or "Cancel" to abort.')) {
+			// Show loading state
+			var $button = jQuery(this);
+			var originalText = $button.text();
+			$button.prop('disabled', true).text('Deleting...');
+			
+			// AJAX call - using localized data
+			jQuery.ajax({
+				url: wpep_hide_elements.ajax_url,
+				type: 'POST',
+				data: {
+					action: 'wpep_clear_all_logs',
+					nonce: wpep_hide_elements.clear_logs_nonce
+				},
+				success: function(response) {
+					if (response.success) {
+						alert('All logs have been deleted successfully.');
+						location.reload();
+					} else {
+						alert('Error: ' + (response.data && response.data.message ? response.data.message : 'Failed to delete logs.'));
+						$button.prop('disabled', false).text(originalText);
+					}
+				},
+				error: function(xhr, status, error) {
+					console.log('AJAX Error:', xhr, status, error);
+					alert('An error occurred while deleting logs. Please check console for details.');
+					$button.prop('disabled', false).text(originalText);
+				}
+			});
+		}
+	});
+
 	function wpepHandleQuantityBox() {
 		var isDonationRecurring = jQuery('#paymentTypeDonationRecurring').is(':checked');
 		var isSubscription      = jQuery('#paymentTypeSubscription').is(':checked');
@@ -423,8 +613,8 @@ jQuery( document ).ready(
 
 			if ( wpep_hide_elements.hide_publish_meta == 'true' ) {
 
+				jQuery( '#preview-action' ).hide();
 				jQuery( '#misc-publishing-actions' ).hide();
-				jQuery( '#minor-publishing-actions' ).hide();
 
 			}
 		}
@@ -601,7 +791,7 @@ jQuery( document ).ready(
 		jQuery( 'div.easypayblock ul#tabs-list li' ).click(
 			function () {
 				var id = jQuery( this ).data( 'id' );
-				setCookie( 'wpep-setting-tab', id, 365 );
+				// setCookie( 'wpep-setting-tab', id, 365 );
 			}
 		);
 
@@ -1040,13 +1230,13 @@ jQuery(
 			label: "Url",
 			type: "text",
 			subtype: "url",
-			icon: "⛓"
+			icon: "â›“"
 		},
 		{
 			label: "Telephone",
 			type: "number",
 			subtype: "number",
-			icon: "☏"
+			icon: "â˜"
 		}
 
 		];
@@ -1462,31 +1652,42 @@ window.addEventListener('load', function () {
 		}
 	}
 });
-var modal = document.getElementById('pre-popupModal');
+// Close button handler - works for any modal
+jQuery(document).on('click', '.pre-close', function() {
+    jQuery(this).closest('.pre-modal').css('display', 'none');
+});
 
-// Get the button that opens the modal
-var btn = document.getElementsByClassName('pro_tag')[0];
+// Pro tag click handler - find modal in same tab context
+jQuery(document).on('click', '.pro_tag', function(e) {
+    e.preventDefault();
+    
+    // Find the main container of clicked element
+    var $main = jQuery(this).closest('main');
+    
+    // Find modal that comes after this main element
+    var $modal = $main.next('.pre-modal');
+    
+    // If not found, try finding in parent or siblings
+    if ($modal.length === 0) {
+        $modal = $main.parent().find('.pre-modal').first();
+    }
+    
+    // If still not found, use any modal (fallback)
+    if ($modal.length === 0) {
+        $modal = jQuery('#pre-popupModal').first();
+    }
+    
+    if ($modal.length > 0) {
+        $modal.css('display', 'block');
+    }
+});
 
-// Get the <span> element that closes the modal
-var span = document.getElementsByClassName('pre-close')[0];
-
-// When the user clicks on <span> (x), close the modal
-if(span){
-	span.onclick = function() {
-		jQuery('#pre-popupModal').css('display', 'none');
-	}
-}
-
-jQuery(document).on('click', '.pro_tag', function() {
-	jQuery('#pre-popupModal').css('display', 'block');
-})
-
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-	if (event.target == modal) {
-		jQuery('#pre-popupModal').css('display', 'none');
-	}
-}
+// Click outside modal to close
+jQuery(document).on('click', '.pre-modal', function(event) {
+    if (jQuery(event.target).hasClass('pre-modal')) {
+        jQuery(this).css('display', 'none');
+    }
+});
 jQuery( 'input[type=radio][name=wpep_square_payment_type]' ).change(
 	function () {		
 		if ( this.value == 'donation' ) {
@@ -1756,9 +1957,17 @@ jQuery("#dialog-delete").on("click", function() {
     openDeleteModal();
     closeModal();
   });
-function showDeletePopup(postId) {
+function showDeletePopup(postId, formStatus) {
   openModal();
-	jQuery("#confirm-delete").on("click", function() {
+  
+  // Hide "Save as Draft" option if form is already in draft
+  if (formStatus && formStatus === 'draft') {
+    jQuery("#dialog-draft").hide();
+  } else {
+    jQuery("#dialog-draft").show();
+  }
+  
+	jQuery("#confirm-delete").off("click").on("click", function() {
 	jQuery(this).text("Please wait...");
 	  jQuery.ajax({
 		type:'POST',
@@ -1784,7 +1993,7 @@ function showDeletePopup(postId) {
 	  });
 	  console.log("Es geht");
 	});
-  jQuery("#dialog-draft").on("click", function() {
+  jQuery("#dialog-draft").off("click").on("click", function() {
     jQuery(this).text("Please wait...");
 	  jQuery.ajax({
 		type:'POST',
@@ -1810,6 +2019,32 @@ function showDeletePopup(postId) {
 		}
 	  });
   });
+}
+
+function showRestorePopup(postId) {
+	if (confirm("Are you sure you want to restore this form to published status?")) {
+		jQuery.ajax({
+			type:'POST',
+			url: wpep_hide_elements.ajax_url,
+			data: {
+				action:'wpep_restore_confirm',
+				nonce:wpep_hide_elements.nonce,
+				form_id: postId
+			},
+			success:function(response){
+				if(response.success == true && response.message == "Post restored to published."){
+					setTimeout(function() {
+						location.reload();
+					}, 500);
+				}else{
+					alert(response.message)
+				}
+			},
+			error: function() {
+				alert("An error occurred while restoring the form.");
+			}
+		});
+	}
 }
 
 jQuery("#confirm-cancel").on("click", function() {
@@ -1842,3 +2077,262 @@ jQuery("#btn_wpep_gen_code").on("click", function(e) {
 		}
 	  });
 	});
+
+
+
+	// Prevent auto-draft and show save confirmation for wp_easy_pay post type
+(function() {
+	// Only run on wp_easy_pay post edit screen
+	if (jQuery('body.post-type-wp_easy_pay').length === 0) {
+		return;
+	}
+	
+	var formChanged = false;
+	var initialFormData = '';
+	var isNavigatingAway = false;
+	var historyStatePushed = false;
+	
+	// Function to get form data as string
+	function getFormData() {
+		var form = jQuery('#post');
+		if (form.length === 0) return '';
+		
+		// Get all input, textarea, select values
+		var data = {};
+		form.find('input, textarea, select').each(function() {
+			var $el = jQuery(this);
+			var name = $el.attr('name');
+			var type = $el.attr('type');
+			
+			// Skip hidden fields that are not important
+			if (type === 'hidden' && name && (
+				name.indexOf('_wp') === 0 || 
+				name === 'post_ID' || 
+				name === 'post_type'
+			)) {
+				return;
+			}
+			
+			if (name) {
+				if (type === 'checkbox' || type === 'radio') {
+					data[name] = $el.is(':checked') ? $el.val() : '';
+				} else {
+					data[name] = $el.val();
+				}
+			}
+		});
+		
+		return JSON.stringify(data);
+	}
+	
+	// Store initial form data
+	jQuery(document).ready(function() {
+		initialFormData = getFormData();
+		
+		// Detect changes in form fields
+		jQuery('#post').on('input change', 'input, textarea, select', function() {
+			var currentData = getFormData();
+			formChanged = (currentData !== initialFormData && currentData !== '');
+			
+			// Push history state ONLY when form is changed for the first time
+			if (formChanged && !historyStatePushed && window.history && window.history.pushState) {
+				window.history.pushState('form-page', null, window.location.href);
+				historyStatePushed = true;
+			}
+		});
+		
+		// Reset flag when form is submitted
+		jQuery('#post').on('submit', function() {
+			formChanged = false;
+			initialFormData = getFormData();
+			isNavigatingAway = true;
+			historyStatePushed = false;
+		});
+		
+		// Handle browser back button using history API
+		// Only listen for popstate if history state was pushed
+		if (window.history && window.history.pushState) {
+			window.addEventListener('popstate', function(event) {
+				// Only prevent navigation if form has changes
+				if (formChanged && !isNavigatingAway && historyStatePushed) {
+					// Prevent default back navigation
+					window.history.pushState('form-page', null, window.location.href);
+					
+					// Show custom popup
+					showSaveConfirmation(function(proceed) {
+						if (proceed) {
+							// User chose to save, let them save first
+							// Navigation will happen after save
+						} else {
+							// User cancelled, stay on page
+							// History state already pushed, so we're on same page
+						}
+					}, null); // No redirect URL for back button
+				}
+				// If formChanged is false, allow normal back navigation (do nothing)
+			});
+		}
+	});
+	
+	// Custom popup/modal for save confirmation
+	function showSaveConfirmation(callback, redirectUrl) {
+		// Remove existing modal if any
+		jQuery('#wpep-save-confirmation-modal').remove();
+		
+		var modal = jQuery('<div id="wpep-save-confirmation-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999999; display: flex; align-items: center; justify-content: center;">' +
+			'<div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">' +
+			'<h2 class="savePopupHeading">Save Changes?</h2>' +
+			'<p class="savePopupDescrip">You have unsaved changes. Would you like to proceed?</p>' +
+			'<div style="text-align: right;">' +
+			'<button id="wpep-save-draft-btn" class="button" style="margin-right: 10px;">Save Changes</button>' +
+			'<button id="wpep-cancel-btn" class="button">Proceed</button>' +
+			'</div>' +
+			'</div>' +
+			'</div>');
+		
+		jQuery('body').append(modal);
+		
+		// Button handlers
+		jQuery('#wpep-save-draft-btn').on('click', function() {
+			formChanged = false;
+			isNavigatingAway = true;
+			historyStatePushed = false;
+			modal.remove();
+			jQuery('#save-post').click();
+			if (callback) callback(true);
+		});
+		
+		jQuery('#wpep-cancel-btn').on('click', function() {
+			// Reset all flags to allow navigation
+			formChanged = false;
+			isNavigatingAway = true;
+			historyStatePushed = false;
+			modal.remove();
+			
+			// If redirectUrl is provided, redirect there (for link clicks)
+			if (redirectUrl) {
+				window.location.href = redirectUrl;
+			} else {
+				// This is from browser back button or reload - redirect to forms list page
+				// Get the forms list URL
+				var currentUrl = window.location.href;
+				var formsListUrl;
+				
+				// Try to construct forms list URL
+				if (currentUrl.indexOf('/wp-admin/') !== -1) {
+					// Extract base URL and construct forms list URL
+					var urlParts = currentUrl.split('/wp-admin/');
+					formsListUrl = urlParts[0] + '/wp-admin/edit.php?post_type=wp_easy_pay';
+				} else {
+					// Fallback: use origin and pathname
+					formsListUrl = window.location.origin + '/wp-admin/edit.php?post_type=wp_easy_pay';
+				}
+				
+				window.location.href = formsListUrl;
+			}
+			
+			if (callback) callback(false);
+		});
+		
+		// Close on background click
+		modal.on('click', function(e) {
+			if (e.target === modal[0]) {
+				modal.remove();
+				if (callback) callback(false);
+			}
+		});
+	}
+	
+	// Handle page reload (F5, Ctrl+R, etc.)
+	// Intercept keyboard shortcuts for reload
+	jQuery(document).on('keydown', function(e) {
+		// Detect F5 or Ctrl+R or Ctrl+Shift+R
+		if ((e.key === 'F5' || (e.ctrlKey && (e.key === 'r' || e.key === 'R')) || (e.ctrlKey && e.shiftKey && (e.key === 'r' || e.key === 'R'))) && formChanged && !isNavigatingAway) {
+			e.preventDefault();
+			e.stopPropagation();
+			showSaveConfirmation(function(proceed) {
+				if (proceed) {
+					// User chose to save
+					isNavigatingAway = true;
+					// Form will submit, reload will happen after save
+				} else {
+					// User chose to proceed without saving
+					formChanged = false;
+					isNavigatingAway = true;
+					historyStatePushed = false;
+					// Allow reload
+					setTimeout(function() {
+						window.location.reload();
+					}, 100);
+				}
+			}, null);
+			return false;
+		}
+	});
+	
+	// Handle beforeunload for other reload methods (browser reload button, etc.)
+	jQuery(window).on('beforeunload', function(e) {
+		if (formChanged && !isNavigatingAway) {
+			// Prevent default browser alert
+			e.preventDefault();
+			e.returnValue = '';
+			// Note: Custom popup cannot be shown in beforeunload, 
+			// but this prevents the default browser alert
+			// Keyboard shortcuts are handled above
+			return '';
+		}
+	});
+	
+	// Handle navigation links (not browser back button)
+	jQuery(document).on('click', 'a', function(e) {
+		if (formChanged && !isNavigatingAway) {
+			var href = jQuery(this).attr('href');
+
+			if (jQuery(this).hasClass('wpep-no-save-popup')) {
+				isNavigatingAway = true;   // taake beforeunload browser popup na dikhaye
+				return true;
+			}
+			
+			// Skip if it's a save/publish button or same page anchor
+			if (href && (
+				href.indexOf('#') === 0 || 
+				href.indexOf('javascript:') === 0 ||
+				jQuery(this).closest('#submitdiv').length > 0 ||
+				jQuery(this).attr('id') === 'save-post' ||
+				jQuery(this).attr('id') === 'publish'
+			)) {
+				return true;
+			}
+			
+			// Show confirmation
+			e.preventDefault();
+			showSaveConfirmation(function(proceed) {
+				if (proceed) {
+					// Form will submit, navigation will happen after
+					isNavigatingAway = true;
+					setTimeout(function() {
+						if (href) {
+							window.location.href = href;
+						}
+					}, 500);
+				}
+			}, href); // Pass the href as redirect URL for cancel button
+			
+			return false;
+		}
+	});
+	
+	// Prevent auto-draft on page load for new posts
+	jQuery(document).ready(function() {
+		// If it's a new post and form has been changed, prevent auto-draft
+		if (jQuery('body').hasClass('post-status-new') || 
+			jQuery('body').hasClass('post-status-auto-draft')) {
+			
+			// Remove auto-draft class if user has made changes
+			if (formChanged) {
+				jQuery('body').removeClass('post-status-auto-draft');
+			}
+		}
+	});
+	
+})();

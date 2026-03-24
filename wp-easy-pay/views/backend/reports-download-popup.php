@@ -19,9 +19,9 @@
 					<a href="#" class="wpep-reports-close">x</a>
 				</div>
 				<div class="wpep-reports-body">
-					<!-- Form Dropdownn -->
+					<!-- Form Dropdown -->
 					<div class="wpep-form-select">
-						<label for="wpep-form-selection"><?php esc_html_e( 'Select Form', 'wp_easy_pay' ); ?></label>
+						<label for="wpep-form-selection"><?php esc_html_e( 'Select form', 'wp_easy_pay' ); ?></label>
 						<select id="wpep-form-selection">
 							<option value=""><?php esc_html_e( 'Select a form', 'wp_easy_pay' ); ?></option>
 							<?php
@@ -47,7 +47,6 @@
 							}
 							?>
 						</select>
-
 					</div>
 
 					<!-- Select Fields Section -->

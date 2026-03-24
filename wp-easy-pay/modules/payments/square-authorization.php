@@ -131,6 +131,9 @@ function wpep_square_callback_success() {
 
 		$initial_page = 0;
 
+		// Default sandbox flag to avoid undefined variable use.
+		$wpep_sandbox = 'no';
+
 		if ( isset( $request['wpep_sandbox'] ) ) {
 			$wpep_sandbox = $request['wpep_sandbox'];
 		}

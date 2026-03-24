@@ -3,9 +3,6 @@ let afterpay = {};
 let cashAppPay = {};
 let applePay = {};
 let recaptcha = '';
-// Flags to prevent multiple simultaneous initializations
-let afterpayInitializing = false;
-let cashAppPayInitializing = false;
 const payments   = initializePayments( wpep_local_vars.square_application_id, wpep_local_vars.square_location_id_in_use );
 
 document.addEventListener('DOMContentLoaded', async function () {
@@ -16,8 +13,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 	});
 	jQuery( '.wizard-section' ).css( 'visibility', 'visible' );
 	jQuery( '.parent-loader' ).remove();
-	
-
+		
 	var wpep_paymentForm = {};
 
 	
@@ -44,10 +40,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 					jQuery('.other-'+current_form_id).on('input', function() {
 					  var customAmount = jQuery(this).val();
 					  clearTimeout(timeoutId);
-					  timeoutId = setTimeout(function() {
+					timeoutId = setTimeout(function() {
 						jQuery('.loader').show();
 						jQuery(`#theForm-${current_form_id}`).find('input[name="one_unit_cost"]').val(customAmount);
-						jQuery('#wpep-selected-amount-'+ current_form_id ).val(customAmount).trigger('change');
 						jQuery('#wpep-single-form-'+ current_form_id ).click();
 					  }, 500);
 					}); 
@@ -219,9 +214,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 						if (selectedTab === 'giftcard-' + current_form_id) {
 
 							giftcard = await displayGiftcard( payments, current_form_id, currency );
-							console.log(' clickiftcard');
+
 							jQuery('.wpep-single-form-' + current_form_id).click(async function (event) {
-								
 								event.preventDefault();
 								var res = paymentButtonClicked(event, giftcard, current_form_id, currency);
 								if(res || wpep_local_vars.wpep_show_wizard == 'on'){
@@ -337,7 +331,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 			if (!recaptcha || recaptcha.length === 0) {
 				jQuery("#theForm-" + current_form_id + " .paymentsBlocks-" + current_form_id)
-					.prepend('<div class="wpep-alert wpep-alert-danger wpep-alert-dismissable"><a href="#" data-dismiss="alert" class="wpep-alert-close">Ã—</a>Please verify that you are not a robot.</div>');
+					.prepend('<div class="wpep-alert wpep-alert-danger wpep-alert-dismissable"><a href="#" data-dismiss="alert" class="wpep-alert-close">×</a>Please verify that you are not a robot.</div>');
 				jQuery('.wpepLoader').remove();
 				return false;
 			}
@@ -347,7 +341,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 		return true;
 
 	}
-	
+
 jQuery('#terminialpay-button').on('click', function(e){
 	e.preventDefault();
 	card = '';
@@ -434,12 +428,12 @@ jQuery('#terminialpay-button').on('click', function(e){
 			  amount               = amount.trim();
 			  amount               = amount.split(' ');
 			  amount               = amount[0];
-			  amount 				 = amount.replace(wpep_local_vars.wpep_square_currency_new+" ", "");
+			  amount 			   = amount.replace(wpep_local_vars.wpep_square_currency_new+" ", "");
 		  }else{
 			  amount               = amount.trim();
 			  amount               = amount.split(' ');
 			  amount               = amount[0];
-			  amount 				 = amount.replace(wpep_local_vars.wpep_currency_symbol, "");
+			  amount 			   = amount.replace(wpep_local_vars.wpep_currency_symbol, "");
 		  }
 		  amount = parseFloat(amount.replace(",", ""));
 		  const billingContact = getBillingContact(form, current_form_id);
@@ -537,7 +531,7 @@ jQuery('#terminialpay-button').on('click', function(e){
 
 						var json_response = JSON.parse( response );
 
-						jQuery( "#theForm-" + current_form_id + " .paymentsBlocks-" + current_form_id ).prepend( '<div class="wpep-alert wpep-alert-danger wpep-alert-dismissable"><a href="#" data-dismiss="alert" class="wpep-alert-close">Ã—</a>' + json_response.detail + '</div>' );
+						jQuery( "#theForm-" + current_form_id + " .paymentsBlocks-" + current_form_id ).prepend( '<div class="wpep-alert wpep-alert-danger wpep-alert-dismissable"><a href="#" data-dismiss="alert" class="wpep-alert-close">×</a>' + json_response.detail + '</div>' );
 						jQuery( 'html, body' ).animate(
 						{
 							scrollTop: jQuery( "#theForm-" + current_form_id + " .paymentsBlocks-" + current_form_id ).offset().top
@@ -566,7 +560,7 @@ jQuery('#terminialpay-button').on('click', function(e){
 		var last_name        = jQuery( "#theForm-" + current_form_id + " input[name='wpep-last-name-field']" ).val();
 		var email            = jQuery( "#theForm-" + current_form_id + " input[name='wpep-email-field']" ).val();
 		var currencies       = ['CAD', 'USD', 'EUR', 'JPY', 'AUD', 'GBP'];
-		var currency_symbols = ['C$', 'A$', 'Â¥', 'Â£', 'â‚¬', '$'];
+		var currency_symbols = ['C$', 'A$', '¥', '£', '€', '$'];
 		var amount           = jQuery( '#amount_display_' + current_form_id ).text();
 		if(jQuery.inArray(currency, currencies) !== -1){
 			if(wpep_local_vars.currencySymbolType == 'code'){
@@ -939,9 +933,17 @@ jQuery('#terminialpay-button').on('click', function(e){
 		} else {
 			var discount = 0;
 		}
+		// var recaptcha = '';
+		// if(wpep_local_vars.enable_recaptcha == 'on' && wpep_local_vars.recaptcha_version == 'v2'){
+		// 	var recaptcha = grecaptcha.getResponse()
+		// }
+		// else if(wpep_local_vars.enable_recaptcha == 'on' && wpep_local_vars.recaptcha_version == 'v3'){
+		// 	var recaptcha = jQuery('#wpep_recaptcha').val();
+			
+		// }
 
 		wpepValidateFormSubmitButton();
-
+		
 		var data = {
 			'action': 'wpep_payment_request',
 			'nonce': token,
@@ -996,7 +998,7 @@ jQuery('#terminialpay-button').on('click', function(e){
 									success: function (response) {
 										var parsed_response = JSON.parse(response);
 										if (parsed_response.hasOwnProperty('error')) {
-											jQuery( "#theForm-" + current_form_id + " .paymentsBlocks-" + current_form_id ).prepend( '<div class="wpep-alert wpep-alert-danger wpep-alert-dismissable"><a href="#" data-dismiss="alert" class="wpep-alert-close">Ã—</a>' + parsed_response.error + '</div>' );
+											jQuery( "#theForm-" + current_form_id + " .paymentsBlocks-" + current_form_id ).prepend( '<div class="wpep-alert wpep-alert-danger wpep-alert-dismissable"><a href="#" data-dismiss="alert" class="wpep-alert-close">×</a>' + parsed_response.error + '</div>' );
 											jQuery( '.wpepLoader' ).remove();
 											
 										} else {
@@ -1058,7 +1060,7 @@ jQuery('#terminialpay-button').on('click', function(e){
 						success: function (response) {
 							var parsed_response = JSON.parse(response);
 							if (parsed_response.hasOwnProperty('error')) {
-								jQuery( "#theForm-" + current_form_id + " .paymentsBlocks-" + current_form_id ).prepend( '<div class="wpep-alert wpep-alert-danger wpep-alert-dismissable"><a href="#" data-dismiss="alert" class="wpep-alert-close">Ã—</a>' + parsed_response.error + '</div>' );
+								jQuery( "#theForm-" + current_form_id + " .paymentsBlocks-" + current_form_id ).prepend( '<div class="wpep-alert wpep-alert-danger wpep-alert-dismissable"><a href="#" data-dismiss="alert" class="wpep-alert-close">×</a>' + parsed_response.error + '</div>' );
 								jQuery( '.wpepLoader' ).remove();
 								
 							} else {
@@ -1106,7 +1108,7 @@ jQuery('#terminialpay-button').on('click', function(e){
 	
 	
 	// This function tokenizes a payment method. 
-	// The â€˜errorâ€™ thrown from this async function denotes a failed tokenization,
+	// The ‘error’ thrown from this async function denotes a failed tokenization,
 	// which is due to buyer error (such as an expired card). It is up to the
 	// developer to handle the error and provide the buyer the chance to fix
 	// their mistakes.
@@ -1147,15 +1149,14 @@ jQuery('#terminialpay-button').on('click', function(e){
 			verificationDetails.amount = amountValue.replace(/,/g, "")
 			verificationDetails.currencyCode = wpep_local_vars.wpep_square_currency_new;
 		}
-		
+
 		let tokenResult;
 		if (method === 'ach') {
-
 			tokenResult = await paymentMethod.tokenize(options);
-
 		} else {
 			tokenResult = await paymentMethod.tokenize(verificationDetails);
 		}
+		// const tokenResult = await paymentMethod.tokenize(verificationDetails);
 
 		if (tokenResult.status === 'OK') {
 			return tokenResult.token;
@@ -1181,6 +1182,7 @@ jQuery('#terminialpay-button').on('click', function(e){
 		if (! validateRecaptcha(current_form_id)) {
 			return;
 		}
+
 
 		try {
 			
@@ -1290,8 +1292,12 @@ jQuery('#terminialpay-button').on('click', function(e){
 	}
 
 	function validateEmail(email) {
-		let re = /^[^\s@]+@[^\s@]+\.(com|net|org|edu|gov|mil|co)$/i;
-		return re.test( String( email ).toLowerCase() );
+		if (typeof email !== 'string') {
+			return false;
+		}
+		const sanitizedEmail = String(email).trim().replace(/\.+$/, '');
+		const re = /^[^\s@]+@[^\s@]+\.[a-z]{2,}(?:\.[a-z]{2,})*$/i;
+		return re.test( sanitizedEmail );
 	}
 
 
@@ -1585,16 +1591,17 @@ jQuery('#terminialpay-button').on('click', function(e){
 		}
 
 		if (jQuery( 'input[name="card_on_file"]' ).is( ':checked' )) {
-			
+
 			var card_on_file = jQuery( 'input[name="card_on_file"]' ).val();
 
 			if(finalCheck <= 0 && termCond == true){
-
+				
+				jQuery( "#theForm-" + current_form_id ).append( jQuery( '<div />' ).attr( 'class', 'wpepLoader' ).html( '<div class="initial-load-animation"><div class="payment-image icomoonLib"><span class="icon-pay"></span></div><div class="loading-bar"><div class="blue-bar"></div></div></div>' ) );
+				
 				if (! validateRecaptcha(current_form_id)) {
 					return;
 				}
-
-				jQuery( "#theForm-" + current_form_id ).append( jQuery( '<div />' ).attr( 'class', 'wpepLoader' ).html( '<div class="initial-load-animation"><div class="payment-image icomoonLib"><span class="icon-pay"></span></div><div class="loading-bar"><div class="blue-bar"></div></div></div>' ) );
+				
 				jQuery('.wpep-single-form-' + current_form_id).attr('disabled', 'disabled');
 				jQuery('.wpep-single-form-' + current_form_id).css('cursor', 'not-allowed');
 				jQuery('.wpep-wizard-form-' + current_form_id).css('cursor', 'not-allowed');
@@ -1747,6 +1754,8 @@ jQuery('#terminialpay-button').on('click', function(e){
 			jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( jQuery( this ).text() ).trigger('change');
 			jQuery( '#wpep_quantity_' + form_id ).val( 1 );
 			jQuery(`#wpep_coupon_applied_${form_id}`).hide();
+			// jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-' + current_form_id).removeClass( 'wpep-disabled' );
+			// jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-' + current_form_id).removeClass( 'wpep-disabled' );
 
 			jQuery( 'form[data-id="' + form_id + '"] .showPayment' ).removeClass( 'shcusIn' );
 			jQuery( 'form[data-id="' + form_id + '"] .customPayment' ).text( jQuery( this ).val() );
@@ -1761,12 +1770,16 @@ jQuery('#terminialpay-button').on('click', function(e){
 		setTimeout(function() {
 			jQuery('input[name="wpep-selected-amount"]').val(min).trigger('change');	
 			jQuery('.customPayment.otherPayment').val(min);
+			// jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-' + current_form_id).removeClass( 'wpep-disabled' );
+			// jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-' + current_form_id).removeClass( 'wpep-disabled' );
 		}, 1500);
 	});
 
 	jQuery( '.otherPayment' ).on(
 		'change',
 		function (e) {
+
+			window.wpep_other_amount_pending_verification = true;
 
 			var form_id      = jQuery( this ).parents( 'form' ).data( 'id' );
 			var currency     = jQuery( this ).parents( 'form' ).data( 'currency' );
@@ -1786,6 +1799,12 @@ jQuery('#terminialpay-button').on('click', function(e){
 				jQuery(`#theForm-${form_id} .wpep-alert-coupon`).remove();
 			}
 
+			// Amount verify hone tak button disable - user click na kar sake
+			jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-' + form_id ).addClass( 'wpep-disabled' );
+			jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-' + form_id ).addClass( 'wpep-disabled' );
+			jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-submit-btn' ).addClass( 'wpep-disabled' );
+			jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-submit-btn' ).addClass( 'wpep-disabled' );
+
 			setTimeout(function() {
 				if (val != '' && val >= min && val <= max) {
 					currency = prepare_display_amount(currencyType, currency, val);
@@ -1804,6 +1823,11 @@ jQuery('#terminialpay-button').on('click', function(e){
 					}
 					jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( jQuery('.otherPayment ').val() ).trigger('change');
 					jQuery( 'span.valueCheckWpep' ).text('');
+					window.wpep_other_amount_pending_verification = false;
+					jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-' + form_id ).removeClass( 'wpep-disabled' );
+					jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-' + form_id ).removeClass( 'wpep-disabled' );
+					jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-submit-btn' ).removeClass( 'wpep-disabled' );
+					jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-submit-btn' ).removeClass( 'wpep-disabled' );
 
 				} else {
 
@@ -1822,13 +1846,14 @@ jQuery('#terminialpay-button').on('click', function(e){
 						jQuery(`#amount_display_${form_id}`).show();
 					}
 					jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( '' ).trigger('change');
-					jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-' + current_form_id).addClass( 'wpep-disabled' );
-					jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-' + current_form_id).addClass( 'wpep-disabled' );
+					window.wpep_other_amount_pending_verification = false;
+					jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-' + form_id ).addClass( 'wpep-disabled' );
+					jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-' + form_id ).addClass( 'wpep-disabled' );
 					var valueValidationWpEp = 'Please insert value between ' + min + ' - ' + max;
 					jQuery( 'span.valueCheckWpep' ).text(valueValidationWpEp);
 				}
 				jQuery(`#wpep_coupon_applied_${form_id}`).hide();
-			}, 1000);
+			}, 400);
 		}
 	);
 
@@ -1849,11 +1874,11 @@ jQuery('#terminialpay-button').on('click', function(e){
 			}
 
 			if (currency == 'JPY') {
-				currency = 'Â¥' + val;
+				currency = '¥' + val;
 			}
 
 			if (currency == 'GBP') {
-				currency = 'Â£' + val;
+				currency = '£' + val;
 			}
 
 		} else {
@@ -1895,6 +1920,15 @@ jQuery('#terminialpay-button').on('click', function(e){
 	);
 
 	function wpepValidateFormSubmitButton() {
+		var $other = jQuery('.otherPayment');
+		if (!$other.length || !$other.is(':visible') || $other.val() === '') {
+			window.wpep_other_amount_pending_verification = false;
+		}
+		if (window.wpep_other_amount_pending_verification) {
+			jQuery('button.wpep-single-form-submit-btn').addClass('wpep-disabled');
+			jQuery('button.wpep-wizard-form-submit-btn').addClass('wpep-disabled');
+			return;
+		}
 		let wpepSelectedAmountHiddenVal = jQuery('input[name="wpep-selected-amount"]')
 		if (
 			(wpep_local_vars.wpep_square_amount_type === 'tabular_layout_for_square' ||
@@ -1902,10 +1936,8 @@ jQuery('#terminialpay-button').on('click', function(e){
 			(wpepSelectedAmountHiddenVal.val() === '' || parseFloat(wpepSelectedAmountHiddenVal.val()) === 0)
 		) {
 			jQuery('button.wpep-single-form-submit-btn').addClass('wpep-disabled');
-			jQuery('button.wpep-wizard-form-submit-btn').addClass('wpep-disabled');
 		} else if (wpepSelectedAmountHiddenVal.val() > 0) {
 			jQuery('button.wpep-single-form-submit-btn').removeClass('wpep-disabled');
-			jQuery('button.wpep-wizard-form-submit-btn').removeClass('wpep-disabled');
 		}
 	}
 
@@ -2030,7 +2062,7 @@ jQuery(window).on('load', function () {
 	
 						jQuery(`#wpep-coupons-${form_id}`).prepend(`
 							<div class="wpep-alert-coupon wpep-alert wpep-alert-success wpep-alert-dismissable">
-								<a href="#" class="wpep-dismiss-coupon wpep-alert-close">Ã—</a>${response.message_success}
+								<a href="#" class="wpep-dismiss-coupon wpep-alert-close">×</a>${response.message_success}
 							</div>
 						`);
 	
@@ -2042,20 +2074,22 @@ jQuery(window).on('load', function () {
 						jQuery(`#theForm-${form_id}`).find('input[name="wpep-selected-amount"]').val(`${subTotalPrice} ${response.currency}`).trigger('change');
 					} else {
 						jQuery(`#wpep-coupons-${form_id}`).prepend(`
-							<div class="wpep-alert-coupon wpep-alert wpep-alert-danger wpep-alert-dismissable quantityCouponAlert">
-								<a href="#" class="wpep-dismiss-coupon wpep-alert-close">Ã—</a>Coupon already applied!
+							<div class="wpep-alert-coupon wpep-alert wpep-alert-danger wpep-alert-dismissable">
+								<a href="#" class="wpep-dismiss-coupon wpep-alert-close">×</a>Coupon already applied!
 							</div>
 						`);
 					}
 				}
 	
 				if (response.status == 'failed') {
-					jQuery(`#wpep-coupons-${form_id}`).prepend(`
-						<div class="wpep-alert-coupon wpep-alert wpep-alert-danger wpep-alert-dismissable quantityCouponAlert">
-							<a href="#" class="wpep-dismiss-coupon wpep-alert-close">Ã—</a>${response.message_failed}
-						</div>
-					`);
-				}
+					if (jQuery(`#wpep-coupons-${form_id} .failedcoupon`).length === 0) {
+						jQuery(`#wpep-coupons-${form_id}`).prepend(`
+							<div class="wpep-alert-coupon wpep-alert wpep-alert-danger wpep-alert-dismissable failedcoupon">
+								<a href="#" class="wpep-dismiss-coupon wpep-alert-close">×</a>${response.message_failed}
+							</div>
+						`);
+					}
+				}	
 			}
 		);
 	}
@@ -2071,6 +2105,7 @@ jQuery(window).on('load', function () {
 	});
 	// payment custom layout of pricing in form settings. 
 	// This is for coupon apply when each tab click.
+	
 	jQuery('.selection input[type="radio"]').on('change', function (e) {
 		if (jQuery(this).hasClass('otherpayment')) {
 			return;
@@ -2191,12 +2226,12 @@ function wpep_update_amount_with_quantity(current_form_id, value) {
 					}
 					
 					jQuery(`#theForm-${current_form_id}`).append(`<input type="hidden" name="wpep-discount" value="${discountPrice}" />`);
-					jQuery(`#wpep-coupons-${current_form_id}`).prepend(`<div class="wpep-alert-coupon wpep-alert wpep-alert-success wpep-alert-dismissable"><a href="#" class="wpep-dismiss-coupon wpep-alert-close">Ã—</a>${response.message_success}</div>`);
+					jQuery(`#wpep-coupons-${current_form_id}`).prepend(`<div class="wpep-alert-coupon wpep-alert wpep-alert-success wpep-alert-dismissable"><a href="#" class="wpep-dismiss-coupon wpep-alert-close">×</a>${response.message_success}</div>`);
 					jQuery(`#theForm-${current_form_id}`).find('input[name="wpep-selected-amount"]').val(`${totalPrice} ${response.currency}`).trigger('change');
 					jQuery(`#theForm-${current_form_id}`).find(`small#amount_display_${current_form_id}`).text(`${totalPrice} ${response.currency}`);
 				
 				} else {
-					jQuery(`#wpep-coupons-${current_form_id}`).prepend(`<div class="wpep-alert-coupon wpep-alert wpep-alert-danger wpep-alert-dismissable quantityCouponAlert"><a href="#" class="wpep-dismiss-coupon wpep-alert-close">Ã—</a>Coupon already applied!</div>`);
+					jQuery(`#wpep-coupons-${current_form_id}`).prepend(`<div class="wpep-alert-coupon wpep-alert wpep-alert-danger wpep-alert-dismissable quantityCouponAlert"><a href="#" class="wpep-dismiss-coupon wpep-alert-close">×</a>Coupon already applied!</div>`);
 				}
 				
 			}
@@ -2207,7 +2242,7 @@ function wpep_update_amount_with_quantity(current_form_id, value) {
 					jQuery(`#theForm-${current_form_id} .wpep-alert-coupon`).remove();
 				}
 
-				jQuery(`#wpep-coupons-${current_form_id}`).prepend(`<div class="wpep-alert-coupon wpep-alert wpep-alert-danger wpep-alert-dismissable quantityCouponAlert"><a href="#" class="wpep-dismiss-coupon wpep-alert-close">Ã—</a>${response.message_failed}</div>`);
+				jQuery(`#wpep-coupons-${current_form_id}`).prepend(`<div class="wpep-alert-coupon wpep-alert wpep-alert-danger wpep-alert-dismissable quantityCouponAlert"><a href="#" class="wpep-dismiss-coupon wpep-alert-close">×</a>${response.message_failed}</div>`);
 				
 			}
 
@@ -2288,7 +2323,7 @@ function calculate(form_id, currency) {
 	}
 
 	var currency_codes = ['CAD', 'GBP', 'AUD', 'JPY', 'EUR', 'USD'];
-	var currency_symbol = ['C$', 'Â£', 'A$', 'Â¥', 'â‚¬', '$'];
+	var currency_symbol = ['C$', '£', 'A$', '¥', '€', '$'];
 
 	if (wpep_local_vars.currencySymbolType == 'symbol') {
 		jQuery.each( currency_codes, function( i, val ) {
@@ -2362,6 +2397,7 @@ function calculate(form_id, currency) {
 		} else {
 			jQuery('#giftcard_text_'+form_id).remove();
 			jQuery(`#amount_display_${form_id}`).show();
+			// jQuery(`#amount_display_${current_form_id}`).text(jQuery(`#amount_display_${current_form_id}`).siblings('input[name="wpep-selected-amount"]').val());
 		}
 		var layout = jQuery('#wpep_amount_layout').val();
 		if (layout !== 'tabular_layout') {
@@ -2370,6 +2406,8 @@ function calculate(form_id, currency) {
 		if (layout == 'tabular_layout_for_square') {
 			jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( total ).trigger('change');
 		}
+		// jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-' + current_form_id).removeClass( 'wpep-disabled' );
+		// jQuery( 'form[data-id="' + form_id + '"] .wpep-wizard-form-' + current_form_id).removeClass( 'wpep-disabled' );
 		jQuery(`#wpep_coupon_applied_${form_id}`).hide();
 	}
 }
@@ -2438,6 +2476,7 @@ jQuery(window).on('load', function() {
 		if ( jQuery(`#theForm-${form_id}`).find('input[name="wpep-signup-amount"]').length > 0 ) {
 			var signup_total = parseFloat(jQuery(`#theForm-${form_id}`).find('input[name="wpep-signup-amount"]').val());
 		}
+		//var gross_total = parseFloat(jQuery(`#theForm-${form_id}`).find('input[name="gross_total"]').val());
 		var total_amount = amount + signup_total;
 		if (isNaN(total_amount)) {
 			if(!localStorage.getItem("alertDisplayed")) {
@@ -2591,13 +2630,12 @@ function wpep_delete_cof(customer_id, card_on_file, current_form_id, delete_id) 
 
 function afterPaybuildPaymentRequest(payments, current_form_id, currency) {
 
+
+	// var finalamoutn = amount;
 	if ( jQuery('input[name="wpep-selected-amount"]').val().trim() != '' && wpep_local_vars.wpep_square_amount_type != 'payment_tabular' ) {
-		var gross_amount = jQuery('#theForm-' + current_form_id).find('#gross_total-'+ current_form_id).val();
-		// Don't trigger change event to prevent re-initialization loops
-		jQuery(`#theForm-${current_form_id}`).find('input[name="wpep-selected-amount"]').val(gross_amount);
-		amount = jQuery('input[name="wpep-selected-amount"]').val();
+	  amount = jQuery('input[name="wpep-selected-amount"]').val();
 	} else {
-		amount = jQuery('#amount_display_' + current_form_id).text();
+	  amount = jQuery('#amount_display_' + current_form_id).text();
 	}
 	
 	coupon_apply = jQuery('#wpep-coupons-' + current_form_id).length;
@@ -2612,13 +2650,8 @@ function afterPaybuildPaymentRequest(payments, current_form_id, currency) {
 			}, 1000);
 		})
 	}
-	amount = String(amount).replace(/\s+/g, '').trim();
-
-	if(wpep_local_vars.currencySymbolType == 'code'){
-		amount 	= amount.replace(wpep_local_vars.wpep_square_currency_new, "");
-	}else{
-		amount 	= amount.replace(wpep_local_vars.wpep_currency_symbol, "");
-	}
+	amount               = amount.trim();
+	amount 				 = amount.replace("$", "");
 	var min          = parseFloat( jQuery( '.otherPayment' ).attr( 'min' ) );
 	if(amount == 0){
 		amount = min;
@@ -2660,58 +2693,40 @@ function afterPaybuildPaymentRequest(payments, current_form_id, currency) {
 	return req;
 }
 function cashAppbuildPaymentRequest(payments, current_form_id, currency) {
-	var amount = jQuery('#amount_display_' + current_form_id).text();
-	
-	// Get amount from selected input if available
-	if ( jQuery('input[name="wpep-selected-amount"]').val().trim() != '' ) {
-		amount = jQuery('input[name="wpep-selected-amount"]').val();
+	amount = jQuery('#amount_display_' + current_form_id).text();
+	coupon_apply = jQuery('#wpep-coupons-' + current_form_id).length;
+	if(coupon_apply > 0 ){
+		 jQuery('.cp-apply').click(function() {
+			setTimeout(function() {
+				if ( jQuery('input[name="wpep-selected-amount"]').val().trim() != '') {
+					amount = jQuery('input[name="wpep-selected-amount"]').val();
+				} else {
+					amount = jQuery('#amount_display_' + current_form_id).text();
+				}
+			}, 1000);
+		})
 	}
-	
-	// Clean amount - remove all non-numeric characters except decimal point
-	amount = String(amount).trim();
-	
-	// Remove currency symbols and codes
-	if(wpep_local_vars.currencySymbolType == 'code'){
-		amount = amount.replace(wpep_local_vars.wpep_square_currency_new, "");
-	} else {
-		amount = amount.replace(wpep_local_vars.wpep_currency_symbol, "");
-	}
-	
-	// Remove any remaining non-numeric characters except decimal point
-	amount = amount.replace(/[^0-9.]/g, '');
-	
-	// Parse and validate
-	amount = parseFloat(amount);
-	var min = parseFloat( jQuery( '.otherPayment' ).attr( 'min' ) ) || 0;
-	
-	if (isNaN(amount) || amount <= 0) {
-		amount = min;
-	}
-	
-	// Ensure amount is at least minimum
-	if (amount < min) {
-		amount = min;
-	}
-	
-	// Convert to string with proper formatting (remove trailing zeros if whole number)
-	var amountString = amount % 1 === 0 ? amount.toString() : amount.toFixed(2);
+	amount = amount.trim();
+	amount = amount.split(' ');
+	amount = amount[0];
+	amount = amount.replace("$", "");
+	var min          = parseFloat( jQuery( '.otherPayment' ).attr( 'min' ) );
+		if(amount == 0){
+			amount = min;
+		}
   
 	jQuery('#cashapp-amount').hide();
-	
-	try {
-		var paymentRequest = payments.paymentRequest({
-		  countryCode: 'US',
-		  currencyCode: currency,
-		  total: {
-			amount: amountString,
-			label: 'Total',
-		  },
-		});
-		return paymentRequest;
-	} catch (error) {
-		console.error('Error creating Cash App payment request:', error);
-		return null;
-	}
+	paymentRequest = payments.paymentRequest({
+	  countryCode: 'US',
+	  currencyCode: currency,
+	  total: {
+		amount: amount.toString(),
+		label: 'Total',
+	  },
+	});
+  
+
+  return paymentRequest;
 }
 
 
@@ -2771,74 +2786,51 @@ var req = {};
   }
 
   async function initializeAfterpay(payments, current_form_id, currency) {
-	// Prevent multiple simultaneous initializations
-	if (afterpayInitializing) {
+	var max          = parseFloat( jQuery( '.otherPayment' ).attr( 'max' ) );
+	var min          = parseFloat( jQuery( '.otherPayment' ).attr( 'min' ) );
+	var val          = jQuery(  '.otherPayment'  ).val();
+	if('code' == wpep_local_vars.currencySymbolType) {
+		currency = wpep_local_vars.wpep_square_currency_new;
+	}
+	var amount           = jQuery( '#amount_display_' + current_form_id ).text();
+	amount               = amount.trim();
+	amount 				 = amount.replace("$", "");
+	
+	if (val == '') {
+		jQuery( '.otherPayment' ).val(min);
+		val = min;
+	}
+	if (!isNaN(val) && val >= min && val <= max) {
+		const paymentRequest = afterPaybuildPaymentRequest(payments, current_form_id, currency);
+		afterpay = await payments.afterpayClearpay(paymentRequest);
+		await afterpay.attach('#afterpay-button-'+current_form_id);
 		return afterpay;
 	}
-	
-	afterpayInitializing = true;
-	
-	try {
-		// Destroy existing instance if it exists and is not already destroyed
-		if (afterpay && typeof afterpay.destroy === 'function') {
-			try {
-				afterpay.destroy();
-			} catch (e) {
-				// Instance may already be destroyed, ignore error
-			}
-			afterpay = null;
-		}
+	else if (!isNaN(amount) && wpep_local_vars.wpep_square_user_defined_amount != 'on') {
+		const paymentRequest = afterPaybuildPaymentRequest(payments, current_form_id, currency);
+		afterpay = await payments.afterpayClearpay(paymentRequest);
 		
-		var max          = parseFloat( jQuery( '.otherPayment' ).attr( 'max' ) );
-		var min          = parseFloat( jQuery( '.otherPayment' ).attr( 'min' ) );
-		var val          = jQuery(  '.otherPayment'  ).val();
-		if('code' == wpep_local_vars.currencySymbolType) {
-			currency = wpep_local_vars.wpep_square_currency_new;
-		}
-		var amount = jQuery( '#amount_display_' + current_form_id ).text();
-		amount = String(amount).replace(/\s+/g, '').trim();
-
-		if(wpep_local_vars.currencySymbolType == 'code'){
-			amount 	= amount.replace(wpep_local_vars.wpep_square_currency_new, "");
-		}else{
-			amount 	= amount.replace(wpep_local_vars.wpep_currency_symbol, "");
-		}
-		if (val == '') {
-			jQuery( '.otherPayment' ).val(min);
-			val = min;
-		}
-		if (!isNaN(val) && val >= min && val <= max) {
-			const paymentRequest = afterPaybuildPaymentRequest(payments, current_form_id, currency);
-			afterpay = await payments.afterpayClearpay(paymentRequest);
-			await afterpay.attach('#afterpay-button-'+current_form_id);
-			return afterpay;
-		}
-		else if (!isNaN(amount) && wpep_local_vars.wpep_square_user_defined_amount != 'on') {
-			const paymentRequest = afterPaybuildPaymentRequest(payments, current_form_id, currency);
-			afterpay = await payments.afterpayClearpay(paymentRequest);
-			// Attach immediately instead of waiting 2 seconds
-			await afterpay.attach('#afterpay-button-'+current_form_id);
-			return afterpay;
-		} 
-		else if (!isNaN(amount) 
-			&& 
-			wpep_local_vars.wpep_square_amount_type == 'payment_radio' 
-			|| wpep_local_vars.wpep_square_amount_type == 'payment_drop' 
-			|| wpep_local_vars.wpep_square_amount_type == 'payment_custom' 
-			|| wpep_local_vars.wpep_square_amount_type == 'payment_tabular'
-			|| wpep_local_vars.wpep_square_amount_type == 'tabular_layout_for_square'
-		  ) {
-			const paymentRequest = afterPaybuildPaymentRequest(payments, current_form_id, currency);
-			afterpay = await payments.afterpayClearpay(paymentRequest);
-			await afterpay.attach('#afterpay-button-'+current_form_id);
-			return afterpay;
-		}
-		else{
-			jQuery('#afterpay-amount').show(); 
-		}
-	} finally {
-		afterpayInitializing = false;
+		setTimeout(function(){ 
+			afterpay.attach('#afterpay-button-'+current_form_id);
+		}, 2000);
+		return afterpay;
 	}
+	else if (!isNaN(amount) 
+		&& 
+		wpep_local_vars.wpep_square_amount_type == 'payment_radio' 
+		|| wpep_local_vars.wpep_square_amount_type == 'payment_drop' 
+		|| wpep_local_vars.wpep_square_amount_type == 'payment_custom' 
+		|| wpep_local_vars.wpep_square_amount_type == 'payment_tabular'  
+		|| wpep_local_vars.wpep_square_amount_type == 'tabular_layout_for_square'
+	  ) {
+		const paymentRequest = afterPaybuildPaymentRequest(payments, current_form_id, currency);
+		afterpay = await payments.afterpayClearpay(paymentRequest);
+		await afterpay.attach('#afterpay-button-'+current_form_id);
+		return afterpay;
+	}
+	else{
+		jQuery('#afterpay-amount').show(); 
+	} 
 }
 async function applepaybuildPaymentRequest( payments, current_form_id, currency, applePay ) {
 
@@ -2973,7 +2965,7 @@ var req = {};
 		await googlePay.attach('#google-pay-button-'+current_form_id);
 		jQuery('#gpay-amount').hide();
 		return googlePay;
-	}else if (!isNaN(amount) && wpep_local_vars.wpep_square_amount_type == 'payment_radio' || wpep_local_vars.wpep_square_amount_type == 'payment_drop' || wpep_local_vars.wpep_square_amount_type == 'payment_tabular'  || wpep_local_vars.wpep_square_amount_type == 'tabular_layout_for_square' ) {
+	}else if (!isNaN(amount) && wpep_local_vars.wpep_square_amount_type == 'payment_radio' || wpep_local_vars.wpep_square_amount_type == 'payment_drop' || wpep_local_vars.wpep_square_amount_type == 'payment_tabular' || wpep_local_vars.wpep_square_amount_type == 'tabular_layout_for_square' ) {
 		const paymentRequest = gpaybuildPaymentRequest(payments, current_form_id, currency, googlePay);
 		googlePay = await payments.googlePay(paymentRequest);
 		await googlePay.attach('#google-pay-button-'+current_form_id);
@@ -2985,107 +2977,50 @@ var req = {};
   }
 
  async function initializeCashApp(payments, current_form_id, currency) {
-	// Prevent multiple simultaneous initializations
-	if (cashAppPayInitializing) {
-		return cashAppPay;
-	}
-	
-	cashAppPayInitializing = true;
-	
-	try {
-		// Check if target element exists
-		const targetElement = document.getElementById('cash-app-pay-'+current_form_id);
-		if (!targetElement) {
-			console.warn('Cash App Pay target element not found: #cash-app-pay-'+current_form_id);
-			return null;
-		}
-		
-		// Destroy existing instance if it exists and is not already destroyed
-		if (cashAppPay && typeof cashAppPay.destroy === 'function') {
-			try {
-				cashAppPay.destroy();
-			} catch (e) {
-				// Instance may already be destroyed, ignore error
-			}
-			cashAppPay = null;
-		}
-		
-		var max          = parseFloat( jQuery( '.otherPayment' ).attr( 'max' ) ) || 0;
-		var min          = parseFloat( jQuery( '.otherPayment' ).attr( 'min' ) ) || 0;
-		var val          = jQuery(  '.otherPayment'  ).val();
+	var max          = parseFloat( jQuery( '.otherPayment' ).attr( 'max' ) );
+	var min          = parseFloat( jQuery( '.otherPayment' ).attr( 'min' ) );
+	var val          = jQuery(  '.otherPayment'  ).val();
 
-		var amount           = jQuery( '#amount_display_' + current_form_id ).text();
-		amount               = amount.trim();
-		amount 				 = amount.replace(currency+" ", "");
-		
-		// Clean amount - remove all non-numeric characters except decimal point
-		amount = amount.replace(/[^0-9.]/g, '');
-		
-		if (val == '' || val == null) {
-			jQuery( '.otherPayment' ).val(min);
-			val = min;
-		}
-		
-		// Validate amount
-		amount = parseFloat(amount);
-		if (isNaN(amount) || amount <= 0) {
-			jQuery('#cashapp-amount').show();
-			return null;
-		}
-		
-		if ((val != '' && val >= min && val <= max) || (amount >= min && amount <= max) && wpep_local_vars.wpep_square_user_defined_amount == 'on') {
-			const paymentRequest = cashAppbuildPaymentRequest(payments, current_form_id, currency);
-			if (!paymentRequest) {
-				jQuery('#cashapp-amount').show();
-				return null;
-			}
-			cashAppPay = await payments.cashAppPay(paymentRequest,{
-			  redirectURL: 'https://my.website/checkout',
-			  referenceId: 'my-website-00000001',
-			});
-			await cashAppPay.attach('#cash-app-pay-'+current_form_id);
-			return cashAppPay;
-		} else if (amount >= min && amount <= max && wpep_local_vars.wpep_square_user_defined_amount != 'on') {
-			const paymentRequest = cashAppbuildPaymentRequest(payments, current_form_id, currency);
-			if (!paymentRequest) {
-				jQuery('#cashapp-amount').show();
-				return null;
-			}
-			cashAppPay = await payments.cashAppPay(paymentRequest,{
-			  redirectURL: 'https://my.website/checkout',
-			  referenceId: 'my-website-00000001',
-			});
-			await cashAppPay.attach('#cash-app-pay-'+current_form_id);
-			return cashAppPay;
-		} else if (
-			wpep_local_vars.wpep_square_amount_type == 'payment_radio' 
-			|| wpep_local_vars.wpep_square_amount_type == 'payment_custom' 
-			|| wpep_local_vars.wpep_square_amount_type == 'payment_drop' 
-			|| wpep_local_vars.wpep_square_amount_type == 'payment_tabular'
-			|| wpep_local_vars.wpep_square_amount_type == 'tabular_layout_for_square'  
-			) {
-			const paymentRequest = cashAppbuildPaymentRequest(payments, current_form_id, currency);
-			if (!paymentRequest) {
-				jQuery('#cashapp-amount').show();
-				return null;
-			}
-			cashAppPay = await payments.cashAppPay(paymentRequest,{
-			  redirectURL: 'https://my.website/checkout',
-			  referenceId: 'my-website-00000001',
-			});
-			await cashAppPay.attach('#cash-app-pay-'+current_form_id);
-			return cashAppPay;
-		}else{
-			jQuery('#cashapp-amount').show();
-			return null;
-		}
-	} catch (error) {
-		console.error('Error initializing Cash App Pay:', error);
-		jQuery('#cashapp-amount').show();
-		return null;
-	} finally {
-		cashAppPayInitializing = false;
+	var amount           = jQuery( '#amount_display_' + current_form_id ).text();
+	amount               = amount.trim();
+	amount 				 = amount.replace(currency+" ", "");
+	if (val == '') {
+		jQuery( '.otherPayment' ).val(min);
+		val = min;
 	}
+	if ((val != '' && val >= min && val <= max) || (!isNaN(amount) && amount >= min && amount <= max) && wpep_local_vars.wpep_square_user_defined_amount == 'on') {
+		const paymentRequest = cashAppbuildPaymentRequest(payments, current_form_id, currency);
+		cashAppPay = await payments.cashAppPay(paymentRequest,{
+		  redirectURL: 'https://my.website/checkout',
+		  referenceId: 'my-website-00000001',
+		});
+		await cashAppPay.attach('#cash-app-pay-'+current_form_id);
+		return cashAppPay;
+	} else if (!isNaN(amount) && wpep_local_vars.wpep_square_user_defined_amount != 'on') {
+		const paymentRequest = cashAppbuildPaymentRequest(payments, current_form_id, currency)
+		cashAppPay = await payments.cashAppPay(paymentRequest,{
+		  redirectURL: 'https://my.website/checkout',
+		  referenceId: 'my-website-00000001',
+		});
+		await cashAppPay.attach('#cash-app-pay-'+current_form_id);
+		return cashAppPay;
+	} else if (
+		wpep_local_vars.wpep_square_amount_type == 'payment_radio' 
+		|| wpep_local_vars.wpep_square_amount_type == 'payment_custom' 
+		|| wpep_local_vars.wpep_square_amount_type == 'payment_drop' 
+		|| wpep_local_vars.wpep_square_amount_type == 'payment_tabular'
+		|| wpep_local_vars.wpep_square_amount_type == 'tabular_layout_for_square'  
+		) {
+		const paymentRequest = cashAppbuildPaymentRequest(payments, current_form_id, currency)
+		cashAppPay = await payments.cashAppPay(paymentRequest,{
+		  redirectURL: 'https://my.website/checkout',
+		  referenceId: 'my-website-00000001',
+		});
+		await cashAppPay.attach('#cash-app-pay-'+current_form_id);
+		return cashAppPay;
+	}else{
+		jQuery('#cashapp-amount').show();
+	} 
   }
 
   function cleanUpDuplicateGiftCards() {
@@ -3093,7 +3028,7 @@ var req = {};
   }
 
  async function initializeGiftcard(payments, current_form_id, currency) {
-	
+
 	var max          = parseFloat( jQuery( '.otherPayment' ).attr( 'max' ) );
 	var min          = parseFloat( jQuery( '.otherPayment' ).attr( 'min' ) );
 	var val          = jQuery(  '.otherPayment'  ).val();
@@ -3134,6 +3069,7 @@ var req = {};
 		
 	} 
   }
+
 
 
 
@@ -3247,16 +3183,11 @@ async function displayGooglePay(payments, current_form_id, currency,googlePay) {
 async function displayAfterPay(payments, current_form_id, currency) {
 	
 	var amount           = jQuery( '#amount_display_' + current_form_id ).text();
-	amount  = amount.trim();
-	if(wpep_local_vars.currencySymbolType == 'code'){
-		amount 	= amount.replace(wpep_local_vars.wpep_square_currency_new, "");
-	}else{
-		amount 	= amount.replace(wpep_local_vars.wpep_currency_symbol, "");
-	}
-
-	
+	amount               = amount.trim();
+	amount 				 = amount.replace(currency+" ", "");
 	if(currency !== amount){
 	
+		let afterpay;
 		try {
 			jQuery('.loader').show();
 			afterpay = await initializeAfterpay(payments, current_form_id, currency);
@@ -3276,25 +3207,22 @@ async function displayAfterPay(payments, current_form_id, currency) {
 				jQuery('#afterpay-amount').hide();
 				
 			clearTimeout(timeoutId);
-			timeoutId = setTimeout(async function() {
-			 if (afterpay && typeof afterpay.destroy === 'function') {	
-					try {
-						afterpay.destroy();
-					} catch (e) {
-						// Instance may already be destroyed, ignore error
-					}
+			timeoutId = setTimeout(function() {
+			 if (afterpay) {	
+					afterpay.destroy();
 				}
 				 
+			   let afterpay;
 				try {
 					jQuery('.loader').show();
-					afterpay = await initializeAfterpay(payments, current_form_id, currency);
+					afterpay =  initializeAfterpay(payments, current_form_id, currency);
 					jQuery('.loader').hide();
 				} catch (e) {
 					console.error('Initializing Afterpay/Clearpay failed', e);
 				}
 			  
 			 
-			}, 500); 
+			}, 1000); 
 		  });
 	});
   
@@ -3304,25 +3232,22 @@ async function displayAfterPay(payments, current_form_id, currency) {
 		jQuery('#afterpay-amount').hide();
 		
 	clearTimeout(timeoutQtyId);
-    timeoutQtyId = setTimeout(async function() {
+    timeoutQtyId = setTimeout(function() {
      
-		if (afterpay && typeof afterpay.destroy === 'function') {	
-			try {
-				afterpay.destroy();
-			} catch (e) {
-				// Instance may already be destroyed, ignore error
-			}
+		if (afterpay) {	
+			afterpay.destroy();
 		}
+	   let afterpay;
 		try {
 			jQuery('.loader').show();
-			afterpay = await initializeAfterpay(payments, current_form_id, currency);
+			afterpay =  initializeAfterpay(payments, current_form_id, currency);
 			jQuery('.loader').hide();
 		} catch (e) {
 			console.error('Initializing Afterpay/Clearpay failed', e);
 		}
 	  
 	 
-    }, 500); 
+    }, 1000); 
   });
 // Product Table
 
@@ -3332,27 +3257,24 @@ async function displayAfterPay(payments, current_form_id, currency) {
 	
 	if ( wpep_local_vars.afterpay == 'on') {
 		jQuery('#afterpay-amount').hide();
-		if (jQuery( '#afterpay-button-'+current_form_id).html().length > 1 && afterpay && typeof afterpay.destroy === 'function') {	
-			try {
-				afterpay.destroy();
-			} catch (e) {
-				// Instance may already be destroyed, ignore error
-			}
+		if (jQuery( '#afterpay-button-'+current_form_id).html().length > 1) {	
+			afterpay.destroy();
 		}
 		clearTimeout(timeoutChangeId);
-		timeoutChangeId = setTimeout(async function() {
+		timeoutChangeId = setTimeout(function() {
 		 
 			 
+		   let afterpay;
 			try {
 				jQuery('.loader').show();
-				afterpay = await initializeAfterpay(payments, current_form_id, currency);
+				afterpay =  initializeAfterpay(payments, current_form_id, currency);
 				jQuery('.loader').hide();
 			} catch (e) {
 				console.error('Initializing Afterpay/Clearpay failed', e);
 			}
 		  
 		 
-		}, 600);
+		}, 2500);
 	}
   }); 
 	let timeoutpayId;
@@ -3361,23 +3283,21 @@ async function displayAfterPay(payments, current_form_id, currency) {
 		jQuery('#afterpay-amount').hide();
 		
 		clearTimeout(timeoutpayId);
-		timeoutpayId = setTimeout(async function() {
-			if (afterpay && typeof afterpay.destroy === 'function') {
-				try {
-					afterpay.destroy();
-				} catch (e) {
-					// Instance may already be destroyed, ignore error
-				}
-			}
+		timeoutpayId = setTimeout(function() {
+			if (afterpay) {
+			afterpay.destroy();
+		}
+		let afterpay;
 			try {
-				afterpay = await initializeAfterpay(payments, current_form_id, currency);
+
+				afterpay =  initializeAfterpay(payments, current_form_id, currency);
 				jQuery('.loader').hide();
 			} catch (e) {
 				console.error('Initializing Afterpay/Clearpay failed', e);
 			}
 		  
 		 
-		}, 500); 
+		}, 2000); 
 	  });	
 	return afterpay;		
 }
@@ -3387,23 +3307,24 @@ jQuery('.other-'+current_form_id).click( function () {
 		if ( wpep_local_vars.cashapp == 'on') {
 			jQuery('#cashapp-amount').hide();
 			clearTimeout(timeoutId);
-			timeoutId = setTimeout(async function() {
-				if(cashAppPay && typeof cashAppPay.destroy === 'function'){
-					try {
-						cashAppPay.destroy();
-					} catch (e) {
-						// Instance may already be destroyed, ignore error
-					}
+			timeoutId = setTimeout(function() {
+				if(cashAppPay){
+					cashAppPay.destroy();
 				} 
-				try {
-					var current_form_id = jQuery(  'form.wpep_payment_form'  ).data( 'id' );
-					var currency        = jQuery(  'form.wpep_payment_form'  ).data( 'currency' );
-					jQuery('.loader').show();
-					cashAppPay = await initializeCashApp(payments,current_form_id, currency);
-					jQuery('.loader').hide();	
-				} catch (e) {
+				let cashAppPay;
+				  try {
+						
+					// Check if Cash App Pay is already attached before reinitializing
+					if (typeof cashAppPay === 'undefined') {
+						var current_form_id = jQuery(  'form.wpep_payment_form'  ).data( 'id' );
+						var currency        = jQuery(  'form.wpep_payment_form'  ).data( 'currency' );
+						jQuery('.loader').show();
+					  cashAppPay =  initializeCashApp(payments,current_form_id, currency);
+						jQuery('.loader').hide();	
+					}
+				  } catch (e) {
 					console.error('Initializing Cash App Pay failed', e);
-				}
+				  }
 			
 			}, 1000); 
 		}
@@ -3416,23 +3337,25 @@ jQuery('.other-'+current_form_id).click( function () {
 				
 			}  
 			clearTimeout(timeoutId);
-			timeoutId = setTimeout(async function() {
-				if(cashAppPay && typeof cashAppPay.destroy === 'function'){
-					try {
-						cashAppPay.destroy();
-					} catch (e) {
-						// Instance may already be destroyed, ignore error
-					}
+			timeoutId = setTimeout(function() {
+				if(cashAppPay){
+					cashAppPay.destroy();
 				} 
-				try {
-					var current_form_id = jQuery(  'form.wpep_payment_form'  ).data( 'id' );
-					var currency        = jQuery(  'form.wpep_payment_form'  ).data( 'currency' );
-					jQuery('.loader').show();
-					cashAppPay = await initializeCashApp(payments,current_form_id, currency);
-					jQuery('.loader').hide();	
-				} catch (e) {
+				let cashAppPay;
+				  try {
+						
+					// Check if Cash App Pay is already attached before reinitializing
+					if (typeof cashAppPay === 'undefined') {
+						var current_form_id = jQuery(  'form.wpep_payment_form'  ).data( 'id' );
+						var currency        = jQuery(  'form.wpep_payment_form'  ).data( 'currency' );
+						jQuery('.loader').show();
+					  cashAppPay =  initializeCashApp(payments,current_form_id, currency);
+						jQuery('.loader').hide();	
+					}
+					
+				  } catch (e) {
 					console.error('Initializing Cash App Pay failed', e);
-				}
+				  }
 			
 			}, 1000); 
 		}
@@ -3454,23 +3377,23 @@ jQuery(window).on('load', function() {
 		if ( wpep_local_vars.cashapp == 'on') {
 			let timeoutId;
 			jQuery('#cashapp-amount').hide();
-			if (cashAppPay && typeof cashAppPay.destroy === 'function') {
-				try {
-					cashAppPay.destroy();
-				} catch (e) {
-					// Instance may already be destroyed, ignore error
-				}
+			if (cashAppPay) {
+				cashAppPay.destroy();
 			}
 			clearTimeout(timeoutId);
-			timeoutId = setTimeout(async function() {
-				try {
-					var current_form_id = jQuery(  'form.wpep_payment_form'  ).data( 'id' );
-					var currency        = jQuery(  'form.wpep_payment_form'  ).data( 'currency' );
-					cashAppPay = await initializeCashApp(payments,current_form_id, currency);
-					jQuery('.loader').hide();	
-				} catch (e) {
-					console.error('Initializing Cash App Pay failed', e);
-				}
+			timeoutId = setTimeout(function() {
+				let cashAppPay;
+					try {
+					// Check if Cash App Pay is already attached before reinitializing
+					if (typeof cashAppPay === 'undefined') {
+						var current_form_id = jQuery(  'form.wpep_payment_form'  ).data( 'id' );
+						var currency        = jQuery(  'form.wpep_payment_form'  ).data( 'currency' );
+					  cashAppPay =  initializeCashApp(payments,current_form_id, currency);
+						jQuery('.loader').hide();	
+					}
+					} catch (e) {
+						console.error('Initializing Cash App Pay failed', e);
+					}
 				}, 1000); 
 			}
 		})
@@ -3478,23 +3401,23 @@ jQuery(window).on('load', function() {
 		if ( wpep_local_vars.cashapp == 'on') {
 			let timeChangeId;
 			jQuery('#cashapp-amount').hide();
-			if (jQuery('#cash_app_pay_v1_element').is(":visible") && jQuery('#cash_app_pay_v1_element').html().length > 1 && cashAppPay && typeof cashAppPay.destroy === 'function') {
-				try {
-					cashAppPay.destroy();
-				} catch (e) {
-					// Instance may already be destroyed, ignore error
-				}
+			if (jQuery('#cash_app_pay_v1_element').is(":visible") && jQuery('#cash_app_pay_v1_element').html().length > 1) {
+				cashAppPay.destroy();
 			}
 			clearTimeout(timeChangeId);
-			timeChangeId = setTimeout(async function() {
-				try {
-					var current_form_id = jQuery(  'form.wpep_payment_form'  ).data( 'id' );
-					var currency        = jQuery(  'form.wpep_payment_form'  ).data( 'currency' );
-					cashAppPay = await initializeCashApp(payments,current_form_id, currency);
-					jQuery('.loader').hide();	
-				} catch (e) {
-					console.error('Initializing Cash App Pay failed', e);
-				}
+			timeChangeId = setTimeout(function() {
+				let cashAppPay;
+					try {
+						// Check if Cash App Pay is already attached before reinitializing
+						if (typeof cashAppPay === 'undefined') {
+							var current_form_id = jQuery(  'form.wpep_payment_form'  ).data( 'id' );
+							var currency        = jQuery(  'form.wpep_payment_form'  ).data( 'currency' );
+							cashAppPay =  initializeCashApp(payments,current_form_id, currency);
+							jQuery('.loader').hide();	
+						}
+					} catch (e) {
+						console.error('Initializing Cash App Pay failed', e);
+					}
 				}, 1000);
 			}
 		})
@@ -3506,22 +3429,14 @@ async function displayCashApp(payments, current_form_id, currency) {
 	amount               = amount.trim();
 	amount 				 = amount.replace(currency+" ", "");
 	
-	// Clean amount for comparison
-	amount = amount.replace(/[^0-9.]/g, '');
-	amount = parseFloat(amount);
-	
-	if(!isNaN(amount) && amount > 0 && currency !== amount){
+	if(currency !== amount){
+		let cashAppPay;
 		try {
 			jQuery('.loader').show();
-			cashAppPay = await initializeCashApp(payments,current_form_id, currency);
-			jQuery('.loader').hide();
-			
-			if (!cashAppPay) {
-				jQuery('#cashapp-amount').show();
-			}
+		  cashAppPay = await initializeCashApp(payments,current_form_id, currency);
+		  jQuery('.loader').hide();
 		} catch (e) {
-			console.error('Initializing Cash App Pay failed', e);
-			jQuery('#cashapp-amount').show();
+		  console.error('Initializing Cash App Pay failed', e);
 		}
 	} else {
 		jQuery('#cashapp-amount').show();
@@ -3557,5 +3472,4 @@ async function displayGiftcard(payments, current_form_id, currency) {
 		return giftcard;
 	// }
 }
-
 

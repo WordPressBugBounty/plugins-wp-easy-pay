@@ -12,18 +12,18 @@ $fees_data                  = get_post_meta( get_the_ID(), 'fees_data', true );
 ?>
 
 <main>
-	<h3>Square Note Fields</h3>
+	<h3 class="FieldHeading">Transaction notes</h3>
 	<div class="notificationsWrap clearfix">
 	<div class="notificationTitle">
 			<span class="titleTags">Default note tags</span>
 			<p style="margin-top:0">
 				<span>
-					First Name:
+					First name:
 					<small class="wpep_tags"> [first_name] </small>
 				</span>
 
 				<span>
-					Last Name:
+					Last name:
 					<small class="wpep_tags"> [last_name] </small>
 				</span>
 				<span>
@@ -45,7 +45,7 @@ $fees_data                  = get_post_meta( get_the_ID(), 'fees_data', true );
 		</div>
 
 		<div class="notificationTitle">
-			<span class="titleTags">Additional Charges tags</span>
+			<span class="titleTags">Additional charges tags</span>
 			<p style="margin-top:0" id="additional_charges_tags">
 				<?php
 				if ( isset( $fees_data[0] ) && count( $fees_data[0] ) > 0 ) {
@@ -68,12 +68,14 @@ $fees_data                  = get_post_meta( get_the_ID(), 'fees_data', true );
 	  
 
 	<div class="form-group">
-		<label>Transaction Notes:</label>
-		<textarea type="text" class="form-control form-control-textarea" placeholder="Please Enter popup description" name="wpep_transaction_notes_box" spellcheck="false"> <?php echo esc_html( $selected_transaction_notes ); ?> </textarea>
+		<label class="transactionNoteLabel">Transaction notes:</label>
+		<textarea type="text" class="form-control form-control-textarea" placeholder="Please Enter popup description" name="wpep_transaction_notes_box" spellcheck="false"><?php echo esc_html( $selected_transaction_notes ); ?></textarea>
 	</div>
 	<div class="note">
-		Note : There is a limit of 60 characters for transaction note in
+		<img src="<?php echo esc_url( WPEP_ROOT_URL . '/assets/backend/img/danger.png' ); ?>" class="dangerIconNotes" alt="Warning Icon" />
+		<div class="noteText">There is a limit of 60 characters for transaction note in
 		Square API, so if you exceed this limit it will automatically
 		ignore.
+		</div>
 	</div>
 </main>

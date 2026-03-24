@@ -18,14 +18,16 @@
  */
 function wpep_render_payment_form( $atts ) {
 
-	if ( isset( $_SERVER['HTTPS'] ) && 'on' === $_SERVER['HTTPS'] ) {
+	// Fix: Sanitize $_SERVER check
+	$is_https = isset( $_SERVER['HTTPS'] ) && 'on' === sanitize_text_field( wp_unslash( $_SERVER['HTTPS'] ) );
+
+	if ( $is_https ) {
 
 		if ( ! is_admin() ) {
 
 			if ( isset( $atts['id'] ) ) {
-
-				$form_post            = get_post( $atts['id'] );
-				$wpep_current_form_id = $atts['id'];
+				$wpep_current_form_id = absint( $atts['id'] );
+				$form_post            = get_post( $wpep_current_form_id );
 
 				if ( null !== $form_post && 'trash' === $form_post->post_status ) {
 
@@ -62,7 +64,8 @@ function wpep_render_payment_form( $atts ) {
 		}
 	}
 
-	if ( ! isset( $_SERVER['HTTPS'] ) || 'on' !== $_SERVER['HTTPS'] ) {
+	// Fix: Use sanitized check
+	if ( ! $is_https ) {
 
 		ob_start();
 
@@ -98,7 +101,7 @@ function wpep_register_premium_shortcode() {
  * @return string|null The Square access token if available, or null if not set.
  */
 function wpep_get_square_token( $wpep_current_form_id ) {
-
+	$access_token        = '';
 	$form_payment_global = get_post_meta( $wpep_current_form_id, 'wpep_individual_form_global', true );
 
 	if ( 'on' === $form_payment_global ) {
@@ -146,7 +149,7 @@ function wpep_get_square_token( $wpep_current_form_id ) {
  * @return void
  */
 function wpep_form_backend_parent_scripts() {
-	if ( 'checkout' === basename( get_permalink() ) ) {
+	if ( basename( get_permalink() ) === 'checkout' ) {
 		return true;
 	}
 
@@ -157,217 +160,252 @@ function wpep_form_backend_parent_scripts() {
 	}
 	$form_post = get_post();
 
-	$current_form_content = $form_post->post_content;
-	if ( empty( $current_form_content ) ) {
+	// If there is no global post (home, archive, etc.), avoid null deref.
+	if ( ! ( $form_post instanceof WP_Post ) ) {
+		return;
+	}
+
+	$current_form_content = (string) $form_post->post_content;
+	if ( '' === $current_form_content ) {
 		$banner_content = get_post_meta( $form_post->ID, 'banner_content', true );
-		if ( false !== strpos( $banner_content, 'wpep' ) ) {
+		if ( is_string( $banner_content ) && strpos( $banner_content, 'wpep' ) !== false ) {
 			$current_form_content = $banner_content;
 		}
 	}
 
 	$widget_blocks = get_option( 'widget_block' );
-
-	foreach ( $widget_blocks as $block ) {
-		if ( isset( $block['content'] ) && is_string( $block['content'] ) && strpos( $block['content'], 'wpep' ) !== false ) {
-			$current_form_content = $block['content'];
+	if ( is_array( $widget_blocks ) ) {
+		foreach ( $widget_blocks as $block ) {
+			if ( isset( $block['content'] ) && is_string( $block['content'] ) && strpos( $block['content'], 'wpep' ) !== false ) {
+				$current_form_content = $block['content'];
+			}
 		}
 	}
 
-	$shortcode_attr       = explode( 'wpep-form', $current_form_content );
-	$current_form_code    = explode( '"', $shortcode_attr[1] );
-	$current_form_code_id = $current_form_code[1];
+	$shortcode_attr       = explode( 'wpep-form', (string) $current_form_content );
+	$current_form_code    = isset( $shortcode_attr[1] ) ? explode( '"', $shortcode_attr[1] ) : array();
+	$current_form_code_id = isset( $current_form_code[1] ) ? $current_form_code[1] : '';
 	if ( empty( $current_form_code_id ) ) {
 		$current_form_code_id = get_transient( 'wpep_guten_id' );
 	}
 
+	if ( ! empty( $current_form_code_id ) ) {
+		$current_form_code_id = absint( $current_form_code_id );
+	}
+
 	if ( empty( $current_form_code_id ) ) {
-		$blocks = parse_blocks( $form_post->post_content );
-		if ( ! empty( $blocks ) && isset( $blocks[0]['attrs']['type'] ) ) {
-			$current_form_code_id = $blocks[0]['attrs']['type'];
+		$blocks = parse_blocks( (string) $form_post->post_content );
+		if ( is_array( $blocks ) && ! empty( $blocks[0] ) && isset( $blocks[0]['attrs'] ) && isset( $blocks[0]['attrs']['type'] ) ) {
+			$current_form_code_id = absint( $blocks[0]['attrs']['type'] );
 		}
 	}
-	// checking from bricks builder.
+	// checking from bricks builder
 	$getpostmeta = get_post_meta( $form_post->ID, '_bricks_page_content_2', true );
-	// Di gayi string.
-	if ( isset( $getpostmeta ) && ! empty( $getpostmeta ) ) {
+	// Di gayi string
+	if ( is_array( $getpostmeta ) && isset( $getpostmeta[2] ) && isset( $getpostmeta[2]['settings'] ) && isset( $getpostmeta[2]['settings']['shortcode'] ) && is_string( $getpostmeta[2]['settings']['shortcode'] ) ) {
 		$string = $getpostmeta[2]['settings']['shortcode'];
-		// Pattern daryaft karne ke liye regular expression.
+		// Pattern daryaft karne ke liye regular expression
 		$pattern = '/\[wpep-form id="(\d+)"\]/';
-		// Match karna.
+		// Match karna
 		if ( preg_match( $pattern, $string, $matches ) ) {
-			// $matches[0] mein pura match hoga.
-			// $matches[1] mein sirf 260 hoga.
-			$current_form_code_id = $matches[1];
+			// $matches[0] mein pura match hoga
+			// $matches[1] mein sirf 260 hoga
+			$current_form_code_id = absint( $matches[1] );
 		}
 	}
+	if ( isset( $current_form_code_id ) && ! empty( $current_form_code_id ) ) {
+		$global_form = get_post_meta( $current_form_code_id, 'wpep_individual_form_global', true );
 
-	$global_form = get_post_meta( $current_form_code_id, 'wpep_individual_form_global', true );
+		$global_payment_mode = get_option( 'wpep_square_payment_mode_global', true );
 
-	$global_payment_mode      = get_option( 'wpep_square_payment_mode_global', true );
-	$individual_payment_mode  = get_post_meta( $current_form_code_id, 'wpep_payment_mode', true );
-	$wpep_show_wizard         = get_post_meta( $current_form_code_id, 'wpep_show_wizard', true );
-	$enable_recaptcha         = get_option( 'wpep_enable_recaptcha' );
-	$recaptcha_version        = get_option( 'wpep_recaptcha_version' );
-	$wpep_open_in_popup       = get_post_meta( $current_form_code_id, 'wpep_open_in_popup', true );
-	$wpep_payment_success_url = ! empty( get_post_meta( $current_form_code_id, 'wpep_square_payment_success_url', true ) ) ? get_post_meta( $current_form_code_id, 'wpep_square_payment_success_url', true ) : '';
-	wp_enqueue_style( 'wpep_wizard_form_style', WPEP_ROOT_URL . 'assets/frontend/css/multi_wizard.css', array(), WPEP_VERSION );
-	wp_enqueue_style( 'wpep_single_form_style', WPEP_ROOT_URL . 'assets/frontend/css/single_page.css', array(), WPEP_VERSION );
-	$fees_data = get_post_meta( $current_form_code_id, 'fees_data', true );
-	wp_enqueue_script( 'jquery' );
-	wp_enqueue_script( 'wpep_wizard_script', WPEP_ROOT_URL . 'assets/frontend/js/script_single.js', array(), WPEP_VERSION, true );
-	if ( 'on' === $wpep_show_wizard ) {
-		wp_enqueue_script( 'wpep_multi_wizard_script', WPEP_ROOT_URL . 'assets/frontend/js/script_wizard.js', array(), WPEP_VERSION, true );
-	}
+		$individual_payment_mode = get_post_meta( $current_form_code_id, 'wpep_payment_mode', true );
 
-	if ( empty( $global_form ) ) {
-			/* For single form*/
-		if ( empty( $individual_payment_mode ) ) {// For test individual.
-			// Condition works on individual form further enhanced to mode setup.
-			wp_enqueue_script( 'square_payment_form_external', 'https://sandbox.web.squarecdn.com/v1/square.js', array(), WPEP_VERSION, true );
-			$square_application_id_in_use = get_post_meta( $current_form_code_id, 'wpep_square_test_app_id', true );
-			$square_location_id_in_use    = get_post_meta( $current_form_code_id, 'wpep_square_test_location_id', true );
-			$square_currency              = get_post_meta( $current_form_code_id, 'wpep_post_square_currency_test', true );
-			$gpay                         = get_post_meta( $current_form_code_id, 'wpep_square_google_pay', true );
-			$afterpay                     = get_post_meta( $current_form_code_id, 'wpep_square_after_pay', true );
-			$applepay                     = get_post_meta( $current_form_code_id, 'wpep_square_apple_pay', true );
-			$cashapp                      = get_post_meta( $current_form_code_id, 'wpep_square_cash_app', true );
-			$giftcard                     = get_post_meta( $current_form_code_id, 'wpep_square_giftcard', true );
-			$ach_debit                    = get_post_meta( $current_form_code_id, 'wpep_square_ach_debit', true );
+		$wpep_show_wizard = get_post_meta( $current_form_code_id, 'wpep_show_wizard', true );
 
-		} else { // For Live individual.
-			wp_enqueue_script( 'square_payment_form_external', 'https://web.squarecdn.com/v1/square.js', array(), WPEP_VERSION, true );
-			$square_application_id_in_use = WPEP_SQUARE_APP_ID;
-			$square_location_id_in_use    = get_post_meta( $current_form_code_id, 'wpep_square_location_id', true );
-			$square_currency              = get_post_meta( $current_form_code_id, 'wpep_post_square_currency_new', true );
-			$gpay                         = get_post_meta( $current_form_code_id, 'wpep_square_google_pay_live', true );
-			$afterpay                     = get_post_meta( $current_form_code_id, 'wpep_square_after_pay_live', true );
-			$applepay                     = get_post_meta( $current_form_code_id, 'wpep_square_apple_pay_live', true );
-			$cashapp                      = get_post_meta( $current_form_code_id, 'wpep_square_cash_app_live', true );
-			$giftcard                     = get_post_meta( $current_form_code_id, 'wpep_square_giftcard_live', true );
-			$ach_debit                    = get_post_meta( $current_form_code_id, 'wpep_square_ach_debit_live', true );
+		$enable_recaptcha = get_option( 'wpep_enable_recaptcha' );
+
+		$recaptcha_version = get_option( 'wpep_recaptcha_version' );
+
+		$wpep_open_in_popup = get_post_meta( $current_form_code_id, 'wpep_open_in_popup', true );
+
+		$wpep_payment_success_url_meta = get_post_meta( $current_form_code_id, 'wpep_square_payment_success_url', true );
+		$wpep_payment_success_url      = ! empty( $wpep_payment_success_url_meta ) ? $wpep_payment_success_url_meta : '';
+		wp_enqueue_style( 'wpep_wizard_form_style', WPEP_ROOT_URL . 'assets/frontend/css/multi_wizard.css', array(), WPEP_VERSION );
+		wp_enqueue_style( 'wpep_single_form_style', WPEP_ROOT_URL . 'assets/frontend/css/single_page.css', array(), '1.0.0' );
+		$fees_data = get_post_meta( $current_form_code_id, 'fees_data', true );
+		wp_enqueue_script( 'jquery' );
+		wp_enqueue_script( 'wpep_wizard_script', WPEP_ROOT_URL . 'assets/frontend/js/script_single.js', array(), WPEP_VERSION, true );
+		if ( 'on' === $wpep_show_wizard ) {
+			wp_enqueue_script( 'wpep_multi_wizard_script', WPEP_ROOT_URL . 'assets/frontend/js/script_wizard.js', array(), WPEP_VERSION, true );
 		}
-	} else { // phpcs:ignore
-		/* For main form*/
-		if ( 'on' !== $global_payment_mode ) {// For test Global.
-			wp_enqueue_script( 'square_payment_form_external', 'https://sandbox.web.squarecdn.com/v1/square.js', array(), WPEP_VERSION, true );
-			$square_application_id_in_use = get_option( 'wpep_square_test_app_id_global', true );
-			$square_location_id_in_use    = get_option( 'wpep_square_test_location_id_global', true );
-			$square_currency              = get_option( 'wpep_square_currency_test' );
-			$gpay                         = get_option( 'wpep_square_test_google_pay_global', true );
-			$applepay                     = get_option( 'wpep_square_test_apple_pay', true );
-			$afterpay                     = get_option( 'wpep_square_test_after_pay', true );
-			$cashapp                      = get_option( 'wpep_square_test_cash_app', true );
-			$giftcard                     = get_option( 'wpep_square_test_giftcard', true );
-			$ach_debit                    = get_option( 'wpep_square_test_ach_debit', true );
 
-		} else { // For Live Global.
-			wp_enqueue_script( 'square_payment_form_external', 'https://web.squarecdn.com/v1/square.js', array(), WPEP_VERSION, true );
-			$square_application_id_in_use = WPEP_SQUARE_APP_ID;
-			$square_location_id_in_use    = get_option( 'wpep_square_location_id', true );
-			$square_currency              = get_option( 'wpep_square_currency_new' );
-			$gpay                         = get_option( 'wpep_square_google_pay', true );
-			$applepay                     = get_option( 'wpep_square_apple_pay', true );
-			$afterpay                     = get_option( 'wpep_square_after_pay', true );
-			$cashapp                      = get_option( 'wpep_square_cash_app', true );
-			$giftcard                     = get_option( 'wpep_square_giftcard', true );
-			$ach_debit                    = get_option( 'wpep_square_ach_debit', true );
+		if ( empty( $global_form ) ) {
+			/* For single form */
+			if ( empty( $individual_payment_mode ) ) { // For test individual
+				// Condition works on individual form further enhanced to mode setup
+				wp_enqueue_script( 'square_payment_form_external', 'https://sandbox.web.squarecdn.com/v1/square.js', array(), '1.0.0', true );
+				$square_application_id_in_use = get_post_meta( $current_form_code_id, 'wpep_square_test_app_id', true );
+				$square_location_id_in_use    = get_post_meta( $current_form_code_id, 'wpep_square_test_location_id', true );
+				$square_currency              = get_post_meta( $current_form_code_id, 'wpep_post_square_currency_test', true );
+				$gpay                         = get_post_meta( $current_form_code_id, 'wpep_square_google_pay', true );
+				$afterpay                     = get_post_meta( $current_form_code_id, 'wpep_square_after_pay', true );
+				$applepay                     = get_post_meta( $current_form_code_id, 'wpep_square_apple_pay', true );
+				$cashapp                      = get_post_meta( $current_form_code_id, 'wpep_square_cash_app', true );
+				$giftcard                     = get_post_meta( $current_form_code_id, 'wpep_square_giftcard', true );
+				$achDebit                     = get_post_meta( $current_form_code_id, 'wpep_square_ach_debit', true );
+
+			} else { // For Live individual
+				wp_enqueue_script( 'square_payment_form_external', 'https://web.squarecdn.com/v1/square.js', array(), '1.0.0', true );
+				$square_application_id_in_use = WPEP_SQUARE_APP_ID;
+				$square_location_id_in_use    = get_post_meta( $current_form_code_id, 'wpep_square_location_id', true );
+				$square_currency              = get_post_meta( $current_form_code_id, 'wpep_post_square_currency_new', true );
+				$gpay                         = get_post_meta( $current_form_code_id, 'wpep_square_google_pay_live', true );
+				$afterpay                     = get_post_meta( $current_form_code_id, 'wpep_square_after_pay_live', true );
+				$applepay                     = get_post_meta( $current_form_code_id, 'wpep_square_apple_pay_live', true );
+				$cashapp                      = get_post_meta( $current_form_code_id, 'wpep_square_cash_app_live', true );
+				$giftcard                     = get_post_meta( $current_form_code_id, 'wpep_square_giftcard_live', true );
+				$achDebit                     = get_post_meta( $current_form_code_id, 'wpep_square_ach_debit_live', true );
+			}
+		} else {
+			/* For main form */
+			$is_global_test = ( 'on' !== $global_payment_mode );
+			if ( $is_global_test ) { // For test Global
+				wp_enqueue_script( 'square_payment_form_external', 'https://sandbox.web.squarecdn.com/v1/square.js', array(), '1.0.0', true );
+				$square_application_id_in_use = get_option( 'wpep_square_test_app_id_global', true );
+				$square_location_id_in_use    = get_option( 'wpep_square_test_location_id_global', true );
+				$square_currency              = get_option( 'wpep_square_currency_test', true );
+				$gpay                         = get_option( 'wpep_square_test_google_pay_global', true );
+				$applepay                     = get_option( 'wpep_square_test_apple_pay', true );
+				$afterpay                     = get_option( 'wpep_square_test_after_pay', true );
+				$cashapp                      = get_option( 'wpep_square_test_cash_app', true );
+				$giftcard                     = get_option( 'wpep_square_test_giftcard', true );
+				$achDebit                     = get_option( 'wpep_square_test_ach_debit', true );
+
+			} else { // For Live Global
+				wp_enqueue_script( 'square_payment_form_external', 'https://web.squarecdn.com/v1/square.js', array(), '1.0.0', true );
+				$square_application_id_in_use = WPEP_SQUARE_APP_ID;
+				$square_location_id_in_use    = get_option( 'wpep_square_location_id', true );
+				$square_currency              = get_option( 'wpep_square_currency_new', true );
+				$gpay                         = get_option( 'wpep_square_google_pay', true );
+				$applepay                     = get_option( 'wpep_square_apple_pay', true );
+				$afterpay                     = get_option( 'wpep_square_after_pay', true );
+				$cashapp                      = get_option( 'wpep_square_cash_app', true );
+				$giftcard                     = get_option( 'wpep_square_giftcard', true );
+				$achDebit                     = get_option( 'wpep_square_ach_debit', true );
+			}
 		}
-	}
-	if ( isset( $cashapp ) && 'on' === $cashapp ) {
-		$cashapp_available = is_available( 'cashapp', $square_currency );
-		$cashapp_available = isset( $cashapp_available ) ? $cashapp_available : false;
-	} else {
-		$cashapp_available = false;
-	}
-	if ( isset( $giftcard ) && 'on' === $giftcard ) {
-		$giftcard_available = is_available( 'giftcard', $square_currency );
-		$giftcard_available = isset( $giftcard_available ) ? $giftcard_available : false;
-	} else {
-		$giftcard_available = false;
-	}
-	if ( isset( $gpay ) && 'on' === $gpay ) {
-		$gpay_available = is_available( 'gpay', $square_currency );
-		$gpay_available = isset( $gpay_available ) ? $gpay_available : false;
-	} else {
-		$gpay_available = false;
-	}
-	if ( isset( $afterpay ) && 'on' === $afterpay ) {
-		$afterpay_available = is_available( 'afterpay', $square_currency );
-		$afterpay_available = isset( $afterpay_available ) ? $afterpay_available : false;
-	} else {
-		$afterpay_available = false;
-	}
-	if ( isset( $applepay ) && 'on' === $applepay ) {
-		$applepay_available = is_available( 'applepay', $square_currency );
-		$applepay_available = isset( $applepay_available ) ? $applepay_available : false;
-	} else {
-		$applepay_available = false;
-	}
-	if ( isset( $ach_debit ) && 'on' === $ach_debit ) {
-		$ach_debit_available = is_available( 'achDebit', $square_currency );
-		$ach_debit_available = isset( $ach_debit_available ) ? $ach_debit_available : false;
-	} else {
-		$ach_debit_available = false;
-	}
+		if ( 'on' === $cashapp ) {
+			$cashapp_available = is_available( 'cashapp', $square_currency );
+		}
+		if ( 'on' === $giftcard ) {
+			$giftcard_available = is_available( 'giftcard', $square_currency );
+		}
+		if ( 'on' === $gpay ) {
+			$gpay_available = is_available( 'gpay', $square_currency );
+		}
+		if ( 'on' === $afterpay ) {
+			$afterpay_available = is_available( 'afterpay', $square_currency );
+		}
+		if ( 'on' === $applepay ) {
+			$applepay_available = is_available( 'applepay', $square_currency );
+		}
+		if ( 'on' === $achDebit ) {
+			$achDebit_available = is_available( 'achDebit', $square_currency );
+		}
 
-	if ( 'on' === $enable_recaptcha && 'v3' === $recaptcha_version ) {
-		$recaptcha_site_key = get_option( 'wpep_recaptcha_site_key_v3' );
+		if ( 'on' === $enable_recaptcha && 'v3' === $recaptcha_version ) {
+			$recaptcha_site_key = get_option( 'wpep_recaptcha_site_key_v3' );
 
-		wp_enqueue_script( 'wpep_recaptcha', 'https://www.google.com/recaptcha/api.js?render=' . $recaptcha_site_key, array(), WPEP_VERSION, true );
+			wp_enqueue_script( 'wpep_recaptcha', 'https://www.google.com/recaptcha/api.js?render=' . $recaptcha_site_key, array(), '1.0.0', true );
+		}
+
+		if ( 'on' === $enable_recaptcha && 'v2' === $recaptcha_version ) {
+			$recaptcha_site_key = get_option( 'wpep_recaptcha_site_key_v2' );
+
+			wp_enqueue_script( 'wpep_recaptcha', 'https://www.google.com/recaptcha/api.js', array(), '1.0.0', true );
+		}
+		if ( 'on' === $wpep_open_in_popup ) {
+
+			wp_enqueue_style( 'wpep_popup_form_style', WPEP_ROOT_URL . 'assets/frontend/css/wpep_popup.css', array(), WPEP_VERSION );
+			wp_enqueue_script( 'wpep_frontend_scripts', WPEP_ROOT_URL . 'assets/frontend/js/wpep_scripts.js', array(), WPEP_VERSION, true );
+		}
+		if ( is_user_logged_in() ) {
+			$current_user = wp_get_current_user();
+			$user_email   = $current_user->user_email;
+		} else {
+			$user_email = '';
+		}
+
+		wp_enqueue_script( 'square_payment_form_internal', WPEP_ROOT_URL . 'assets/frontend/js/wpep_paymentform.js?rand=' . wp_rand(), array(), WPEP_VERSION, true );
+		$currency_symbol_type = get_post_meta( $current_form_code_id, 'currencySymbolType', true );
+
+		$currency_symbol_type = sanitize_text_field( $currency_symbol_type );
+
+		$theme_color = sanitize_hex_color( get_post_meta( $current_form_code_id, 'wpep_form_theme_color', true ) );
+
+		$success_url = esc_url_raw( $wpep_payment_success_url );
+
+		$user_email = sanitize_email( $user_email );
+
+		$first_name = sanitize_text_field( get_user_meta( get_current_user_id(), 'first_name', true ) );
+
+		$last_name = sanitize_text_field( get_user_meta( get_current_user_id(), 'last_name', true ) );
+
+		$square_app_id = sanitize_text_field( $square_application_id_in_use );
+
+		$square_location_id = sanitize_text_field( $square_location_id_in_use );
+
+		$square_currency = sanitize_text_field( $square_currency );
+
+		$amount_type           = sanitize_text_field( get_post_meta( $current_form_code_id, 'wpep_square_amount_type', true ) );
+		$recaptcha_site_key_v3 = sanitize_text_field( get_option( 'wpep_recaptcha_site_key_v3' ) );
+		$show_wizard           = sanitize_text_field( get_post_meta( $current_form_code_id, 'wpep_show_wizard', true ) );
+		$payment_type          = sanitize_text_field( get_post_meta( $current_form_code_id, 'wpep_square_payment_type', true ) );
+		$user_defined_amount   = sanitize_text_field( get_post_meta( $current_form_code_id, 'wpep_square_user_defined_amount', true ) );
+		$recaptcha_version     = sanitize_text_field( $recaptcha_version );
+		$enable_recaptcha      = sanitize_text_field( $enable_recaptcha );
+		$gpay                  = sanitize_text_field( $gpay );
+		$afterpay              = sanitize_text_field( $afterpay );
+		$applepay              = sanitize_text_field( $applepay );
+		$cashapp               = sanitize_text_field( $cashapp );
+		$giftcard              = sanitize_text_field( $giftcard );
+		$achDebit              = sanitize_text_field( $achDebit );
+		wp_localize_script(
+			'square_payment_form_internal',
+			'wpep_local_vars',
+			array(
+				'ajax_url'                        => admin_url( 'admin-ajax.php' ),
+				'square_application_id'           => $square_app_id,
+				'square_location_id_in_use'       => $square_location_id,
+				'wpep_square_currency_new'        => $square_currency,
+				'wpep_currency_symbol'            => wpep_currency_symbol( $square_currency ),
+				'current_form_id'                 => $current_form_code_id,
+				'currencySymbolType'              => ! empty( $currency_symbol_type ) ? $currency_symbol_type : 'code',
+				'wpep_form_theme_color'           => $theme_color ? $theme_color : '',
+				'front_img_url'                   => WPEP_ROOT_URL . 'assets/frontend/img',
+				'wpep_payment_success_url'        => $success_url,
+				'logged_in_user_email'            => $user_email,
+				'first_name'                      => $first_name,
+				'last_name'                       => $last_name,
+				'extra_fees'                      => ( ! empty( $fees_data ) && isset( $fees_data[0]['check'] ) && in_array( 'yes', $fees_data[0]['check'], true ) ),
+				'gpay'                            => isset( $gpay_available ) && true === $gpay_available ? $gpay : '',
+				'afterpay'                        => isset( $afterpay_available ) && true === $afterpay_available ? $afterpay : '',
+				'applepay'                        => isset( $applepay_available ) && true === $applepay_available ? $applepay : '',
+				'cashapp'                         => isset( $cashapp_available ) && true === $cashapp_available ? $cashapp : '',
+				'giftcard'                        => isset( $giftcard_available ) && true === $giftcard_available ? $giftcard : '',
+				'achDebit'                        => isset( $achDebit_available ) && true === $achDebit_available ? $achDebit : '',
+				'wpep_square_user_defined_amount' => $user_defined_amount,
+				'wp_payment_nonce'                => wp_create_nonce( 'payment_nonce' ),
+				'recaptcha_version'               => $recaptcha_version,
+				'enable_recaptcha'                => $enable_recaptcha,
+				'wpep_square_amount_type'         => $amount_type,
+				'recaptcha_site_key_v3'           => $recaptcha_site_key_v3,
+				'wpep_show_wizard'                => $show_wizard,
+				'wpep_square_payment_type'        => $payment_type,
+			)
+		);
+		// Cart script intentionally not enqueued here.
 	}
-
-	if ( 'on' === $enable_recaptcha && 'v2' === $recaptcha_version ) {
-		$recaptcha_site_key = get_option( 'wpep_recaptcha_site_key_v2' );
-
-		wp_enqueue_script( 'wpep_recaptcha', 'https://www.google.com/recaptcha/api.js', array(), WPEP_VERSION, true );
-	}
-	if ( 'on' === $wpep_open_in_popup ) {
-
-		wp_enqueue_style( 'wpep_popup_form_style', WPEP_ROOT_URL . 'assets/frontend/css/wpep_popup.css', array(), WPEP_VERSION );
-		wp_enqueue_script( 'wpep_frontend_scripts', WPEP_ROOT_URL . 'assets/frontend/js/wpep_scripts.js', array(), WPEP_VERSION, true );
-	}
-	if ( is_user_logged_in() ) {
-		$current_user = wp_get_current_user();
-		$user_email   = $current_user->user_email;
-	} else {
-		$user_email = '';
-	}
-
-	wp_enqueue_script( 'square_payment_form_internal', WPEP_ROOT_URL . 'assets/frontend/js/wpep_paymentform.js?rand=' . wp_rand(), array(), WPEP_VERSION, true );
-	wp_localize_script(
-		'square_payment_form_internal',
-		'wpep_local_vars',
-		array(
-			'ajax_url'                        => admin_url( 'admin-ajax.php' ),
-			'square_application_id'           => $square_application_id_in_use,
-			'square_location_id_in_use'       => $square_location_id_in_use,
-			'wpep_square_currency_new'        => $square_currency,
-			'wpep_currency_symbol'            => wpep_currency_symbol( $square_currency ),
-			'current_form_id'                 => $current_form_code_id,
-			'currencySymbolType'              => ! empty( get_post_meta( $current_form_code_id, 'currencySymbolType', true ) ) ? get_post_meta( $current_form_code_id, 'currencySymbolType', true ) : 'code',
-			'wpep_form_theme_color'           => get_post_meta( $current_form_code_id, 'wpep_form_theme_color', true ),
-			'front_img_url'                   => WPEP_ROOT_URL . 'assets/frontend/img',
-			'wpep_payment_success_url'        => $wpep_payment_success_url,
-			'logged_in_user_email'            => $user_email,
-			'first_name'                      => get_user_meta( get_current_user_id(), 'first_name', true ),
-			'last_name'                       => get_user_meta( get_current_user_id(), 'last_name', true ),
-			'extra_fees'                      => ( ! empty( $fees_data[0]['check'] ) && in_array( 'yes', $fees_data[0]['check'], true ) ),
-			'gpay'                            => isset( $gpay_available ) && true === $gpay_available ? $gpay : '',
-			'afterpay'                        => isset( $afterpay_available ) && true === $afterpay_available ? $afterpay : '',
-			'applepay'                        => isset( $applepay_available ) && true === $applepay_available ? $applepay : '',
-			'cashapp'                         => isset( $cashapp_available ) && true === $cashapp_available ? $cashapp : '',
-			'giftcard'                        => isset( $giftcard_available ) && true === $giftcard_available ? $giftcard : '',
-			'achDebit'                        => isset( $ach_debit_available ) && true === $ach_debit_available ? $ach_debit : '',
-			'wpep_square_user_defined_amount' => get_post_meta( $current_form_code_id, 'wpep_square_user_defined_amount', true ),
-			'wp_payment_nonce'                => wp_create_nonce( 'payment_nonce' ),
-			'recaptcha_version'               => $recaptcha_version,
-			'enable_recaptcha'                => $enable_recaptcha,
-			'wpep_square_amount_type'         => get_post_meta( $current_form_code_id, 'wpep_square_amount_type', true ),
-			'recaptcha_site_key_v3'           => get_option( 'wpep_recaptcha_site_key_v3' ),
-			'wpep_show_wizard'                => get_post_meta( $current_form_code_id, 'wpep_show_wizard', true ),
-
-		)
-	);
 }
 add_action( 'wp_enqueue_scripts', 'wpep_form_backend_parent_scripts' );
 
