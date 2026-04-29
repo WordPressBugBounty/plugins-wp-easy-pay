@@ -94,7 +94,6 @@ function wpep_send_admin_email( $current_form_id, $form_values, $transaction_id,
 		$headers .= 'Bcc: ' . $bcc . "\r\n";
 		$headers .= "MIME-Version: 1.0\r\n";
 		$headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-		$message  = $message;
-
+		$message  = nl2br( $message );
 		wp_mail( $to, $subject, $message, $headers );
 }

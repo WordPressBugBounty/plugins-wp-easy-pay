@@ -698,7 +698,6 @@ endif;
 									$location_name = $location->name;
 								}
 							}
-
 							$saved_location_id = get_option( 'wpep_square_location_id', false );
 							$selected          = '';
 							if ( false !== $saved_location_id ) {

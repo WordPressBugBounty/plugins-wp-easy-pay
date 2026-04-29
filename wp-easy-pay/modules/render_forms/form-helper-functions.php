@@ -20,7 +20,7 @@ function wpep_print_checkbox_group( $checkbox_group ) {
 	$hide_label  = 'hideLabel';
 	echo "<label data-label-show='" . esc_attr( $checkbox_group->$hide_label ) . "'>";
 	echo esc_html( $checkbox_group->label );
-	echo '' . ( ( isset( $checkbox_group->required ) ) ? esc_html( $if_required ) : '' ) . '</label>';
+	echo '' . ( ( isset( $checkbox_group->required ) ) ? wp_kses_post( $if_required ) : '' ) . '</label>';
 	echo "<div class='wpep-checkboxWrapper'>";
 	foreach ( $checkbox_group->values as $value ) {
 		echo "<div class='wizard-form-checkbox " . esc_html( ( isset( $checkbox_group->required ) ) ? 'wpep-required' : '' ) . "'><div class='form-group wpep-m-0'><input type='checkbox' name='" . esc_attr( $checkbox_group->name ) . "' data-label='" . esc_attr( $value->label ) . "' data-main-label='" . esc_attr( $checkbox_group->label ) . "'  id='radio_id_" . esc_attr( $value->value ) . "' value='" . esc_attr( $value->value ) . "' required='" . esc_attr( ( isset( $checkbox_group->required ) ) ? 'true' : 'false' ) . "'><label for='radio_id_" . esc_attr( $value->value ) . "'>" . esc_html( $value->label ) . '</label></div></div>';
@@ -102,7 +102,7 @@ function wpep_print_textarea( $textarea ) {
 	$name        = isset( $textarea->name ) ? $textarea->name : '';
 	$required    = isset( $textarea->required ) ? 'true' : 'false';
 	$if_required = " <span class='fieldReq'>*</span>";
-	if ( 'true' === $required ) {
+	if ( true === $required ) {
 		echo '<div class="form-group text-field wpep-required">
 		<label class="wizard-form-text-label"> ' . esc_html( ( isset( $label ) ) ? $label : '' ) . wp_kses_post( $if_required ) . '</label><textarea rows="6" maxlength="' . esc_attr($textarea->maxlength) . '" data-label="' . esc_attr( $label ) . '" name="' . esc_attr( $name ) . '" class="' . esc_attr( $classname ) . ' form-control" rows="4" cols="100" required="' . esc_attr( $required ) . '">' . esc_html( $value ) . '</textarea>';
 		if ( isset( $textarea->description ) && '' !== $textarea->description ) {
@@ -141,37 +141,80 @@ function wpep_print_credit_card_fields( $current_form_id ) {
 }
 
 /**
- * Prints the reCAPTCHA field (v2 or v3) based on the current form and settings.
+ * Prints the captcha field based on selected provider (reCAPTCHA, hCaptcha, Turnstile, or None).
  *
- * This function checks the settings for enabling reCAPTCHA and the reCAPTCHA version (v2 or v3).
- * It then generates the appropriate HTML for rendering the reCAPTCHA widget on the form.
+ * This function checks the selected captcha provider and generates the appropriate HTML
+ * for rendering the captcha widget on the form.
  *
- * - If reCAPTCHA is enabled and the version is v2, it outputs a visible reCAPTCHA widget.
- * - If reCAPTCHA is enabled and the version is v3, it outputs a hidden reCAPTCHA field for invisible validation.
+ * - If reCAPTCHA is selected, it outputs reCAPTCHA widget (v2 visible, v3 hidden).
+ * - If hCaptcha is selected, it outputs hCaptcha widget.
+ * - If Turnstile is selected, it outputs Cloudflare Turnstile widget.
+ * - If None is selected, no captcha is displayed.
  *
- * @param int $current_form_id The ID of the current form. (Not used directly in this function but can be extended if needed).
+ * @param int $current_form_id The ID of the current form.
  *
  * @return void
  */
 function wpep_print_recaptcha_fields( $current_form_id ) { // phpcs:ignore
-	$enable_recapcha   = get_option( 'wpep_enable_recaptcha' );
-	$recaptcha_v2      = get_option( 'wpep_recaptcha_site_key_v2' );
-	$recaptcha_version = get_option( 'wpep_recaptcha_version' );
-	ob_start();
-	?>
-
-	<?php if ( 'on' === $enable_recapcha && 'v2' === $recaptcha_version ) { ?>
-			<div class="g-recaptcha" data-sitekey="<?php echo esc_attr( $recaptcha_v2 ); ?>"></div>
-			<?php
+	$captcha_provider = get_option( 'wpep_captcha_provider', 'none' );
+	
+	// If none is selected, don't show any captcha
+	if ( 'none' === $captcha_provider || empty( $captcha_provider ) ) {
+		return;
 	}
-	if ( 'on' === $enable_recapcha && 'v3' === $recaptcha_version ) {
-		?>
-			
-			<input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response">
-			<input type="hidden" name="action" value="validate_captcha">
-			<?php } ?>
-
-	<?php
+	
+	ob_start();
+	
+	// reCAPTCHA (V2 or V3)
+	if ( 'recaptcha' === $captcha_provider ) {
+		$recaptcha_version = get_option( 'wpep_recaptcha_version', 'v2' );
+		
+		if ( 'v2' === $recaptcha_version ) {
+			$recaptcha_site_key_v2 = get_option( 'wpep_recaptcha_site_key_v2' );
+			if ( ! empty( $recaptcha_site_key_v2 ) ) {
+				?>
+				<div class="wpep-captcha-wrapper">
+					<div class="g-recaptcha" data-sitekey="<?php echo esc_attr( $recaptcha_site_key_v2 ); ?>"></div>
+				</div>
+				<?php
+			}
+		} elseif ( 'v3' === $recaptcha_version ) {
+			$recaptcha_site_key_v3 = get_option( 'wpep_recaptcha_site_key_v3' );
+			if ( ! empty( $recaptcha_site_key_v3 ) ) {
+				?>
+				<div class="wpep-captcha-wrapper">
+					<input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response">
+					<input type="hidden" name="action" value="validate_captcha">
+				</div>
+				<?php
+			}
+		}
+	}
+	
+	// hCaptcha
+	if ( 'hcaptcha' === $captcha_provider ) {
+		$hcaptcha_site_key = get_option( 'wpep_hcaptcha_site_key' );
+		if ( ! empty( $hcaptcha_site_key ) ) {
+			?>
+			<div class="wpep-captcha-wrapper">
+				<div class="h-captcha" data-sitekey="<?php echo esc_attr( $hcaptcha_site_key ); ?>"></div>
+			</div>
+			<?php
+		}
+	}
+	
+	// Cloudflare Turnstile
+	if ( 'turnstile' === $captcha_provider ) {
+		$turnstile_site_key = get_option( 'wpep_turnstile_site_key' );
+		if ( ! empty( $turnstile_site_key ) ) {
+			?>
+			<div class="wpep-captcha-wrapper">
+				<div class="cf-turnstile" data-sitekey="<?php echo esc_attr( $turnstile_site_key ); ?>"></div>
+			</div>
+			<?php
+		}
+	}
+	
 	ob_end_flush();
 }
 
@@ -184,21 +227,24 @@ function wpep_print_recaptcha_fields( $current_form_id ) { // phpcs:ignore
  * @param object $file_upload An object containing file upload field data.
  */
 function wpep_print_file_upload( $file_upload ) {
-	$if_required = '';
-	$required    = false;
+	$if_required        = '';
+	$required           = false;
+	$is_multiple        = isset( $file_upload->multiple );
+	$input_name         = $file_upload->name . ( $is_multiple ? '[]' : '' );
+	$multiple_attribute = $is_multiple ? ' multiple' : '';
 	if ( isset( $file_upload->required ) ) {
 		$if_required = " <span class='fieldReq'>*</span>";
 		$required    = true;
 	}
-	$class_name = 'className';
-	if ( 'true' === $required ) {
-		echo "<label class='labelupload'>" . esc_html( $file_upload->label . $if_required ) . '</label>';
+	$class_name         = 'className';
+	if ( true === $required ) {
+		echo "<label class='labelupload'>" . esc_html( $file_upload->label ) . wp_kses_post( $if_required ) . '</label>';
 		echo "<div class='form-group file-upload-wrapper wpep-required' data-text='Select your file!'>";
-		echo "<input accept='.gif, .jpg, .png, .doc, .pdf' type='" . esc_attr( $file_upload->type ) . "' name='" . esc_attr( $file_upload->name ) . "' id='wpep_file_upload_field' class='file-upload-field " . esc_html( $file_upload->$class_name ) . "' required='required'>";
+		echo "<input accept='.gif, .jpg, .png, .doc, .pdf' type='" . esc_attr( $file_upload->type ) . "' name='" . esc_attr( $input_name ) . "' id='wpep_file_upload_field' class='file-upload-field " . esc_html( $file_upload->$class_name ) . "'" . esc_attr( $multiple_attribute ) . " required='required'>";
 	} else {
-		echo "<label class='labelupload'>" . esc_html( $file_upload->label . $if_required ) . '</label>';
+		echo "<label class='labelupload'>" . esc_html( $file_upload->label ) . wp_kses_post( $if_required ) . '</label>';
 		echo "<div class='form-group file-upload-wrapper' data-text='Select your file!'>";
-		echo "<input accept='.gif, .jpg, .png, .doc, .pdf' type='" . esc_attr( $file_upload->type ) . "' name='" . esc_attr( $file_upload->name ) . "' id='wpep_file_upload_field' class='file-upload-field " . esc_html( $file_upload->$class_name ) . "'>";
+		echo "<input accept='.gif, .jpg, .png, .doc, .pdf' type='" . esc_attr( $file_upload->type ) . "' name='" . esc_attr( $input_name ) . "' id='wpep_file_upload_field' class='file-upload-field " . esc_html( $file_upload->$class_name ) . "'" . esc_attr( $multiple_attribute ) . '>';
 
 	}
 

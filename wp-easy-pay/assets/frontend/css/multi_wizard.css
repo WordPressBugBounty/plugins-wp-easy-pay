@@ -1721,7 +1721,7 @@ input[type="number"] {
   background: rgba(253, 253, 253, 0.98);
   border-radius: 4px;
   border: 1px solid #fbfbfb;
-  z-index: 99;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;

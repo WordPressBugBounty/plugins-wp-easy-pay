@@ -614,40 +614,43 @@ pre {
 }
 
 .switch-label {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-  color: #727272;
-  font-weight: 500;
-  padding: 25px 25px 25px 45px;
-}
-
-.switch-label:before,
-.switch-label:after {
-  content: "";
-  position: absolute;
-  margin: 0;
-  outline: 0;
-  top: 50%;
-  transform: translate(0, -50%);
-  transition: all 0.3s ease;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    color: #727272;
+    font-weight: 500;
+    padding-right: 45px; 
 }
 
 .switch-label:before {
-  left: 1px;
-  width: 34px;
-  height: 14px;
-  background-color: #b6b6b6;
-  border-radius: 8px;
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 33px;
+    height: 18px;
+    border: 2px solid #d1e3ff;
+    border-radius: 999px;
+    background-color: white !important;
+    box-sizing: border-box;
+    transition: all 0.25s 
+ease-in-out;
 }
-
 .switch-label:after {
-  left: 0;
-  width: 20px;
-  height: 20px;
-  background-color: #fafafa;
-  border-radius: 50%;
-  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.14), 0 2px 2px 0 rgba(0, 0, 0, 0.098), 0 1px 5px 0 rgba(0, 0, 0, 0.084);
+    content: "";
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 15px;
+    height: 15px;
+    background-color: #cbd5e1;
+    border-radius: 50%;
+    transition: all 0.25s 
+ease-in-out;
+    z-index: 2;
 }
 
 .switch-label .toggle--on {
@@ -659,12 +662,12 @@ pre {
 }
 
 .switch-input:checked + .switch-label:before {
-  background-color: #2f6fa8;
+  /* background-color: #2f6fa8; */
 }
 
 .switch-input:checked + .switch-label:after {
   background-color: #428bca;
-  transform: translate(80%, -50%);
+  transform: translate(105%, -50%);
 }
 
 .switch-input:checked + .switch-label .toggle--on {
@@ -1370,7 +1373,7 @@ ul.accordion li a.toggle:hover {
 }
 
 .wpep_tags:hover::after {
-  opacity: 1;
+  opacity: 0;
 }
 
 .noteInSquareConnect {
@@ -1507,6 +1510,14 @@ h3.titleSquare .fa.fa-check-square {
   display: none;
   text-align: center;
   z-index: 4;
+}
+
+.reportDownloadIcon{
+  width: 17px;
+  margin: 0px 5px -4px 0px;
+}
+.freeVersion{
+  opacity: 1;
 }
 
 .post-type-wp_easy_pay .form-wrap.form-builder .stage-wrap {
@@ -2732,7 +2743,7 @@ tbody#the-list td.colspanchange {
 .inputWrapper .add,
 .inputWrapper .remove {
   position: absolute;
-  top: 0;
+  top: 10px;
   right: 0;
   color: #2065E0;
   height: 40px;
@@ -4220,44 +4231,53 @@ a#wpep_reset_donation_goal {
 
 .integrations_tab {
   overflow: hidden;
-  border: 1px solid #ccc;
-  background-color: #f1f1f1;
+  background-color: #ffffff;
 }
 
 /* Style the buttons inside the tab */
 .integrations_tab button {
-  background-color: inherit;
   float: left;
   border: none;
   outline: none;
   cursor: pointer;
   padding: 14px 16px;
   transition: 0.3s;
-  font-size: 17px;
+  background-color: #ffffff;
+  color: #676767;
+  font-family: 'Figtree', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 /* Change background color of buttons on hover */
 .integrations_tab button:hover {
-  background-color: #ddd;
+  background-color: #dbedff;
 }
 
 /* Create an active/current tablink class */
 .integrations_tab button.active {
-  background-color: #2065e0;
-  color: #ddd;
+  background-color: #ffffff;
+  color: #007bff;
+  border-bottom: 2px solid #007bff;
+  font-family: 'Figtree', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 /* Style the tab content */
 .integration_tab_content {
   display: block;
-  padding: 6px 12px;
-  border: 1px solid #ccc;
+  padding: 10px 10px;
+  margin: 20px 0px;
   border-top: none;
+  border: 2px solid #E2E2E2;
+  border-radius: 8px;
 }
 
 
 .integrations{
   padding: 0px 15px;
+   background: #ffffff;
 }
 
 
@@ -4788,47 +4808,6 @@ div#confirmation-dialog {
 	vertical-align: middle;
     font-size: 16px;
 	color: #F39237;
-}
-.integrations_tab {
-  overflow: hidden;
-  border: 1px solid #ccc;
-  background-color: #f1f1f1;
-}
-
-/* Style the buttons inside the tab */
-.integrations_tab button {
-  background-color: inherit;
-  float: left;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  padding: 14px 16px;
-  transition: 0.3s;
-  font-size: 17px;
-}
-
-/* Change background color of buttons on hover */
-.integrations_tab button:hover {
-  background-color: #ddd;
-}
-
-/* Create an active/current tablink class */
-.integrations_tab button.active {
-  background-color: #2065e0;
-  color: #ddd;
-}
-
-/* Style the tab content */
-.integration_tab_content {
-  display: block;
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-top: none;
-}
-
-
-.integrations{
-  padding: 0px 15px;
 }
 
 
@@ -6033,15 +6012,6 @@ table.table-view-list .column-formsTitle a.wpep_tags{
   width: 100%;
 }
 
-.post-type-wp_easy_pay #publishing-action input#publish {
-    background: #E1ECFF;
-    color: #2065E0;
-    font-size: 15px;
-    font-weight: 700;
-    font-family: Figtree;
-    padding: 1px 25px;
-}
-
 
 
 
@@ -6134,6 +6104,7 @@ table.table-view-list .column-formsTitle a.wpep_tags{
       width: 1.1rem !important;
       min-width: 1.1rem !important;    
       height: 1.1rem !important;
+      background: #fff !important;
 }
 .post-type-wp_easy_pay input[type=radio]:checked::before {
     margin: 3px 3px;
@@ -6354,7 +6325,7 @@ div#wpep_additional_charges {
 }
 .integrationImg img {
     width: 100%;
-    opacity: 0.5;
+    opacity: 0.7;
     background: white;
 }
 .integrationPageHeading{
@@ -6822,6 +6793,7 @@ span.subtitle strong {
     font-weight: 600;
     font-family: Figtree;
     padding: 1px 20px;
+        margin-top: 1vw;
 }
 .post-type-wp_easy_pay #publishing-action input#publish {
     background: #2065E0;
@@ -6835,7 +6807,10 @@ span.subtitle strong {
 a.submitdelete.deletion {
     padding: 0px 7px;
 }
-
+.post-type-wpep_reports .manage-column input[type="checkbox"]:checked::before,
+.post-type-wpep_reports .author-self input[type="checkbox"]:checked::before{
+  filter: brightness(0.5) !important;
+}
 .post-status-trash.post-type-wp_easy_pay .tablenav.top {
     width: 39% !important;
 }
@@ -6921,4 +6896,135 @@ td.actions.column-actions {
 }
 th#actions {
     text-align: center;
+/* Editor Tab Switcher Styles */
+.wpep-editor-tabs {
+	display: flex;
+	border-bottom: 1px solid #ddd;
+	margin-bottom: 10px;
+}
+
+.wpep-tab-btn {
+	padding: 8px 16px;
+	background: #f5f5f5;
+	border: 1px solid #ddd;
+	border-bottom: none;
+	cursor: pointer;
+	font-size: 13px;
+	color: #555;
+	transition: all 0.2s;
+	margin-right: 2px;
+}
+
+.wpep-tab-btn:hover {
+	background: #e5e5e5;
+}
+
+.wpep-tab-btn.active {
+	background: #fff;
+	color: #0073aa;
+	border-bottom: 1px solid #fff;
+	margin-bottom: -1px;
+	font-weight: 600;
+}
+
+.wpep-editor-container {
+	position: relative;
+}
+
+.wpep-editor-container textarea {
+	min-height: 200px;
+}
+
+
+/* WordPress Editor Tabs Styling - Fluent Form Style */
+.post-type-wp_easy_pay .wp-editor-wrap .wp-editor-tabs {
+	display: flex;
+	margin-bottom: 0;
+	padding: 0;
+  float: left;
+}
+
+.post-type-wp_easy_pay .wp-editor-wrap .wp-switch-editor {
+	display: inline-block;
+	padding: 6px 12px 24px 12px;
+    margin: 10px 5px 10px 0px;
+	border-bottom: none;
+	background: #ffffff;
+	color: #7E8994;
+	cursor: pointer;
+	font-size: 13px;
+	transition: all 0.2s ease;
+	text-decoration: none;
+	box-shadow: none;
+	outline: none;
+}
+
+.post-type-wp_easy_pay .wp-editor-wrap .wp-switch-editor.switch-tmce,
+.post-type-wp_easy_pay .wp-editor-wrap .wp-switch-editor.switch-html {
+	border: none;
+}
+
+
+.post-type-wp_easy_pay .wp-editor-wrap #wpep_square_admin_email_content_field-tmce[aria-pressed="true"] {
+	background: #E0ECFF;
+	color: #2065E0;
+	border-bottom: 1px solid #fff;
+	margin-bottom: -1px;
+	font-weight: 600;
+	position: relative;
+	z-index: 1;
+}
+.post-type-wp_easy_pay .wp-editor-wrap #wpep_square_admin_email_content_field-html[aria-pressed="true"] {
+	background: #E0ECFF;
+	color: #2065E0;
+	border-bottom: 1px solid #fff;
+	margin-bottom: -1px;
+	font-weight: 600;
+	position: relative;
+	z-index: 1;
+}
+.post-type-wp_easy_pay .wp-editor-wrap #wpep_square_user_email_content_field-tmce[aria-pressed="true"] {
+	background: #E0ECFF;
+	color: #2065E0;
+	border-bottom: 1px solid #fff;
+	margin-bottom: -1px;
+	font-weight: 600;
+	position: relative;
+	z-index: 1;
+}
+.post-type-wp_easy_pay .wp-editor-wrap #wpep_square_user_email_content_field-html[aria-pressed="true"] {
+	background: #E0ECFF;
+	color: #2065E0;
+	border-bottom: 1px solid #fff;
+	margin-bottom: -1px;
+	font-weight: 600;
+	position: relative;
+	z-index: 1;
+}
+
+div#qt_wpep_square_admin_email_content_field_toolbar {
+    background: #f6f9ff;
+    border: 1px solid #e4e4e4;
+}
+div#qt_wpep_square_user_email_content_field_toolbar {
+    background: #f6f9ff;
+    border: 1px solid #e4e4e4;
+}
+
+.post-type-wp_easy_pay .wp-editor-wrap .wp-switch-editor.active:hover {
+	color: #005177;
+}
+
+div.mce-tinymce{
+    border: 1px solid #CCE0FF;
+    border-top: 2px solid #CCE0FF !important;
+}
+div.mce-container-body{
+  background: #f6f9ff;
+}
+div.mce-toolbar-grp {
+  border: none;
+}
+.wp-editor-container textarea.wp-editor-area {
+    border: 1px solid #e4e4e4;
 }

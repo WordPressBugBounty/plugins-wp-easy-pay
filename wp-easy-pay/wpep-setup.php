@@ -402,16 +402,19 @@ function wpep_create_reports_post_type() {
 		'description'         => __( 'Post Type Description', 'wp_easy_pay' ),
 		'labels'              => $labels,
 		'hierarchical'        => false,
-		'public'              => true,
+		'public'              => false,               // hide from front-end
+		'publicly_queryable'  => false,               // block ?post_type access
+		'has_archive'         => false,               // disable archives
+		'exclude_from_search' => true,                // keep out of search
+		'show_in_nav_menus'   => false,               // not selectable in menus
+		'query_var'           => false,               // no query var exposure
+		'rewrite'             => false,               // no rewrites/front routes
 		'supports'            => false,
-		'show_ui'             => true,
+		'show_ui'             => true,                // allow admin UI
 		'show_in_menu'        => false,
 		'show_in_admin_bar'   => true,
-		'show_in_nav_menus'   => true,
 		'can_export'          => true,
-		'has_archive'         => true,
-		'exclude_from_search' => false,
-		'publicly_queryable'  => true,
+		'show_in_rest'        => false,               // prevent REST exposure
 		'capability_type'     => 'post',
 
 	);
@@ -556,7 +559,11 @@ function wpep_add_columns_data_add_form( $column, $post_id ) {
 	switch ( $column ) {
 
 		case 'formsTitle':
-			echo '<a href="' . esc_url( get_edit_post_link( $post_id ) ) . '" class="wpep_tags">' . esc_html( get_the_title( $post_id ) ) . '</a>';
+			$form_title = trim( (string) get_the_title( $post_id ) );
+			if ( '' === $form_title ) {
+				$form_title = __( 'Untitled form', 'wp_easy_pay' );
+			}
+			echo '<a href="' . esc_url( get_edit_post_link( $post_id ) ) . '" class="wpep_tags">' . esc_html( $form_title ) . '</a>';
 			break;
 
 		case 'shortcode':
@@ -1469,3 +1476,72 @@ function funct_wpep_draft_confirm() {
 	wp_send_json( $response );
 	wp_die();
 }
+
+/**
+ * Adds a custom "Download CSV Report" link to the views section of the 'wpep_reports' edit screen.
+ *
+ * This function adds an "Import" view link that allows premium users to download a CSV report
+ * of transactions. It modifies the `$views` array to include a custom link with the ID
+ * 'wpep-export-transactions'.
+ *
+ * @param array $views An array of existing views links on the edit screen.
+ * @return array Modified array of views links, including the new "Download CSV Report" link.
+ */
+function my_filter( $views ) {
+	$views['import'] = '<a id="wpep-export-transactions" class="primary freeVersion pro_tag"><img src="' . WPEP_ROOT_URL . 'assets/backend/img/document-download.png" class="reportDownloadIcon">Download CSV Report <span class="pro_tag">Pro</span></a>';
+	return $views;
+}
+add_filter( 'views_edit-wpep_reports', 'my_filter' );
+
+/**
+ * Injects the premium upgrade modal into the footer of the reports list page.
+ */
+add_action( 'admin_footer', function () {
+	$screen = get_current_screen();
+	if ( $screen && 'edit-wpep_reports' === $screen->id ) {
+		?>
+		<div id="pre-popupModal" class="pre-modal">
+			<div class="pre-modal-content">
+				<span class="pre-close">&times;</span>
+				<div class="premium_popup_content">
+					<div class="wp_easypay_logo">
+						<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/Logo_white.png' ); ?>" class="wpep_logo">
+					</div>
+					<h3 class="proPopHeading">Enhance Your Square Payment Forms With Premium Features.</h3>
+					<div class="featuresListPopup">
+						<div class="row">
+							<div class="col-6">
+								<ul>
+									<li><img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/popup-tick.png' ); ?>" class="" /> 
+										<p>5+ Digital Wallets</p>
+									</li>
+									<li><img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/popup-tick.png' ); ?>" class="" /> 
+										<p>Square Product Sync</p>
+									</li>
+								</ul>
+							</div>
+							<div class="col-6">
+								<ul>	
+									<li><img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/popup-tick.png' ); ?>" class="" /> 
+										<p>Square Gift Card</p>
+									</li>
+									<li><img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/popup-tick.png' ); ?>" class="" /> 
+										<p>Manage Subscriptions</p>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div class="integration_button_div">
+						<a href="https://wpeasypay.com/pricing?utm_source=plugin&utm_medium=reports_page_export" target="_blank" rel="noopener noreferrer" class="wpep-no-save-popup">
+							<button type="button" class="upgradeBtn">
+								Upgrade Now <img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/upgrade-btn-arrow.png' ); ?>" class="" /> 
+							</button>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+});

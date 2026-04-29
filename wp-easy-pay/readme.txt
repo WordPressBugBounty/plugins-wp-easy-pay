@@ -2,9 +2,9 @@
 Contributors: wpexpertsio
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=pay@objects.ws&item_name=DonationForPlugin
 Tags: square payment form, credit card payments , payment form, donation form, square payments
-Requires at least: 5.2
+Requires at least: 5.6.0
 Tested up to: 6.9.4
-Stable tag: 4.3.0
+Stable tag: 4.4.0
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -17,7 +17,7 @@ Integrate Square with WordPress easily, quickly, and securely. The Square Paymen
 
 ### WP Easy Pay - Square for WordPress Plugin: Integrate Square with WordPress to Collect Payments
 
-**Create your custom Square payment and Donation form in WordPress with ease!**
+✨**Now with native Elementor & Beaver Builder integrations, plus flexible CAPTCHA options (Google reCAPTCHA, hCaptcha, Cloudflare Turnstile) for better spam protection and user experience.**
 
 https://youtu.be/3VVbSl8pnr0?si=TSZNns99l5qTI43u
 
@@ -109,9 +109,17 @@ Accept Square Payments via Google Pay, Apple Pay, Cash App, and Afterpay directl
 
 Easily embed WP Easy Pay forms on any page or post using Gutenberg blocks that make the setup process simple and straightforward.
 
-✅ **CAPTCHA Security** **(PRO)**
+✅ **Elementor Widget Integration** - **New**
 
-Protect your payment forms from spam and bots by enabling CAPTCHA v2 and v3 to ensure only legitimate users interact with your forms.
+Add WP Easy Pay forms directly inside Elementor using a native drag-and-drop widget. No shortcodes needed—just drop your payment form anywhere in your Elementor layout and style it visually.
+
+✅ **Beaver Builder Module Integration** - **New**
+
+Seamlessly insert WP Easy Pay forms into Beaver Builder layouts with a dedicated native module. Build payment pages faster with full visual control and zero context switching.
+
+✅ **Flexible CAPTCHA Options** **(PRO)**
+
+Protect your payment forms from spam and bots with your choice of three modern CAPTCHA providers: **Google reCAPTCHA**, **hCaptcha** (privacy-focused), or **Cloudflare Turnstile** (frictionless, invisible verification). Choose the option that best balances security and user experience for your audience.
 
 ✅ **Customizable Thank You Page** 
 
@@ -217,7 +225,7 @@ Following are a few popular use cases for WP Easy Pay payment forms that show ho
 
 ☑️ Multi-step form layouts guide users through complex transactions step-by-step, reducing drop-offs.
 
-☑️ Allows you to add custom fields and upload options, enabling you to gather any required customer information.
+☑️ Native integrations with Elementor and Beaver Builder let you embed payment forms directly inside your favorite page builders—no shortcodes or manual embedding required.
 
 **Reason 03: Comprehensive Subscription Management**
 
@@ -251,7 +259,7 @@ Following are a few popular use cases for WP Easy Pay payment forms that show ho
 
 **Reason 06: Better Security and Spam Prevention**
 
-☑️ Built-in Google ReCaptcha integration helps prevent spam and ensures only genuine transactions.
+☑️ Built-in support for Google reCAPTCHA, hCaptcha, and Cloudflare Turnstile helps prevent spam and ensures only genuine transactions, with options to prioritize privacy or frictionless UX.
 
 ☑️ PCI-compliant payment processing meets industry standards for handling sensitive data securely.
 
@@ -385,6 +393,10 @@ Currently, WP Easy Pay is available for businesses in the U.S., Canada, the U.K.
 
 Yes! WP Easy Pay includes a sandbox mode, allowing you to test all functionalities before going live. This feature ensures that you can optimize your setup without any risk to real transactions.
 
+**Can I use WP Easy Pay forms inside Elementor or Beaver Builder?**
+
+Yes! WP Easy Pay now includes native integrations for both Elementor and Beaver Builder (Pro version). You can drag-and-drop payment forms directly into your page builder layouts, no shortcodes or manual embedding required.
+
 **Where do I report security bugs found in this plugin?**
 
 Please report security bugs found in the source code of the undefined plugin through the [Patchstack Vulnerability Disclosure Program](https://patchstack.com/database/wordpress/plugin/wp-easy-pay/vulnerabilities). The Patchstack team will assist you with verification, CVE assignment, and notify the developers of this plugin.
@@ -392,9 +404,16 @@ Please report security bugs found in the source code of the undefined plugin thr
 
 == Changelog ==
 
+= 4.4.0 - 04/29/2026 = 
+
+Added - Beaver builder block support 
+Added - Elementor block support
+Fixed - A vulnerability reported by Patchstack
+Fixed - Gutenberg block dropdown issue
+
 = 4.3.0 - 03/24/2026
 
-Add- Square Connection Logs
+Added - Square Connection Logs
 Improvement - plugin settings UI.
 Fixed - Form Email Validation.
 Fixed - A vulnerability reported by Patchstack

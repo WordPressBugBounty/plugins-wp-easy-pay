@@ -95,18 +95,25 @@ jQuery( document ).ready(
 						}
 						if (current.find('input[type="file"]').length > 0) {
 						  var fileInput = current.find('input[type="file"]');
-						  var file = fileInput[0].files[0];
+						  var files = fileInput[0].files;
 
-						  if (file === undefined) {
+						  if (files === undefined || files.length === 0) {
 							if (current.find('input[type="file"] ~ .wpepError').length === 0) {
 							  jQuery(wpepError).insertAfter(fileInput);
 							}
 							result2 = false;
 						  } else {
 							var allowedExtensions = ['.gif', '.jpg', '.png', '.doc', '.pdf'];
-							var fileExtension = file.name.split('.').pop();
+							var hasInvalidFile = false;
+							for (var fileIndex = 0; fileIndex < files.length; fileIndex++) {
+							  var fileExtension = files[fileIndex].name.split('.').pop();
+							  if (allowedExtensions.indexOf('.' + fileExtension.toLowerCase()) === -1) {
+								hasInvalidFile = true;
+								break;
+							  }
+							}
 
-							if (allowedExtensions.indexOf('.' + fileExtension.toLowerCase()) === -1) {
+							if (hasInvalidFile) {
 							  if (current.find('input[type="file"] ~ .wpepError').length === 0) {
 								jQuery(wpepError).insertAfter(fileInput);
 							  }

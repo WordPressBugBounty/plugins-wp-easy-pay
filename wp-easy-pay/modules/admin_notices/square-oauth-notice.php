@@ -29,7 +29,7 @@ function wpep_square_oauth_admin_notice() {
 			<?php
 			// translators: Link to connect Square account in WP Easy Pay settings: %s is a placeholder for Connect Square URL.
 			printf(
-				wp_kses_post( 'Seems like you have not connected your Square account yet. <a href="%s" class="btn btn-primary btn-square"> Connect Square </a>', 'wp-easy-pay' ),
+				wp_kses_post( 'Seems like you have not connected your Square account yet. <a href="%s" class="btn btn-primary"> Connect Square </a>', 'wp-easy-pay' ),
 				esc_url( 'admin.php?page=wpep-settings&wpep_admin_url=admin.php&wpep_prepare_connection_call=1&wpep_page_post=global' )
 			);
 			?>

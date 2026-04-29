@@ -10,7 +10,8 @@
  * Displays an admin notice for SSL certificate.
  */
 function wpep_ssl_admin_notice() {
-	if ( empty( $_SERVER['HTTPS'] ) && 'off' === $_SERVER['HTTPS'] ) {
+	// Avoid undefined index notices while keeping the same non-HTTPS check.
+	if ( empty( $_SERVER['HTTPS'] ) || 'off' === $_SERVER['HTTPS'] ) {
 		?>
 
 	<div class="notice notice-success is-dismissible">

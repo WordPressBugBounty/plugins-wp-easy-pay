@@ -19,7 +19,6 @@ $square_currency      = wpep_get_form_currency( $wpep_current_form_id );
 $currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currencySymbolType', true ) ) ? get_post_meta( $wpep_current_form_id, 'currencySymbolType', true ) : 'code';
 ?>
 <fieldset class="wizard-fieldset show">
-	<input type="hidden" class="g-recaptcha-response" name="g-recaptcha-response"/>
 	<div class="s_ft noMulti">
 		<h2>Basic Info</h2>
 	</div>

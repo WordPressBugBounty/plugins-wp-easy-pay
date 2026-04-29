@@ -405,11 +405,64 @@ jQuery( document ).ready(
 			}
 		);
 
+		function wpepGetFileUploadDisplayText(files) {
+			if (!files || files.length === 0) {
+				return 'Select your file!';
+			}
+			if (files.length === 1) {
+				return files[0].name;
+			}
+			return files[0].name + ' +' + (files.length - 1) + ' more';
+		}
+
+		function wpepMergeFiles(existingFiles, newFiles) {
+			var merged = [];
+			var seen = {};
+			var allFiles = [];
+
+			if (existingFiles && existingFiles.length) {
+				allFiles = allFiles.concat(Array.from(existingFiles));
+			}
+			if (newFiles && newFiles.length) {
+				allFiles = allFiles.concat(Array.from(newFiles));
+			}
+
+			allFiles.forEach(function (file) {
+				var key = [file.name, file.size, file.lastModified].join('|');
+				if (!seen[key]) {
+					seen[key] = true;
+					merged.push(file);
+				}
+			});
+
+			return merged;
+		}
+
 		jQuery( ".file-upload-wrapper" ).on(
 			"change",
 			".file-upload-field",
 			function () {
-				jQuery( this ).parent( ".file-upload-wrapper" ).attr( "data-text", jQuery( this ).val().replace( /.*(\/|\\)/, '' ) );
+				var inputEl = this;
+				var wrapper = jQuery( inputEl ).parent( ".file-upload-wrapper" );
+				var currentSelection = inputEl.files || [];
+				var finalFiles = currentSelection;
+
+				if (inputEl.multiple) {
+					var previousSelection = jQuery( inputEl ).data( 'wpepSelectedFiles' ) || [];
+					finalFiles = wpepMergeFiles(previousSelection, currentSelection);
+
+					if (typeof DataTransfer !== 'undefined') {
+						var dataTransfer = new DataTransfer();
+						finalFiles.forEach(function (file) {
+							dataTransfer.items.add(file);
+						});
+						inputEl.files = dataTransfer.files;
+						finalFiles = dataTransfer.files;
+					}
+				}
+
+				jQuery( inputEl ).data( 'wpepSelectedFiles', Array.from(finalFiles || []) );
+				wrapper.attr( "data-text", wpepGetFileUploadDisplayText(finalFiles) );
 			}
 		);
 

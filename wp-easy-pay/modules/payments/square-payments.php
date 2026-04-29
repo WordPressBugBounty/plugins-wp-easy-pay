@@ -19,6 +19,55 @@ add_action( 'wp_ajax_nopriv_wpep_file_upload', 'wpep_file_upload' );
 add_action( 'wp_ajax_wpep_payment_refund', 'wpep_payment_refund' );
 
 /**
+ * Validate required file upload fields against submitted form values.
+ *
+ * @param int   $current_form_id Current form ID.
+ * @param array $form_values     Submitted form values.
+ *
+ * @return bool|string True when valid, otherwise error message string.
+ */
+function wpep_validate_required_file_upload_submission( $current_form_id, $form_values ) {
+	$form_builder_fields = get_post_meta( $current_form_id, 'wpep_square_form_builder_fields', true );
+	$form_fields_json    = json_decode( $form_builder_fields );
+
+	if ( empty( $form_fields_json ) || ! is_array( $form_fields_json ) ) {
+		return true;
+	}
+
+	$has_required_file_field = false;
+	foreach ( $form_fields_json as $field ) {
+		if ( isset( $field->type ) && 'file' === $field->type && isset( $field->required ) ) {
+			$has_required_file_field = true;
+			break;
+		}
+	}
+
+	if ( ! $has_required_file_field ) {
+		return true;
+	}
+
+	$uploaded_url_value = '';
+	if ( is_array( $form_values ) ) {
+		foreach ( $form_values as $item ) {
+			if ( ! isset( $item['label'] ) || ! isset( $item['value'] ) ) {
+				continue;
+			}
+
+			if ( in_array( $item['label'], array( 'Uploaded URL', 'Uploaded File URL' ), true ) ) {
+				$uploaded_url_value = trim( (string) $item['value'] );
+				break;
+			}
+		}
+	}
+
+	if ( '' === $uploaded_url_value ) {
+		return __( 'File upload is required.', 'wp_easy_pay' );
+	}
+
+	return true;
+}
+
+/**
  * Handle file upload.
  */
 function wpep_file_upload() {
@@ -26,23 +75,74 @@ function wpep_file_upload() {
 		exit;
 	}
 
-	$files        = $_FILES;
-	$uploadedfile = $files['file'];
+	if ( empty( $_FILES['file'] ) ) {
+		wp_die(
+			wp_json_encode(
+				array(
+					'error' => __( 'No file received for upload.', 'wp_easy_pay' ),
+				)
+			)
+		);
+	}
 
-	$upload_overrides = array(
+	$files             = $_FILES['file'];
+	$uploaded_fileurls = array();
+	$upload_overrides  = array(
 		'test_form' => false,
 	);
-	$movefile         = wp_handle_upload( $uploadedfile, $upload_overrides );
 
-	if ( $movefile && ! isset( $movefile['error'] ) ) {
-		$return_response = array(
-			'uploaded_file_url' => $movefile['url'],
-		);
-		wp_die( wp_json_encode( $return_response ) );
+	// Handle both single-file and multi-file requests.
+	if ( is_array( $files['name'] ) ) {
+		$file_count = count( $files['name'] );
+		for ( $index = 0; $index < $file_count; $index++ ) {
+			if ( empty( $files['name'][ $index ] ) ) {
+				continue;
+			}
+
+			$uploadedfile = array(
+				'name'     => $files['name'][ $index ],
+				'type'     => $files['type'][ $index ],
+				'tmp_name' => $files['tmp_name'][ $index ],
+				'error'    => $files['error'][ $index ],
+				'size'     => $files['size'][ $index ],
+			);
+
+			$movefile = wp_handle_upload( $uploadedfile, $upload_overrides );
+			if ( $movefile && ! isset( $movefile['error'] ) ) {
+				$uploaded_fileurls[] = $movefile['url'];
+			} else {
+				echo wp_json_encode( $movefile );
+				wp_die();
+			}
+		}
 	} else {
-		echo wp_json_encode( $movefile );
-		wp_die();
+		$movefile = wp_handle_upload( $files, $upload_overrides );
+		if ( $movefile && ! isset( $movefile['error'] ) ) {
+			$uploaded_fileurls[] = $movefile['url'];
+		} else {
+			echo wp_json_encode( $movefile );
+			wp_die();
+		}
 	}
+
+	if ( empty( $uploaded_fileurls ) ) {
+		wp_die(
+			wp_json_encode(
+				array(
+					'error' => __( 'No files were uploaded.', 'wp_easy_pay' ),
+				)
+			)
+		);
+	}
+
+	wp_die(
+		wp_json_encode(
+			array(
+				'uploaded_file_url'  => $uploaded_fileurls[0], // Backward compatibility for existing frontend expectations.
+				'uploaded_file_urls' => $uploaded_fileurls,
+			)
+		)
+	);
 }
 
 /**
@@ -71,6 +171,17 @@ function wpep_payment_request() {
 	$current_form_id = $post['current_form_id'];
 	$amount          = $post['amount'];
 	$currency        = $post['currency'];
+	$form_values     = isset( $post['form_values'] ) ? $post['form_values'] : array();
+
+	$file_upload_validation = wpep_validate_required_file_upload_submission( absint( $current_form_id ), $form_values );
+	if ( true !== $file_upload_validation ) {
+		$error = array(
+			'status' => 'failed',
+			'code'   => '',
+			'detail' => $file_upload_validation,
+		);
+		wp_die( wp_json_encode( $error ) );
+	}
 
 	if ( isset( $cof ) && ! empty( $cof ) && 'false' !== $cof ) {
 

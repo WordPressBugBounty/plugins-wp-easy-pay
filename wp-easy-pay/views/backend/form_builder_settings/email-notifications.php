@@ -127,10 +127,19 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 
 					<div class="form-group">
 						<label>Message body:</label>
-						<textarea id="admin_email" type="text" class="form-control form-control-longtext"
-									placeholder="Please Enter Message" name="wpep_square_admin_email_content_field"
-									style="line-height:1.5"><?php echo '<pre>' . esc_html( $wpep_square_admin_email_content_field ) . '</pre>'; ?></textarea>
-
+						<?php
+						wp_editor(
+							$wpep_square_admin_email_content_field,
+							'wpep_square_admin_email_content_field',
+							array(
+								'textarea_name' => 'wpep_square_admin_email_content_field',
+								'textarea_rows' => 10,
+								'media_buttons' => false,
+								'teeny' => false,
+								'quicktags' => true,
+							)
+						);
+						?>
 					</div>
 
 					<div class="form-group">
@@ -146,22 +155,6 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 								>
 							<label for="exclude">	Exclude lines with blank mail-tags from output
 							</label>
-						</div>
-						<br/>
-						<div class="wizard-form-checkbox">
-						
-							<input type="checkbox" id="htmltype"
-									value="<?php echo ! empty( $wpep_square_admin_email_content_type_html ) ? esc_html( $wpep_square_admin_email_content_type_html ) : 'on'; ?>"
-									name="wpep_square_admin_email_content_type_html" 
-									<?php
-									if ( 'on' === $wpep_square_admin_email_content_type_html ) {
-										echo 'checked';
-									}
-									?>
-							>
-							<label for="htmltype">Use HTML content type
-							</label>
-							
 						</div>
 					</div>
 				</div>
@@ -189,10 +182,19 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 
 					<div class="form-group">
 						<label>Message body:</label>
-						<textarea id="user_email" type="text" class="form-control form-control-longtext"
-									placeholder="Please Enter Message" name="wpep_square_user_email_content_field"
-									style="line-height:1.5"> <?php echo '<pre>' . esc_html( $wpep_square_user_email_content_field ) . '</pre>'; ?> </textarea>
-
+						<?php
+						wp_editor(
+							$wpep_square_user_email_content_field,
+							'wpep_square_user_email_content_field',
+							array(
+								'textarea_name' => 'wpep_square_user_email_content_field',
+								'textarea_rows' => 10,
+								'media_buttons' => false,
+								'teeny' => false,
+								'quicktags' => true,
+							)
+						);
+						?>
 					</div>
 
 					<div class="form-group">
@@ -206,18 +208,6 @@ $wpep_square_summary_email_frequency_field = get_post_meta( get_the_ID(), 'wpep_
 									?>
 							>
 							Exclude lines with blank mail-tags from output
-							</label>
-						<br/>
-						<label for="htmltype">
-							<input type="checkbox" name="wpep_square_user_email_content_type_html"
-									id="htmltype" 
-									<?php
-									if ( 'on' === $wpep_square_user_email_content_type_html ) {
-										echo 'checked';
-									}
-									?>
-							>
-							Use HTML content type
 							</label>
 					</div>
 

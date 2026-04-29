@@ -125,14 +125,15 @@
 					"font-family": "Figtree"
 				};
 				var pluginUrl            = typeof wpep_data !== 'undefined' && wpep_data.plugin_url ? wpep_data.plugin_url : '';
-				var wpep_icon            = pluginUrl ? pluginUrl + 'assets/backend/img/wpep-logo-pro.png' : null;
+				var wpep_icon            = pluginUrl ? pluginUrl + 'assets/backend/img/wpep-logo-pro-widget.png' : null;
 				var wpep_icon_element    = wpep_icon ? wp.element.createElement(
 					"img",
 					{
 						src: wpep_icon,
 						style: {
-							width: '60px',
-							height: '15px'
+							maxWidth: '24px',
+							width: '24px',
+							height: 'auto'
 						}
 					}
 				) : 'format-aside';

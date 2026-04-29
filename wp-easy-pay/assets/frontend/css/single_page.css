@@ -853,6 +853,12 @@ label.subscrition_cycle_label {
   }
 }
 
+@media screen and (max-width: 767px) {
+  .singlepage .basket-tbl .headCol.pCost .form-control-em {
+	text-align: center;
+  }
+}
+
 .singlepage .basket-tbl .headCol.pCost {
   width: 70px;
   margin: 0px auto;
@@ -1661,7 +1667,7 @@ background-color: #fbfbfb;
   background: rgba(253, 253, 253, 0.98);
   border-radius: 4px;
   border: 1px solid #fbfbfb;
-  z-index: 6;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2373,7 +2379,6 @@ span.fieldReq {
   width: calc(100% - 160px);
   pointer-events: none;
   z-index: 20;
-  height: 0px;
   line-height: 18px;
   color: #2f2f37;
   border-radius: 5px 10px 10px 5px;
@@ -2843,7 +2848,6 @@ span.valueCheckWpep {
     color: #ff0000;
     font-size: 12px;
 }
-
 span.couponAmountError {
     color: #ff0000;
     font-size: 12px;

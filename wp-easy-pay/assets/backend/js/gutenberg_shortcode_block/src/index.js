@@ -21,14 +21,15 @@ var wpep_select = {
 }
 
 const pluginUrl = ( typeof wpep_data !== 'undefined' && wpep_data.plugin_url ) ? wpep_data.plugin_url : '';
-const wpep_icon = pluginUrl ? `${pluginUrl}assets/backend/img/wpep-logo-pro.png` : null;
+const wpep_icon = pluginUrl ? `${pluginUrl}assets/backend/img/wpep-logo-pro-widget.png` : null;
 const wpep_icon_element = wpep_icon ? wp.element.createElement(
 	'img',
 	{
 		src: wpep_icon,
 		style: {
-			width: '60px',
-			height: '15px'
+			maxWidth: '24px',
+			width: '24px',
+			height: 'auto'
 		}
 	}
 ) : 'format-aside';

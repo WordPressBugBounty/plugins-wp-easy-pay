@@ -260,9 +260,36 @@ if ( wepp_fs()->is__premium_only() ) {
 		echo '<th>' . esc_html( $label ) . '</th>';
 
 		// Value
-		if ( 'Uploaded File URL' === $value['label'] ) {
-			$file_link = '<a target="_blank" rel="noopener noreferrer" href="' . esc_url( $value['value'] ) . '">' . esc_html( 'Click to see uploaded file' ) . '</a>';
-			echo '<td>' . wp_kses_post( $file_link ) . '</td>';
+		if ( in_array( $value['label'], array( 'Uploaded File URL', 'Uploaded URL' ), true ) && isset( $value['value'] ) ) {
+			$raw_urls        = explode( ',', (string) $value['value'] );
+			$uploaded_output = array();
+
+			foreach ( $raw_urls as $raw_url ) {
+				$file_url = trim( $raw_url );
+				if ( '' === $file_url ) {
+					continue;
+				}
+
+				$file_url_escaped = esc_url( $file_url );
+				if ( '' === $file_url_escaped ) {
+					continue;
+				}
+
+				$file_type = wp_check_filetype( $file_url_escaped );
+				$is_image  = isset( $file_type['type'] ) && 0 === strpos( $file_type['type'], 'image/' );
+
+				if ( $is_image ) {
+					$uploaded_output[] = '<a target="_blank" rel="noopener noreferrer" href="' . $file_url_escaped . '" style="display:inline-block;margin-right:8px;margin-bottom:8px;"><img src="' . $file_url_escaped . '" alt="' . esc_attr__( 'Uploaded file preview', 'wp_easy_pay' ) . '" width="100" height="100" style="width:100px;height:100px;object-fit:cover;border:1px solid #ddd;border-radius:4px;" /></a>';
+				} else {
+					$uploaded_output[] = '<a target="_blank" rel="noopener noreferrer" href="' . $file_url_escaped . '">' . esc_html( $file_url ) . '</a>';
+				}
+			}
+
+			if ( ! empty( $uploaded_output ) ) {
+				echo '<td>' . wp_kses_post( implode( '', $uploaded_output ) ) . '</td>';
+			} else {
+				echo '<td>-</td>';
+			}
 		} elseif ( isset( $value['value'] ) ) {
 			echo '<td>' . esc_html( $value['value'] ) . '</td>';
 		} else {

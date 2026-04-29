@@ -20,8 +20,12 @@ function wpep_register_gutenberg_blocks() {
 	$wpep_payment_forms = array();
 	$count              = 0;
 	foreach ( $latest_books as $value ) {
+		$form_title = trim( (string) $value->post_title );
+		if ( '' === $form_title ) {
+			$form_title = __( 'Untitled form', 'wp_easy_pay' ) . ' (ID: ' . $value->ID . ')';
+		}
 		$wpep_payment_forms[ $count ]['ID']    = $value->ID;
-		$wpep_payment_forms[ $count ]['title'] = $value->post_title;
+		$wpep_payment_forms[ $count ]['title'] = $form_title;
 		++$count;
 	}
 

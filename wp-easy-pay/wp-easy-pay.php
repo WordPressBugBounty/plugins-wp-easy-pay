@@ -8,7 +8,7 @@
  * without coding it yourself or hiring a developer. Skip setting up a complex shopping cart system.
  * Author: WP Easy Pay
  * Author URI: https://wpeasypay.com/
- * Version: 4.3
+ * Version: 4.4.0
  * Text Domain: wp_easy_pay
  * License: GPLv2 or later
  *
@@ -236,8 +236,14 @@ function wpep_create_example_form() {
 	}
 }
 // Fix: Check $_POST instead of undefined $post variable
-if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-	exit;
+if ( isset( $_POST['wp_global_nonce'] ) ) {
+	if ( ! function_exists( 'wp_verify_nonce' ) ) {
+		require_once ABSPATH . WPINC . '/pluggable.php';
+	}
+
+	if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
+		exit;
+	}
 }
 // $_REQUEST is used for reading query parameters, values are sanitized when accessed via $request array
 $request = array_map( 'sanitize_text_field', wp_unslash( $_REQUEST ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -264,6 +270,32 @@ require_once WPEP_ROOT_PATH . 'modules/render_forms/form-render-shortcode.php';
 require_once WPEP_ROOT_PATH . 'modules/admin_notices/ssl-notice.php';
 require_once WPEP_ROOT_PATH . 'modules/blocks/gutenberg-shortcode-block.php';
 require_once WPEP_ROOT_PATH . 'modules/admin_notices/square-oauth-notice.php';
+
+// Load Beaver Builder module after plugins loaded (so FLBuilder is available in both Free and Pro)
+add_action( 'plugins_loaded', function () {
+	if ( class_exists( 'FLBuilder' ) ) {
+		require_once WPEP_ROOT_PATH . 'modules/blocks/beaver-builder-shortcode-module.php';
+	}
+}, 20 );
+
+// Load Elementor widget if Elementor is active
+// Check if Elementor plugin exists and is active
+add_action( 'plugins_loaded', function () {
+	// Check multiple ways to ensure Elementor is available
+	if ( did_action( 'elementor/loaded' )
+		|| class_exists( '\Elementor\Plugin' )
+		|| defined( 'ELEMENTOR_VERSION' ) ) {
+		// Use elementor/init hook which fires after Elementor is fully loaded
+		add_action( 'elementor/init', function () {
+			// Double check Widget_Base class exists before requiring file
+			if ( class_exists( '\Elementor\Widget_Base' ) ) {
+				require_once WPEP_ROOT_PATH . 'modules/blocks/elementor-widget.php';
+			}
+		}, 10 );
+	}
+}, 30 );
+
+
 // Add this after line 369 (after other AJAX handlers)
 add_action( 'wp_ajax_wpep_clear_all_logs', 'wpep_clear_all_logs_handler' );
 
@@ -344,6 +376,7 @@ if ( isset( $post_type_name ) ) {
 	if ( 'wpep_reports' === $post_type_name ) {
 		add_action( 'admin_enqueue_scripts', 'wpep_include_stylesheets' );
 		add_action( 'admin_enqueue_scripts', 'wpep_include_reports_scripts' );
+		add_action( 'admin_enqueue_scripts', 'wpep_include_scripts_easy_pay_type_only' );
 	}
 }
 

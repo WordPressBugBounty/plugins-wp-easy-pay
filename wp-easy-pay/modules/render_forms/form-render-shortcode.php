@@ -62,10 +62,7 @@ function wpep_render_payment_form( $atts ) {
 
 			}
 		}
-	}
-
-	// Fix: Use sanitized check
-	if ( ! $is_https ) {
+	} else {
 
 		ob_start();
 
@@ -111,9 +108,7 @@ function wpep_get_square_token( $wpep_current_form_id ) {
 		if ( 'on' === $global_payment_mode ) {
 			/* If Global Form Live Mode */
 			$access_token = get_option( 'wpep_live_token_upgraded', true );
-		}
-
-		if ( 'on' !== $global_payment_mode ) {
+		} else {
 			/* If Global Form Test Mode */
 			$access_token = get_option( 'wpep_square_test_token_global', true );
 		}
@@ -126,9 +121,7 @@ function wpep_get_square_token( $wpep_current_form_id ) {
 		if ( 'on' === $individual_payment_mode ) {
 			/* If Individual Form Live Mode */
 			$access_token = get_post_meta( $wpep_current_form_id, 'wpep_live_token_upgraded', true );
-		}
-
-		if ( 'on' !== $individual_payment_mode ) {
+		} else {
 			/* If Individual Form Test Mode */
 			$access_token = get_post_meta( $wpep_current_form_id, 'wpep_square_test_token', true );
 		}
@@ -199,6 +192,19 @@ function wpep_form_backend_parent_scripts() {
 			$current_form_code_id = absint( $blocks[0]['attrs']['type'] );
 		}
 	}
+
+	// checking from Elementor
+	if ( empty( $current_form_code_id ) && class_exists( '\Elementor\Plugin' ) ) {
+		$elementor_data = get_post_meta( $form_post->ID, '_elementor_data', true );
+		if ( ! empty( $elementor_data ) ) {
+			// Elementor data is JSON string, decode it
+			$elementor_data_array = json_decode( $elementor_data, true );
+			if ( is_array( $elementor_data_array ) ) {
+				$current_form_code_id = wpep_extract_form_id_from_elementor_data( $elementor_data_array );
+			}
+		}
+	}
+
 	// checking from bricks builder
 	$getpostmeta = get_post_meta( $form_post->ID, '_bricks_page_content_2', true );
 	// Di gayi string
@@ -396,6 +402,7 @@ function wpep_form_backend_parent_scripts() {
 				'achDebit'                        => isset( $achDebit_available ) && true === $achDebit_available ? $achDebit : '',
 				'wpep_square_user_defined_amount' => $user_defined_amount,
 				'wp_payment_nonce'                => wp_create_nonce( 'payment_nonce' ),
+				'captcha_provider'                => 'none',
 				'recaptcha_version'               => $recaptcha_version,
 				'enable_recaptcha'                => $enable_recaptcha,
 				'wpep_square_amount_type'         => $amount_type,
@@ -467,4 +474,35 @@ function wpep_currency_symbol( $currency ) {
 		$symbol = '£';
 	}
 	return $symbol;
+}
+
+/**
+ * Extract form ID from Elementor data recursively
+ * 
+ * @param array $elementor_data Elementor data array
+ * @return int|false Form ID or false if not found
+ */
+function wpep_extract_form_id_from_elementor_data( $elementor_data ) {
+	if ( ! is_array( $elementor_data ) ) {
+		return false;
+	}
+	
+	foreach ( $elementor_data as $element ) {
+		// Check if this is our widget
+		if ( isset( $element['widgetType'] ) && 'wpep-form' === $element['widgetType'] ) {
+			if ( isset( $element['settings']['form_id'] ) && ! empty( $element['settings']['form_id'] ) ) {
+				return absint( $element['settings']['form_id'] );
+			}
+		}
+		
+		// Check if element has children (sections, columns, etc.)
+		if ( isset( $element['elements'] ) && is_array( $element['elements'] ) ) {
+			$found_id = wpep_extract_form_id_from_elementor_data( $element['elements'] );
+			if ( false !== $found_id ) {
+				return $found_id;
+			}
+		}
+	}
+	
+	return false;
 }
