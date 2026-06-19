@@ -1,6 +1,29 @@
 jQuery( 'document' ).ready(
 	function(){
 
+	// Reports list: move search box into top actions row.
+	if ( jQuery( 'body' ).hasClass( 'post-type-wpep_reports' ) && jQuery( 'body' ).hasClass( 'edit-php' ) ) {
+		function moveReportsSearchBox() {
+			var $reportSearchBox = jQuery( '.post-type-wpep_reports #posts-filter .search-box' );
+			if ( $reportSearchBox.length === 0 ) {
+				return;
+			}
+
+			var $targetRow = jQuery( '.post-type-wpep_reports #posts-filter .tablenav.top .alignleft.actions:not(.bulkactions)' ).first();
+			if ( $targetRow.length === 0 ) {
+				$targetRow = jQuery( '.post-type-wpep_reports #posts-filter .tablenav.top .alignleft.actions' ).eq( 1 );
+			}
+
+			if ( $targetRow.length > 0 && $targetRow.find( '#post-search-input' ).length === 0 ) {
+				$targetRow.append( $reportSearchBox.children().clone() );
+				$reportSearchBox.hide();
+			}
+		}
+
+		moveReportsSearchBox();
+		setTimeout( moveReportsSearchBox, 150 );
+	}
+
 	// This below code is for Subscription, Report and Coupons custom post type search
 	// This jQuery file was calling upon backend so added this chunk here.
 	// Chunk Open.
@@ -109,25 +132,27 @@ jQuery( 'document' ).ready(
 	}
 );
 
-jQuery(document).ready(function(jQuery) {
-    // Check if we're on reports detail page
-    if (jQuery('body').hasClass('post-type-wpep_reports') && jQuery('body').hasClass('post-php')) {
-		
-        // Back button URL - adjust according to your WordPress installation
-        var backUrl = '/wp-admin/edit.php?post_type=wpep_reports';
-        
-        // Or use full URL if needed
-        // var backUrl = window.location.origin + '/wp-admin/edit.php?post_type=wpep_reports';
-        
-        // Create back button
-        var backButton = '<a href="' + backUrl + '" class="wpep-back-button page-title-action">← Back to Reports</a>';
-        console.log(backButton, 'hello');
-        // Add button after Edit Report button
-        if (jQuery('.page-title-action').length > 0) {
-            jQuery('.page-title-action').first().after(backButton);
-        } else {
-            // Fallback: add after page title
-            jQuery('.wp-heading-inline').after(backButton);
-        }
-    }
+jQuery(document).ready(function($) {
+	function wpepInsertContextBackButton() {
+		var urlParams = new URLSearchParams(window.location.search);
+		var from = urlParams.get('wpep_from');
+
+		if (!from || !wpep_reports_data.back_contexts || !wpep_reports_data.back_contexts[from]) {
+			return;
+		}
+
+		var cfg = wpep_reports_data.back_contexts[from];
+		var backButton = '<a href="' + cfg.url + '" class="wpep-back-button page-title-action">' + cfg.label + '</a>';
+
+		if ($('.page-title-action').length > 0) {
+			$('.page-title-action').first().after(backButton);
+		} else {
+			$('.wp-heading-inline').after(backButton);
+		}
+	}
+
+	if ($('body').hasClass('post-php') &&
+		($('body').hasClass('post-type-wpep_reports') || $('body').hasClass('post-type-wpep_subscriptions'))) {
+		wpepInsertContextBackButton();
+	}
 });

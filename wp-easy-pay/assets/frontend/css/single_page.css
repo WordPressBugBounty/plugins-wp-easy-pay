@@ -2852,3 +2852,13 @@ span.couponAmountError {
     color: #ff0000;
     font-size: 12px;
 }
+
+.form-title-front-view{
+  margin: 0px 0px 0px 0px;
+}
+.form-description-front-view{
+  margin: 5px 0px 10px 0px;
+}
+.goal-message-front-view{
+  margin: 0px 0px 11px 0px;
+}

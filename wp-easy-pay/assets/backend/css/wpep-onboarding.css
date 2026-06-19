@@ -1,0 +1,436 @@
+/* wpep-onboarding.css */
+#toplevel_page_wpep-onboarding ul.wp-submenu-wrap li:nth-child(11) a[href="admin.php?page=get_pro_menu"] {
+    color: white !important;
+    font-weight: 500;
+	  background: linear-gradient(90deg, #2065E0 0%, #11377A 100%);
+	font-size: 14px;
+      padding-top: 0px;
+}
+/* Get Pro submenu star gradient */
+#adminmenu a[href*="page=get_pro_menu"]::before {
+	content: "★";
+	margin-right: 6px;
+	font-size: 20px;
+	font-weight: bold;
+	background: linear-gradient(90deg, #51DFDF 30%, #2065E0 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+	color: transparent;
+}
+body.toplevel_page_wpep-onboarding {
+    background: #EEF1F9;
+}
+
+/* Components */
+.wpep-onboarding-container {
+    max-width: 800px;
+    margin: 40px auto;
+    font-family: 'Figtree', sans-serif;
+    color: #1E293B;
+}
+
+.wpep-onboarding-header {
+    text-align: left;
+    margin-bottom: 24px;
+}
+.wpep-header-logo {
+    height: 28px;
+}
+
+.wpep-card {
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 36px 40px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.wpep-card h2.card-title {
+    font-size: 21px;
+    font-weight: 600;
+    color: #3B3B3B;
+}
+
+.wpep-card .card-desc {
+    color: #3B3B3B;
+    font-size: 14px;
+    margin-top: 3px;
+}
+
+.connectSquare .wpep-btn{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
+    gap: 8px;
+    color: #fff;
+    transition: 0.5s;
+     background-size: 250% auto;
+     box-shadow: 0 0 20px #eee;
+}
+
+.connectSquare .wpep-btn {
+  background-image: linear-gradient(to left, #002068 25%, #0046E8 100%);
+}
+
+.connectSquare .wpep-btn:hover {
+  background-position: right center;
+  color: #fff;
+  text-decoration: none;
+}
+
+.wpep-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 60px;
+    font-size: 17px;
+    font-weight: 700 !important;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
+    gap: 8px;
+}
+.btn-primary {
+    background-color: #0046E8;
+    color: #fff;
+    border: 1px solid #0046E8;
+}
+.btn-primary:hover {
+    background-color: #0037B8;
+    color: #fff;
+}
+.btn-warning {
+    background-color: #F5A623;
+    color: #0B132B;
+    border: 1px solid #F5A623;
+    font-weight: 600;
+}
+.btn-warning:hover {
+    background-color: #E09315;
+    color: #0B132B;
+}
+
+/* Welcome Card */
+.welcome-card .wpep-logo-onboarding { 
+	height: auto;
+    width: 30%;
+}
+.welcome-card .plus-icon-onboarding { 
+    width: 3%;
+}
+.welcome-card .square-logo { 
+	height: auto;
+    width: 30%;
+}
+.welcome-title {
+    font-size: 27px;
+    font-weight: 600;
+    margin: 30px 0 -6px 0px;
+    color: #0F172A;
+}
+.welcome-desc {
+       color: #3B3B3B;
+    font-size: 16px;
+    margin: 16px 0px;
+    padding: 0px 17px;
+}
+.welcome-badges {
+    margin-bottom: 28px;
+}
+.badge-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #EEF2FF;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #1E293B;
+    font-weight: 500;
+    border: 1px solid #0046E8;
+}
+.welcome-footer {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #2065E0;
+    font-size: 12px;
+    font-weight: 600;
+    font-style: italic;
+}
+
+/* Walkthrough Card */
+/* .video-thumbnail {
+    margin-top: 24px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%);
+    height: 320px;
+    position: relative;
+    overflow: hidden;
+} */
+
+.video-thumbnail {
+    margin-top: 24px;
+    border-radius: 8px;
+    background-image: url('../img/walkthrough-background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 390px;
+    position: relative;
+    overflow: hidden;
+}
+
+.wpep-onboarding-walkthrough .video-thumbnail-embed {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+}
+
+.wpep-onboarding-walkthrough .wpep-walkthrough-iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+}
+.play-btn-circle {
+    width: 64px;
+    height: 64px;
+    background: #0046E8;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 70, 232, 0.3);
+    cursor: pointer;
+    transition: transform 0.2s;
+    z-index: 2;
+}
+.play-btn-circle:hover {
+    transform: scale(1.05);
+}
+
+.play-btn-new{
+    width: 30%;
+}
+.play-btn-new:hover {
+    transform: scale(1.05);
+     cursor: pointer;
+}
+
+/* Steps Card */
+.steps-container {
+    padding-top: 16px;
+}
+.step-item {
+    position: relative;
+    z-index: 2;
+        width: 25%;
+}
+.step-icon-wrapper {
+    width: 52px;
+    height: 52px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 50%;
+    margin-bottom: 16px;
+}
+.get-start-steps-icons{
+    width: 38%;
+}
+.get-start-steps-arrow{
+    width: 80%;
+}
+.get-start-steps-down{
+    width: 80%;
+}
+.step-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0046E8;
+    margin: 20px 0 0 8px;
+}
+.step-desc {
+    font-size: 12px;
+    color: #64748B;
+    margin: 3px 0 8px 0;
+    line-height: 1.4;
+    padding: 0 10px;
+}
+.step-link {
+    font-size: 12px;
+    color: #0046E8;
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px solid #0046E8;
+    padding-bottom: 7px;
+}
+.step-link:hover { text-decoration: underline; }
+.step-arrow {
+    position: absolute;
+    top: 6px;
+    left: 21%;
+    width: 25%;
+    transform: translateY(50%);
+    z-index: 999;
+}
+.step-arrow-2 {
+    left: 59%;
+    top: 35px;
+}
+
+/* Pro Card */
+.pro-card {
+    background-image: url(../img/premium-features-banner.png);
+    background-repeat: no-repeat;
+    background-position: bottom;
+    background-size: cover;
+
+    border: none;
+    padding: 48px 40px;
+}
+.pro-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(90deg, #B8D3FF 0%, #78ADFF 100%);
+    color: #000645;
+    padding: 6px 11px 5px 11px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    margin-bottom: 20px;
+}
+.pro-badge .pro-tag-star{
+   width: 15px;
+   margin-bottom: 2px;
+}
+.pro-title {
+    font-size: 35px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 32px;
+    color: #fff;
+}
+.row.features-list-ul{
+    --bs-gutter-x: -6rem;
+}
+.pro-feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.pro-feature-list li {
+    font-size: 14px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #E2E8F0;
+}
+.check-circle {
+    width: 32px;
+    height: 32px;
+    background: #EDF4FF66;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.check-circle svg path {
+    stroke: #fff;
+}
+.features-list-icon{
+    width: 15px;
+}
+.pro-btn-arrow{
+    width: 18px;
+}
+
+/* Guides Card */
+.view-all-link {
+    color: #0046E8;
+    border-bottom: 2px solid #0046E8;
+    padding-bottom: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+.guide-col-boxes-left{
+    border: 2px solid #e4e4e4;
+    border-radius: 15px;
+    padding: 15px 15px 5px 15px;
+}
+.guide-col-boxes-right{
+    border: 2px solid #e4e4e4;
+    border-radius: 15px;
+    padding: 15px 15px 5px 15px;
+}
+.guide-col-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+.guide-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.guide-list li {
+    margin-bottom: 14px;
+}
+.guide-list a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #3B3B3B;
+    text-decoration: none;
+    font-size: 13px;
+}
+.guide-list a:hover {
+    color: #0046E8;
+    text-decoration: underline;
+    font-weight: 500;
+}
+.doc-list-icon{
+    width: 13px;
+}
+.wp-logo-review{
+    width: 35px;
+}
+.wp-reviews-stars{
+    width: 37%;
+}
+/* Testimonials Card */
+.testimonial-item {
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 24px;
+    height: 100%;
+    box-sizing: border-box;
+}
+.testimonial-text {
+    font-size: 13px;
+    color: #475569;
+    font-style: italic;
+    margin: 0;
+    line-height: 1.6;
+}
+.testimonial-author strong {
+    font-size: 13px;
+    color: #0F172A;
+}
+.testimonial-author span {
+    font-size: 12px;
+    color: #64748B;
+}

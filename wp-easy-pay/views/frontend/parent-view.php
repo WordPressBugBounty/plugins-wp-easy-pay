@@ -20,6 +20,7 @@ $wpep_open_in_popup           = get_post_meta( $wpep_current_form_id, 'wpep_open
 $wpep_show_wizard             = get_post_meta( $wpep_current_form_id, 'wpep_show_wizard', true );
 $wpep_show_shadow             = get_post_meta( $wpep_current_form_id, 'wpep_show_shadow', true );
 $wpep_btn_theme               = get_post_meta( $wpep_current_form_id, 'wpep_btn_theme', true );
+$wpep_show_form_header        = get_post_meta( $wpep_current_form_id, 'wpep_show_form_header', true );
 $form_content                 = get_post( $wpep_current_form_id );
 $wpep_button_title            = empty( get_post_meta( $wpep_current_form_id, 'wpep_button_title', true ) ) ? 'Pay' : get_post_meta( $wpep_current_form_id, 'wpep_button_title', true );
 $square_application_id_in_use = null;
@@ -349,6 +350,18 @@ if ( 'on' === $wpep_open_in_popup ) {
 						}
 					</style>
 					<input type="hidden" name="is_extra_fee" class="is_extra_fee" value="<?php echo ( ! empty( $fees_data[0]['check'] ) && in_array( 'yes', $fees_data[0]['check'], true ) ) ? 1 : 0; ?>" />
+					<?php
+					if ( 'on' === $wpep_show_form_header && ! empty( $form_content->post_title ) ) {
+						?>
+						<h3 class="form-title-front-view"><?php echo esc_html( $form_content->post_title ); ?></h3>
+						<?php
+					}
+					if ( 'on' === $wpep_show_form_header && ! empty( $form_content->post_content ) ) {
+						?>
+						<p class="wpep-form-desc form-description-front-view"><?php echo esc_html( $form_content->post_content ); ?></p>
+						<?php
+					}
+					?>
 					<div class="wizardWrap clearfix">
 						<div class="form-wizard-header">
 							<ul class="list-unstyled form-wizard-steps clearfix">

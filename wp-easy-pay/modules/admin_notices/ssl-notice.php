@@ -22,4 +22,4 @@ function wpep_ssl_admin_notice() {
 	}
 }
 
-add_action( 'admin_notices', 'wpep_ssl_admin_notice' );
+add_action( 'admin_noticess', 'wpep_ssl_admin_notice' );

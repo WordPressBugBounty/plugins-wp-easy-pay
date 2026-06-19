@@ -28,16 +28,31 @@ function wpep_popup_enque_scripts() {
 	if ( 'checkout' === basename( get_permalink() ) ) {
 		return;
 	}
+	$current_form_code_id = '';
 	$form_post            = get_post();
-	$current_form_content = $form_post->post_content;
-	if ( isset( $current_form_content ) ) {
-		$shortcode_attr       = explode( 'wpep-form', $current_form_content );
-		$current_form_code    = explode( '"', $shortcode_attr[1] );
-		$current_form_code_id = $current_form_code[1];
+
+	if ( $form_post instanceof WP_Post ) {
+		$current_form_content = (string) $form_post->post_content;
+
+		if ( '' !== $current_form_content && false !== strpos( $current_form_content, 'wpep-form' ) ) {
+			$shortcode_attr = explode( 'wpep-form', $current_form_content );
+			if ( isset( $shortcode_attr[1] ) ) {
+				$current_form_code = explode( '"', $shortcode_attr[1] );
+				if ( isset( $current_form_code[1] ) ) {
+					$current_form_code_id = $current_form_code[1];
+				}
+			}
+		}
 	}
+
 	if ( empty( $current_form_code_id ) ) {
 		$current_form_code_id = get_transient( 'wpep_guten_id' );
 	}
+
+	if ( empty( $current_form_code_id ) ) {
+		return;
+	}
+
 	$global_form             = get_post_meta( $current_form_code_id, 'wpep_individual_form_global', true );
 	$global_payment_mode     = get_option( 'wpep_square_payment_mode_global', true );
 	$individual_payment_mode = get_post_meta( $current_form_code_id, 'wpep_payment_mode', true );
@@ -82,6 +97,7 @@ function wpep_popup_into_footer() {
 				$wpep_open_in_popup           = get_post_meta( $wpep_current_form_id, 'wpep_open_in_popup', true );
 				$wpep_show_wizard             = get_post_meta( $wpep_current_form_id, 'wpep_show_wizard', true );
 				$wpep_show_shadow             = get_post_meta( $wpep_current_form_id, 'wpep_show_shadow', true );
+				$wpep_show_form_header        = get_post_meta( $wpep_current_form_id, 'wpep_show_form_header', true );
 				$form_content                 = get_post( $wpep_current_form_id );
 				$wpep_button_title            = empty( get_post_meta( $wpep_current_form_id, 'wpep_button_title', true ) ) ? 'Pay' : get_post_meta( $wpep_current_form_id, 'wpep_button_title', true );
 				$square_application_id_in_use = null;
@@ -279,13 +295,18 @@ function wpep_popup_into_footer() {
 			
 											<input type="hidden" name="is_extra_fee" class="is_extra_fee" value="<?php echo ( ! empty( $fees_data[0]['check'] ) && in_array( 'yes', $fees_data[0]['check'], true ) ) ? 1 : 0; ?>" />
 
-											<?php if ( ! empty( $form_content->post_content ) ) { ?>
-
-												<h3> <?php echo esc_html( $form_content->post_title ); ?> </h3>
-
-												<p class="wpep-form-desc"><?php echo esc_html( $form_content->post_content ); ?></p>
-
-											<?php } ?>
+											<?php
+											if ( 'on' === $wpep_show_form_header && ! empty( $form_content->post_title ) ) {
+												?>
+												<h3 class="form-title-front-view"><?php echo esc_html( $form_content->post_title ); ?></h3>
+												<?php
+											}
+											if ( 'on' === $wpep_show_form_header && ! empty( $form_content->post_content ) ) {
+												?>
+												<p class="wpep-form-desc form-description-front-view"><?php echo esc_html( $form_content->post_content ); ?></p>
+												<?php
+											}
+											?>
 
 											<?php if ( 'on' !== $wpep_open_in_popup ) { ?>
 												<div class="form-wizard-header">

@@ -18,7 +18,11 @@ add_action( 'init', 'wpep_create_reports_post_type' );
 add_filter( 'manage_wpep_reports_posts_columns', 'wpep_modify_column_names_reports' );
 add_action( 'manage_wpep_reports_posts_custom_column', 'wpep_add_columns_data_reports', 9, 2 );
 add_action( 'admin_menu', 'wpep_add_submenu' );
+add_action( 'admin_enqueue_scripts', 'wpep_onboarding_admin_assets', 5 );
+add_action( 'admin_head', 'wpep_onboarding_admin_head_preconnect', 1 );
+require_once WPEP_ROOT_PATH . 'modules/onboarding/onboarding-screen.php';
 add_action( 'post_edit_form_tag', 'wpep_post_edit_form_tag' );
+add_action( 'init', 'wpep_maybe_set_global_default_after_option', 20 );
 add_action( 'wp_ajax_wpep_reset_donation_goal', 'wpep_reset_donation_goal' );
 add_filter( 'cron_schedules', 'wpep_email_payment_summary_cron_schedules' );
 add_action( 'wpep_email_payment_summary_cron_job_hook', 'wpep_email_payment_summary_cron_job' );
@@ -26,8 +30,22 @@ add_action( 'wp_ajax_wpep_restore_confirm', 'funct_wpep_restore_confirm' );
 add_action( 'wp_ajax_wpep_delete_confirm', 'funct_wpep_delete_confirm' );
 add_action( 'wp_ajax_wpep_draft_confirm', 'funct_wpep_draft_confirm' );
 
+require_once WPEP_ROOT_PATH . 'modules/admin/all-forms-transactions-column.php';
+require_once WPEP_ROOT_PATH . 'modules/admin/transactions-form-name-column.php';
+require_once WPEP_ROOT_PATH . 'modules/admin/transactions-list-form-filter.php';
 
 $post_custom = $_POST; // phpcs:ignore
+
+/**
+ * Sets the 'wpep_global_default_after' option once so new forms (created after this) get defaults ON.
+ * Existing forms are never changed (backwards compatibility).
+ */
+function wpep_maybe_set_global_default_after_option() {
+	if ( false !== get_option( 'wpep_global_default_after', false ) ) {
+		return;
+	}
+	update_option( 'wpep_global_default_after', time(), true );
+}
 
 /**
  * Adds the multipart encoding type to the form tag.
@@ -215,16 +233,24 @@ if ( ! function_exists( 'wpep_add_submenu' ) ) {
 	 */
 	function wpep_add_submenu() {
 		add_menu_page(
-			'WP EASY PAY',               // Page title
-			'WP EASY PAY',               // Menu title
+			'WP EASY PAY',               // Page title.
+			'WP EASY PAY',               // Top-level sidebar name (.wp-menu-name).
 			'manage_options',            // Capability
-			'edit.php?post_type=wp_easy_pay', // Slug points to All Forms
-			'',                          // No callback needed
+			'wpep-onboarding',           // Slug points to Onboarding.
+			'wpep_render_onboarding_page',
 			WPEP_ROOT_URL . 'assets/backend/img/Vector.png',
 			6
 		);
 		add_submenu_page(
-			'edit.php?post_type=wp_easy_pay',           // Parent slug.
+			'wpep-onboarding',               // Parent slug.
+			'Dashboard',                    // Page title.
+			'Dashboard',                    // Menu title.
+			'manage_options',               // Capability.
+			'wpep-onboarding',              // Same slug as parent.
+			'wpep_render_onboarding_page'   // Callback.
+		);
+		add_submenu_page(
+			'wpep-onboarding',               // Parent slug.
 			'All Forms',                    // Page title.
 			'All Forms',                    // Menu title.
 			'manage_options',           // Capability.
@@ -232,14 +258,14 @@ if ( ! function_exists( 'wpep_add_submenu' ) ) {
 		);
 		// Add custom post type as a submenu.
 		add_submenu_page(
-			'edit.php?post_type=wp_easy_pay',           // Parent slug.
+			'wpep-onboarding',               // Parent slug.
 			'Create Payment Form',                    // Page title.
 			'Create Payment Form',                    // Menu title.
 			'manage_options',           // Capability.
 			'post-new.php?post_type=wp_easy_pay'   // Menu slug (link to custom post type).
 		);
 		add_submenu_page(
-			'edit.php?post_type=wp_easy_pay',           // Parent slug.
+			'wpep-onboarding',               // Parent slug.
 			'Subscriptions',                    // Page title.
 			'Subscriptions',                    // Menu title.
 			'manage_options',           // Capability.
@@ -247,7 +273,14 @@ if ( ! function_exists( 'wpep_add_submenu' ) ) {
 			'wpep_render_subscription_page'
 		);
 		add_submenu_page(
-			'edit.php?post_type=wp_easy_pay',           // Parent slug.
+			'wpep-onboarding',           // Parent slug.
+			'Transactions',                    // Page title.
+			'Transactions',                    // Menu title.
+			'manage_options',           // Capability.
+			'edit.php?post_type=wpep_reports'   // Menu slug (link to custom post type).
+		);
+		add_submenu_page(
+			'wpep-onboarding',               // Parent slug.
 			'Coupons',                    // Page title.
 			'Coupons',                    // Menu title.
 			'manage_options',           // Capability.
@@ -255,24 +288,17 @@ if ( ! function_exists( 'wpep_add_submenu' ) ) {
 			'wpep_render_coupon_page'
 		);
 		add_submenu_page(
-			'edit.php?post_type=wp_easy_pay',           // Parent slug.
-			'Reports',                    // Page title.
-			'Reports',                    // Menu title.
-			'manage_options',           // Capability.
-			'edit.php?post_type=wpep_reports'   // Menu slug (link to custom post type).
-		);
-		add_submenu_page(
-			'edit.php?post_type=wp_easy_pay',    // Parent slug
+			'wpep-onboarding',               // Parent slug.
 			__('Square Connection Logs', 'wp_easy_pay'),    // Page title
 			__('Square Logs', 'wp_easy_pay'),    // Menu title
 			'manage_options',                    // Capability
 			'square-logs',                       // Custom menu slug
 			'render_square_logs_page'            // Callback (your tabs function)
 		);
-		add_submenu_page( 'edit.php?post_type=wp_easy_pay', 'Square Connect', 'Square Connect', 'manage_options', 'wpep-settings', 'wpep_render_global_settings_page' );
-		add_submenu_page( 'edit.php?post_type=wp_easy_pay', 'Integrations', 'Integrations', 'manage_options', 'wpep-integrations', 'wpep_render_integration_page' );
+		add_submenu_page( 'wpep-onboarding', 'Square Connect', 'Square Connect', 'manage_options', 'wpep-settings', 'wpep_render_global_settings_page' );
+		add_submenu_page( 'wpep-onboarding', 'Integrations', 'Integrations', 'manage_options', 'wpep-integrations', 'wpep_render_integration_page' );
 		add_submenu_page(
-			'edit.php?post_type=wp_easy_pay',
+			'wpep-onboarding',
 			'Get Pro',
 			'Upgrade',
 			'manage_options',
@@ -282,6 +308,123 @@ if ( ! function_exists( 'wpep_add_submenu' ) ) {
 		);
 	}
 
+}
+
+if ( ! function_exists( 'wpep_is_onboarding_admin_screen' ) ) {
+	/**
+	 * Whether the current admin request is the onboarding screen.
+	 *
+	 * @return bool
+	 */
+	function wpep_is_onboarding_admin_screen() {
+		if ( ! is_admin() ) {
+			return false;
+		}
+
+		if ( isset( $_GET['page'] ) && 'wpep-onboarding' === sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return true;
+		}
+
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+		return ( $screen && isset( $screen->id ) && 'toplevel_page_wpep-onboarding' === $screen->id );
+	}
+}
+
+if ( ! function_exists( 'wpep_should_enqueue_onboarding_bootstrap' ) ) {
+	/**
+	 * Whether Bootstrap should load on the onboarding screen.
+	 *
+	 * Skip Bootstrap while Freemius activation/opt-in UI is open
+	 * to avoid CSS conflicts with Freemius modal markup.
+	 *
+	 * @return bool
+	 */
+	function wpep_should_enqueue_onboarding_bootstrap() {
+		if ( ! function_exists( 'wepp_fs' ) ) {
+			return true;
+		}
+
+		return ! wepp_fs()->is_activation_mode();
+	}
+}
+
+if ( ! function_exists( 'wpep_onboarding_admin_head_preconnect' ) ) {
+	/**
+	 * Preconnect to Bootstrap CDN on onboarding to reduce first-paint flash.
+	 *
+	 * @return void
+	 */
+	function wpep_onboarding_admin_head_preconnect() {
+		if ( ! wpep_is_onboarding_admin_screen() ) {
+			return;
+		}
+
+		echo '<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+}
+
+if ( ! function_exists( 'wpep_onboarding_admin_assets' ) ) {
+	/**
+	 * Enqueue onboarding CSS/JS in admin head (before page content renders).
+	 *
+	 * @return void
+	 */
+	function wpep_onboarding_admin_assets() {
+		if ( ! wpep_is_onboarding_admin_screen() ) {
+			return;
+		}
+
+		$bootstrap_deps = array();
+
+		if ( wpep_should_enqueue_onboarding_bootstrap() ) {
+			wp_enqueue_style(
+				'wpep-onboarding-bootstrap-cdn',
+				'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css',
+				array(),
+				'5.3.3'
+			);
+			$bootstrap_deps[] = 'wpep-onboarding-bootstrap-cdn';
+		}
+
+		wp_enqueue_style(
+			'wpep-onboarding-style',
+			WPEP_ROOT_URL . 'assets/backend/css/wpep-onboarding.css',
+			$bootstrap_deps,
+			WPEP_VERSION
+		);
+
+		wp_enqueue_script( 'jquery' );
+		wp_enqueue_script(
+			'wpep_backend_script',
+			WPEP_ROOT_URL . 'assets/backend/js/wpep_backend_scripts.js',
+			array( 'jquery' ),
+			WPEP_VERSION,
+			true
+		);
+		wp_localize_script(
+			'wpep_backend_script',
+			'wpep_hide_elements',
+			array(
+				'ajax_url'          => admin_url( 'admin-ajax.php' ),
+				'hide_publish_meta' => 'true',
+				'wpep_site_url'     => WPEP_ROOT_URL,
+				'nonce'             => wp_create_nonce( 'wp_global_nonce' ),
+				'clear_logs_nonce'  => wp_create_nonce( 'wpep_clear_logs_nonce' ),
+			)
+		);
+	}
+}
+
+if ( ! function_exists( 'wpep_render_onboarding_page' ) ) {
+	/**
+	 * Render onboarding admin page.
+	 *
+	 * @return void
+	 */
+	function wpep_render_onboarding_page() {
+		wpep_render_onboarding_screen_content();
+	}
 }
 
 /**
@@ -367,16 +510,16 @@ function wpep_create_payment_forms_post_type() {
  */
 function wpep_create_reports_post_type() {
 	$labels = array(
-		'name'                  => _x( 'Reports', 'Post Type General Name', 'wp_easy_pay' ),
-		'singular_name'         => _x( 'Reports', 'Post Type Singular Name', 'wp_easy_pay' ),
-		'menu_name'             => __( 'Reports', 'wp_easy_pay' ),
+		'name'                  => _x( 'Transactions', 'Post Type General Name', 'wp_easy_pay' ),
+		'singular_name'         => _x( 'Transactions', 'Post Type Singular Name', 'wp_easy_pay' ),
+		'menu_name'             => __( 'Transactions', 'wp_easy_pay' ),
 		'name_admin_bar'        => __( 'Post Type', 'wp_easy_pay' ),
 		'archives'              => __( 'Item Archives', 'wp_easy_pay' ),
 		'attributes'            => __( 'Item Attributes', 'wp_easy_pay' ),
 		'parent_item_colon'     => __( 'Parent Item:', 'wp_easy_pay' ),
-		'all_items'             => __( 'Reports', 'wp_easy_pay' ),
-		'add_new_item'          => __( 'Build Report', 'wp_easy_pay' ),
-		'add_new'               => __( 'Build Report', 'wp_easy_pay' ),
+		'all_items'             => __( 'Transactions', 'wp_easy_pay' ),
+		'add_new_item'          => __( 'Build Transaction', 'wp_easy_pay' ),
+		'add_new'               => __( 'Build Transaction', 'wp_easy_pay' ),
 		'new_item'              => __( 'New Item', 'wp_easy_pay' ),
 		'edit_item'             => __( 'Edit Item', 'wp_easy_pay' ),
 		'update_item'           => __( 'Update Item', 'wp_easy_pay' ),
@@ -398,7 +541,7 @@ function wpep_create_reports_post_type() {
 
 	$args = array(
 
-		'label'               => __( 'Reports', 'wp_easy_pay' ),
+		'label'               => __( 'Transactions', 'wp_easy_pay' ),
 		'description'         => __( 'Post Type Description', 'wp_easy_pay' ),
 		'labels'              => $labels,
 		'hierarchical'        => false,
@@ -422,6 +565,42 @@ function wpep_create_reports_post_type() {
 	register_post_type( 'wpep_reports', $args );
 }
 
+function wpep_reports_search_title_and_meta( $query ) {
+	if ( is_admin() && $query->is_main_query() && $query->is_search() ) {
+		$post_type = $query->get('post_type');
+
+		if ( 'wpep_reports' === $post_type ) {
+			$search_term = $query->get('s');
+
+			if ( empty( $search_term ) ) {
+				return;
+			}
+
+			global $wpdb;
+
+			$meta_query = $wpdb->prepare(
+				"
+                SELECT DISTINCT post_id FROM $wpdb->postmeta
+                WHERE meta_key IN ( 'wpep_first_name', 'wpep_last_name', 'wpep_email', 'wpep_transaction_type' )
+                AND meta_value LIKE %s
+            ",
+				'%' . $wpdb->esc_like( $search_term ) . '%'
+			);
+
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$post_ids = $wpdb->get_col( $meta_query );
+
+			$query->set( 's', '' );
+			if ( ! empty( $post_ids ) ) {
+				$query->set( 'post__in', array_map( 'absint', $post_ids ) );
+			} else {
+				$query->set( 'post__in', array( 0 ) );
+			}
+		}
+	}
+}
+add_action( 'pre_get_posts', 'wpep_reports_search_title_and_meta' );
+
 /**
  * Adds a meta box for building reports in the admin area.
  *
@@ -434,7 +613,7 @@ function wpep_create_reports_post_type() {
 function wpep_add_reports_metabox() {
 	add_meta_box(
 		'wporg_box_id',
-		'Build Reports',
+		'Transaction Summary',
 		'wpep_render_reports_meta_html',
 		'wpep_reports'
 	);
@@ -469,14 +648,31 @@ function wpep_render_reports_meta_html( $post ) { // phpcs:ignore
 function wpep_modify_column_names_reports( $columns ) {
 	unset( $columns['date'] );
 	unset( $columns['title'] );
-	$columns['post_id'] = __( 'ID' );
-	$columns['paid_by'] = __( 'Paid by' );
-	$columns['type']    = __( 'Type' );
-	$columns['method']  = __( 'Payment method' );
-	$columns['date']    = __( 'Date' );
-	$columns['actions'] = __( 'Actions' );
+	$columns['post_id']        = __( 'ID' );
+	$columns['customer_email'] = __( 'Customer Email' );
+	$columns['type']           = __( 'Type' );
+	$columns['report_date']    = __( 'Date' );
+	$columns['method']         = __( 'Payment method' );
+	$columns['amount']         = __( 'Amount' );
+	$columns['actions']        = __( 'Actions' );
 
 	return $columns;
+}
+
+/**
+ * Builds an admin edit link with a back-navigation context query arg.
+ *
+ * @param int    $post_id Post ID for the detail screen.
+ * @param string $context Back context slug (e.g. transactions, subscriptions).
+ * @return string|false
+ */
+function wpep_get_detail_link_with_context( $post_id, $context = '' ) {
+	$url = get_edit_post_link( absint( $post_id ), 'raw' );
+	if ( ! $url || empty( $context ) ) {
+		return $url;
+	}
+
+	return add_query_arg( 'wpep_from', sanitize_key( $context ), $url );
 }
 
 /**
@@ -495,27 +691,61 @@ function wpep_add_columns_data_reports( $column, $post_id ) {
 	$last_name          = get_post_meta( $post_id, 'wpep_last_name', true );
 	$email              = get_post_meta( $post_id, 'wpep_email', true );
 	$charge_amount      = get_post_meta( $post_id, 'wpep_square_charge_amount', true );
+	$charge_currency    = get_post_meta( $post_id, 'wpep_charge_currency', true );
 	$refund_id          = get_post_meta( $post_id, 'wpep_square_refund_id', false );
 	$transaction_type   = get_post_meta( $post_id, 'wpep_transaction_type', true );
 	$transaction_source = get_post_meta( $post_id, 'wpep_transaction_source', true );
 	$transaction_id     = get_the_title( $post_id );
+	$linked_subscription_id = absint( get_post_meta( $post_id, 'wpep_subscription_post_id', true ) );
+	$is_subscription_txn    = in_array( $transaction_type, array( 'subscription', 'donation_recurring' ), true );
+	$view_target_post_id    = (
+		$is_subscription_txn
+		&& $linked_subscription_id > 0
+		&& post_type_exists( 'wpep_subscriptions' )
+		&& 'wpep_subscriptions' === get_post_type( $linked_subscription_id )
+	) ? $linked_subscription_id : $post_id;
+	$view_url = wpep_get_detail_link_with_context( $view_target_post_id, 'transactions' );
+	if ( ! $view_url ) {
+		$view_url = wpep_get_detail_link_with_context( $post_id, 'transactions' );
+	}
+	$display_amount = $charge_amount;
+	if ( ! empty( $charge_amount ) && ! empty( $charge_currency ) ) {
+		$amount_string = trim( (string) $charge_amount );
+		$amount_body   = $amount_string;
+		if ( preg_match( '/^(.+?)\s*' . preg_quote( (string) $charge_currency, '/' ) . '$/i', $amount_string, $matches ) ) {
+			$amount_body = trim( $matches[1] );
+		}
+		$normalized_charge_amount = str_replace( ',', '', $amount_body );
+		if ( is_numeric( $normalized_charge_amount ) ) {
+			$display_amount = number_format( (float) $normalized_charge_amount, 2, '.', '' ) . ' ' . $charge_currency;
+		}
+	}
 
 	switch ( $column ) {
 
 		case 'post_id':
-			echo "<a href='" . esc_url( get_edit_post_link( $post_id ) ) . "' class='wpep-blue' title='Details'>#" . esc_html( $post_id ) . '</a>';
+			echo "<a href='" . esc_url( $view_url ) . "' class='wpep-blue' title='Details'>#" . esc_html( $post_id ) . '</a>';
+			break;
+		case 'customer_email':
+			echo ! empty( $email ) ? esc_html( $email ) : '&ndash;';
 			break;
 		case 'type':
 			echo "<span class='" . esc_attr( $transaction_type ) . "'>" . esc_html( str_replace( '_', ' ', $transaction_type ) ) . '</span>';
 			break;
-		case 'paid_by':
-			echo esc_html( $first_name . ' ' . $last_name );
+		case 'report_date':
+			echo '<span>' . esc_html( get_the_modified_date( 'd/m/Y \a\t g:i a', $post_id ) ) . '</span>';
 			break;
 		case 'method':
 			echo esc_html( $transaction_source );
 			break;
+		case 'amount':
+			echo ! empty( $display_amount ) ? esc_html( $display_amount ) : '&ndash;';
+			break;
 		case 'actions':
 			echo '<a href="' . esc_url( get_delete_post_link( $post_id ) ) . '" class="deleteIcon" title="Delete report"> Delete </a>';
+			if ( $view_url ) {
+				echo ' <a href="' . esc_url( $view_url ) . '" title="Details" style="margin: 0px 0px 0px -8px !important;"><img src="' . esc_url( WPEP_ROOT_URL . 'assets/backend/img/eye.png' ) . '" alt="Details" style="width:18px; height:18px;"></a>';
+			}
 			break;
 		
 	}
@@ -536,10 +766,9 @@ function wpep_modify_column_names_payment_forms( $columns ) {
 	unset( $columns['title'] );
 	unset( $columns['date'] );
 	$columns['formsTitle'] = __( 'Form title' );
-	$columns['shortcode']  = __( 'Shortcode' );
 	$columns['type']       = __( 'Type' );
 	$columns['status']     = __( 'Status' );
-	$columns['formsDate']  = __( 'Last modified date' );
+	$columns['shortcode']  = __( 'Shortcode' );
 	$columns['actions']    = __( 'Actions' );
 
 	return $columns;
@@ -929,8 +1158,19 @@ function wpep_save_add_form_fields( $post_ID, $post, $update ) {  // phpcs:ignor
 		update_post_meta( $post_ID, 'wpep_square_payment_max', ( isset( $post_custom['wpep_square_payment_max'] ) ? sanitize_text_field( $post_custom['wpep_square_payment_max'] ) : '' ) );
 
 		update_post_meta( $post_ID, 'wpep_show_wizard', ( isset( $post_custom['wpep_show_wizard'] ) ? sanitize_text_field( $post_custom['wpep_show_wizard'] ) : '' ) );
-		update_post_meta( $post_ID, 'wpep_show_shadow', ( isset( $post_custom['wpep_show_shadow'] ) ? sanitize_text_field( $post_custom['wpep_show_shadow'] ) : '' ) );
+
+		$existing_shadow_meta = get_post_meta( $post_ID, 'wpep_show_shadow', false );
+		$global_default_after = (int) get_option( 'wpep_global_default_after', 0 );
+		$post_obj             = get_post( $post_ID );
+		$post_created_at      = $post_obj && ! empty( $post_obj->post_date ) ? strtotime( $post_obj->post_date ) : 0;
+		if ( array() === $existing_shadow_meta && $global_default_after > 0 && $post_created_at >= $global_default_after ) {
+			update_post_meta( $post_ID, 'wpep_show_shadow', 'on' );
+		} else {
+			update_post_meta( $post_ID, 'wpep_show_shadow', ( isset( $post_custom['wpep_show_shadow'] ) ? sanitize_text_field( $post_custom['wpep_show_shadow'] ) : '' ) );
+		}
+
 		update_post_meta( $post_ID, 'wpep_btn_theme', ( isset( $post_custom['wpep_btn_theme'] ) ? sanitize_text_field( $post_custom['wpep_btn_theme'] ) : '' ) );
+		update_post_meta( $post_ID, 'wpep_show_form_header', ( isset( $post_custom['wpep_show_form_header'] ) ? sanitize_text_field( $post_custom['wpep_show_form_header'] ) : '' ) );
 		update_post_meta( $post_ID, 'wpep_form_theme_color', ( isset( $post_custom['wpep_form_theme_color'] ) ? sanitize_text_field( $post_custom['wpep_form_theme_color'] ) : '' ) );
 		update_post_meta( $post_ID, 'wpep_payment_btn_label', ( isset( $post_custom['wpep_payment_btn_label'] ) ? sanitize_text_field( $post_custom['wpep_payment_btn_label'] ) : '' ) );
 

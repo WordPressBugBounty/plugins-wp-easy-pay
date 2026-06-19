@@ -1974,7 +1974,7 @@ function showDeletePopup(postId, formStatus) {
 		url: wpep_hide_elements.ajax_url,
 		data: {
 			action:'wpep_delete_confirm',
-			nonce:wpep_hide_elements.nonce,
+			wp_global_nonce:wpep_hide_elements.nonce,
 			form_id: postId
 		},
 		success:function(response){
@@ -2000,7 +2000,7 @@ function showDeletePopup(postId, formStatus) {
 		url: wpep_hide_elements.ajax_url,
 		data: {
 			action:'wpep_draft_confirm',
-			nonce:wpep_hide_elements.nonce,
+			wp_global_nonce:wpep_hide_elements.nonce,
 			form_id: postId
 		},
 		success:function(response){
@@ -2028,7 +2028,7 @@ function showRestorePopup(postId) {
 			url: wpep_hide_elements.ajax_url,
 			data: {
 				action:'wpep_restore_confirm',
-				nonce:wpep_hide_elements.nonce,
+				wp_global_nonce:wpep_hide_elements.nonce,
 				form_id: postId
 			},
 			success:function(response){
@@ -2336,3 +2336,25 @@ jQuery("#btn_wpep_gen_code").on("click", function(e) {
 	});
 	
 })();
+
+// Onboarding: Quick Walkthrough - play reveals YouTube iframe (same box, autoplay muted).
+jQuery(function($) {
+	$(document).on('click', '.wpep-onboarding-walkthrough .play-btn-new', function(e) {
+		console.log('dasdasda');
+		e.preventDefault();
+		var $area = $(this).closest('.wpep-onboarding-walkthrough');
+		var $preview = $area.find('.video-thumbnail-preview');
+		var $embed = $area.find('.video-thumbnail-embed');
+		var $iframe = $embed.find('iframe');
+
+		if ($iframe.length) {
+			var embedSrc = $iframe.attr('data-src') || $iframe.data('src');
+			if (embedSrc && !$iframe.attr('src')) {
+				$iframe.attr('src', embedSrc);
+			}
+		}
+
+		$preview.addClass('d-none');
+		$embed.removeClass('d-none').attr('aria-hidden', 'false');
+	});
+});

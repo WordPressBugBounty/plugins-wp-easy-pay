@@ -8,7 +8,7 @@
  * without coding it yourself or hiring a developer. Skip setting up a complex shopping cart system.
  * Author: WP Easy Pay
  * Author URI: https://wpeasypay.com/
- * Version: 4.4.0
+ * Version: 4.5.0
  * Text Domain: wp_easy_pay
  * License: GPLv2 or later
  *
@@ -230,6 +230,7 @@ function wpep_create_example_form() {
 		update_post_meta( $post_ID, 'wpep_square_payment_type', 'simple' );
 		update_post_meta( $post_ID, 'wpep_square_amount_type', 'payment_custom' );
 		update_post_meta( $post_ID, 'wpep_form_theme_color', '5d97ff' );
+		update_post_meta( $post_ID, 'wpep_show_shadow', 'on' );
 		update_post_meta( $post_ID, 'wpep_square_form_builder_fields', '[ { "type": "text", "required": true, "label": "First Name", "className": "form-control", "name": "wpep-first-name-field", "subtype": "text", "hideLabel": "yes" }, { "type": "text", "required": true, "label": "Last Name", "className": "form-control", "name": "wpep-last-name-field", "subtype": "text", "hideLabel": "yes" }, { "type": "text", "subtype": "email", "required": true, "label": "Email", "className": "form-control", "name": "wpep-email-field", "hideLabel": "yes" } ]' );
 		update_post_meta( $post_ID, 'wpep_payment_success_msg', 'The example payment form has been submitted successfully' );
 
@@ -376,7 +377,6 @@ if ( isset( $post_type_name ) ) {
 	if ( 'wpep_reports' === $post_type_name ) {
 		add_action( 'admin_enqueue_scripts', 'wpep_include_stylesheets' );
 		add_action( 'admin_enqueue_scripts', 'wpep_include_reports_scripts' );
-		add_action( 'admin_enqueue_scripts', 'wpep_include_scripts_easy_pay_type_only' );
 	}
 }
 
@@ -387,6 +387,11 @@ if ( isset( $request['page'] ) ) {
 		add_action( 'admin_enqueue_scripts', 'wpep_include_scripts_easy_pay_type_only' );
 		add_action( 'admin_enqueue_scripts', 'wpep_include_stylesheets' );
 		add_action( 'admin_enqueue_scripts', 'wpep_include_reports_scripts' );
+	}
+
+	if ( 'square-logs' === $request_page ) {
+		add_action( 'admin_enqueue_scripts', 'wpep_include_stylesheets' );
+		add_action( 'admin_enqueue_scripts', 'wpep_include_scripts_easy_pay_type_only' );
 	}
 }
 
@@ -417,12 +422,22 @@ function wpep_include_reports_scripts() {
 	$data = array(
 		'ajax_url' => admin_url( 'admin-ajax.php' ),
 		'nonce'    => wp_create_nonce( 'wp_global_nonce' ),
+		'back_contexts' => array(
+			'transactions'  => array(
+				'url'   => admin_url( 'edit.php?post_type=wpep_reports' ),
+				'label' => '← Back to Transactions',
+			),
+			'subscriptions' => array(
+				'url'   => admin_url( 'edit.php?post_type=wpep_subscriptions' ),
+				'label' => '← Back to Subscriptions',
+			),
+		),
 	);
 	wp_enqueue_script(
 		'wpep_reports_scripts',
 		WPEP_ROOT_URL . 'assets/backend/js/reports_scripts.js',
 		array(),
-		'3.0.0',
+		'3.0.1',
 		true
 	);
 	wp_localize_script( 'wpep_reports_scripts', 'wpep_reports_data', $data );
@@ -658,6 +673,24 @@ function load_font_awesome_in_admin() {
 }
 add_action( 'admin_enqueue_scripts', 'load_font_awesome_in_admin' );
 
+/**
+ * Loads Figtree font globally in admin.
+ *
+ * Onboarding styles use Figtree, so free build must enqueue it even when
+ * wpep_include_stylesheets() is not hooked for the current admin page.
+ *
+ * @return void
+ */
+function load_figtree_font_in_admin() {
+	wp_enqueue_style(
+		'figtree-admin-font',
+		'https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap',
+		array(),
+		WPEP_VERSION
+	);
+}
+add_action( 'admin_enqueue_scripts', 'load_figtree_font_in_admin' );
+
 // Add this new function for frontend
 function load_figtree_font_in_frontend() {
 	wp_enqueue_style(
@@ -680,11 +713,13 @@ function wpep_add_custom_header_to_all_pages() {
 		'wpep_reports',
 		'wpep_subscriptions',
 		'wpep_coupons',
+		'wpep-onboarding',
 		'wpep-dashboard',
 		'wpep-settings',
 		'wpep-integrations',
 		'wpep-coupon',
 		'wpep-subscription',
+		'square-logs',
 	);
 
 	$is_wpep_page = false;
@@ -702,8 +737,13 @@ function wpep_add_custom_header_to_all_pages() {
 		}
 	}
 
-	// Sirf edit form screen par (body .post-type-wp_easy_pay.post-php)
+	// Payment form edit screen (body .post-type-wp_easy_pay.post-php).
 	$is_edit_form_screen = ( isset( $screen->base ) && 'post' === $screen->base && isset( $screen->post_type ) && 'wp_easy_pay' === $screen->post_type );
+
+	// Onboarding welcome screen.
+	$is_onboarding_screen = ( isset( $screen->id ) && 'toplevel_page_wpep-onboarding' === $screen->id );
+
+	$wpep_show_back_to_forms = ( $is_edit_form_screen || $is_onboarding_screen );
 
 	if ( $is_wpep_page ) {
 		?>
@@ -715,10 +755,10 @@ function wpep_add_custom_header_to_all_pages() {
 					</div>
 				</div>
 				<div class="wpep-header-actions" id="wpep-screen-options-container">
-					<?php if ( ! empty( $is_edit_form_screen ) ) { ?>
-						<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=wp_easy_pay' ) ); ?>" 
+					<?php if ( $wpep_show_back_to_forms ) { ?>
+						<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=wp_easy_pay' ) ); ?>"
 						class="wpep-back-to-forms-btn">
-							<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/arrow-left.png' ); ?>" class="backToFormArrow" /> Back to all forms
+							<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/arrow-left.png' ); ?>" class="backToFormArrow" alt="" /> <?php esc_html_e( 'Back to all forms', 'wp_easy_pay' ); ?>
 						</a>
 					<?php } ?>
 					<button type="button" class="wpep-screen-options-btn" id="wpep-screen-options">
@@ -828,7 +868,6 @@ function wpep_add_custom_header_to_all_pages() {
 			text-decoration: none;
 			cursor: pointer;
 			transition: all 0.2s ease;
-			border-right: 2px solid #647179;
 			font-family: Figtree;
 		}
 		.wpep-back-to-forms-btn:hover {
@@ -839,11 +878,11 @@ function wpep_add_custom_header_to_all_pages() {
 
 		<script>
 		jQuery(document).ready(function(jQuery) {
-			// Hide Screen Options button if WP screen meta not available
+			// Hide Screen Options button if WP screen meta not available (keep back link on onboarding).
 				var hasWpScreenMeta = jQuery('#screen-meta-links').length > 0 && (jQuery('#screen-options-wrap').length > 0 || jQuery('#contextual-help-wrap').length > 0);
 				if ( !hasWpScreenMeta ) {
-					jQuery('#wpep-screen-options-container').remove();
-					return; // stop binding click handlers for this page
+					jQuery('#wpep-screen-options').remove();
+					return;
 				}
 
 			// Function to toggle WordPress screen options
@@ -885,6 +924,29 @@ function wpep_add_custom_header_to_all_pages() {
 
 // Hook the function to admin_notices with very high priority
 add_action('admin_notices', 'wpep_add_custom_header_to_all_pages', -999);
+
+if ( ! function_exists( 'wpep_onboarding_strip_admin_notices_keep_header' ) ) {
+	/**
+	 * On the onboarding admin screen only: remove all admin notices, then re-register
+	 * the WP Easy Pay custom header so it still appears with no other notices below it.
+	 *
+	 * @return void
+	 */
+	function wpep_onboarding_strip_admin_notices_keep_header() {
+		if ( ! is_admin() || ! isset( $_GET['page'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- admin screen routing only.
+			return;
+		}
+		if ( 'wpep-onboarding' !== sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+		remove_all_actions( 'admin_notices' );
+		remove_all_actions( 'all_admin_notices' );
+		if ( function_exists( 'wpep_add_custom_header_to_all_pages' ) ) {
+			add_action( 'admin_notices', 'wpep_add_custom_header_to_all_pages', -999 );
+		}
+	}
+}
+add_action( 'admin_head', 'wpep_onboarding_strip_admin_notices_keep_header', 999 );
 
 /**
  * Renders the UI for adding a new payment form.

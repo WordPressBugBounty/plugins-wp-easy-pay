@@ -530,8 +530,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 					next.find('.wizard-fieldset.orderCompleted').addClass("show wpep-ptb-150", "400");
 					next.find('.wpep-popup').addClass('completed');
 					next.find('.wizard-fieldset.orderCompleted').siblings().remove();
-					// remove form desc on thankyou page
-					current.find('.wpep-form-desc').remove();
 
 					jQuery('html, body').animate(
 						{

@@ -911,6 +911,9 @@ button.SquareConnectIndivi{
   font-family: 'Figtree';
   font-size: 14px;
 }
+.form-control-textarea.form-description-field {
+    margin-bottom: 10px;
+}
 .wpeasyPay label.field-label {
   display: inline-block;
       font-size: 17px !important;
@@ -2037,12 +2040,14 @@ table.widefat {
 .post-type-wp_easy_pay input#post-search-input::placeholder {
    color: #B1CFFF !important;
 }
-.post-type-wp_easy_pay input#search-submit {
-    background: #E0ECFF !important;
+.post-type-wp_easy_pay input#search-submit, .post-type-wpep_reports input#search-submit {
+     background: #E0ECFF !important;
     font-size: 13px !important;
     font-family: 'Figtree';
     margin: 1px 5px;
     border-radius: 2px !important;
+    color: #2271c2 !important;
+        border: 1px solid #2271c2 !important;
 }
 
 #posts-filter #search-submit {
@@ -2131,6 +2136,12 @@ tfoot {
   border-color: #f0f3ff;
   color: #808080;
   box-shadow: none;
+}
+
+.edit-php.post-type-wpep_reports .tablenav .wpep-transactions-form-filter-select {
+  float: unset;
+  margin-right: 6px;
+  max-width: 12.5rem;
 }
 
 #wpep-export-transactions {
@@ -5876,6 +5887,46 @@ table.table-view-list .column-formsTitle a.wpep_tags{
   color: #2065E0;
 }
 
+/* Keep Transactions (wpep_reports) list columns in one row. */
+body.post-type-wpep_reports .wp-list-table.table-view-list {
+  table-layout: auto;
+}
+body.post-type-wpep_reports .wp-list-table.table-view-list th,
+body.post-type-wpep_reports .wp-list-table.table-view-list td {
+  white-space: nowrap;
+}
+body.post-type-wpep_reports .wp-list-table.table-view-list .column-post_id {
+  width: 64px;
+}
+body.post-type-wpep_reports .wp-list-table.table-view-list .column-form_name {
+  width: 180px;
+}
+body.post-type-wpep_reports .wp-list-table.table-view-list td.column-form_name,
+body.post-type-wpep_reports .wp-list-table.table-view-list td.column-form_name a {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+body.post-type-wpep_reports .wp-list-table.table-view-list .column-customer_email {
+  width: 220px;
+}
+body.post-type-wpep_reports .wp-list-table.table-view-list .column-type {
+  width: 120px;
+}
+body.post-type-wpep_reports .wp-list-table.table-view-list .column-report_date {
+  width: 190px;
+}
+body.post-type-wpep_reports .wp-list-table.table-view-list .column-method {
+  width: 140px;
+}
+body.post-type-wpep_reports .wp-list-table.table-view-list .column-amount {
+  width: 120px;
+}
+body.post-type-wpep_reports .wp-list-table.table-view-list .column-actions {
+  width: 100px;
+}
+
 .allFormsScreen .mainModalHeader {
     display: flex;
     flex-direction: row;
@@ -6232,7 +6283,7 @@ div#wpep_additional_charges {
     width: 80%;
 }
 
-#toplevel_page_edit-post_type-wp_easy_pay ul.wp-submenu-wrap li:nth-child(10) a {
+#toplevel_page_wpep-onboarding ul.wp-submenu-wrap li:nth-child(11) a {
     color: white !important;
     font-weight: 500;
 	  background: linear-gradient(90deg, #2065E0 0%, #11377A 100%);
@@ -6759,16 +6810,37 @@ span.subtitle strong {
     font-weight: 600;
 }
 
+.post-type-wpep_reports span.subtitle {
+    padding: 0px;
+    color: #2065E0;
+    font-family: 'Figtree';
+    display: block;
+    margin-top: 0vw;
+    margin-bottom: 1vw;
+}
+.post-type-wpep_reports span.subtitle strong {
+    font-weight: 600;
+}
+
 .post-type-wp_easy_pay div#submitpost{
     display: flex;
 }
-.post-type-wp_easy_pay.post-status-draft div#major-publishing-actions {
-    display: flex;
-    flex-direction: column-reverse;
-    padding: 9px 15px;
+/* Before publish: hide trash row so Publish button aligns */
+.post-type-wp_easy_pay.post-status-draft #delete-action,
+.post-type-wp_easy_pay.post-status-auto-draft #delete-action,
+.post-type-wp_easy_pay.post-status-new #delete-action,
+.post-type-wp_easy_pay.post-new-php #delete-action {
+    display: none;
 }
-.post-type-wp_easy_pay.post-status-draft #delete-action {
-    padding: 3px 5px 3px 5px;
+.post-type-wp_easy_pay.post-status-draft div#major-publishing-actions,
+.post-type-wp_easy_pay.post-status-auto-draft div#major-publishing-actions,
+.post-type-wp_easy_pay.post-status-new div#major-publishing-actions,
+.post-type-wp_easy_pay.post-new-php div#major-publishing-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    padding: 9px 15px;
 }
 .post-type-wp_easy_pay.post-status-publish div#major-publishing-actions {
     display: flex;
@@ -6776,12 +6848,8 @@ span.subtitle strong {
     padding: 9px 15px;
 }
 .post-type-wp_easy_pay.post-status-publish #delete-action {
+    display: block;
     padding: 3px 5px 3px 5px;
-}
-.post-type-wp_easy_pay.post-new-php div#major-publishing-actions {
-    display: flex;
-    flex-direction: column;
-    padding: 9px 15px;
 }
 .post-type-wp_easy_pay #publishing-action span.spinner {
     display: none;
@@ -6793,7 +6861,6 @@ span.subtitle strong {
     font-weight: 600;
     font-family: Figtree;
     padding: 1px 20px;
-        margin-top: 1vw;
 }
 .post-type-wp_easy_pay #publishing-action input#publish {
     background: #2065E0;
@@ -6803,6 +6870,12 @@ span.subtitle strong {
     font-family: Figtree;
     padding: 0px 25px;
     margin: 0px 0px 0px -15px;
+}
+.post-type-wp_easy_pay.post-status-draft #publishing-action input#publish,
+.post-type-wp_easy_pay.post-status-auto-draft #publishing-action input#publish,
+.post-type-wp_easy_pay.post-status-new #publishing-action input#publish,
+.post-type-wp_easy_pay.post-new-php #publishing-action input#publish {
+    margin: 0;
 }
 a.submitdelete.deletion {
     padding: 0px 7px;
@@ -6816,12 +6889,6 @@ a.submitdelete.deletion {
 }
 .post-status-trash.post-type-wp_easy_pay input#delete_all {
     display: none;
-}
-.post-type-wp_easy_pay.post-status-draft div#major-publishing-actions {
-    display: flex;
-    flex-direction: row-reverse;
-    padding: 9px 15px;
-    width: 80%;
 }
 .post-type-wp_easy_pay.post-status-draft input#save-post {
     display: none;
@@ -6896,6 +6963,7 @@ td.actions.column-actions {
 }
 th#actions {
     text-align: center;
+}    
 /* Editor Tab Switcher Styles */
 .wpep-editor-tabs {
 	display: flex;
@@ -7027,4 +7095,9 @@ div.mce-toolbar-grp {
 }
 .wp-editor-container textarea.wp-editor-area {
     border: 1px solid #e4e4e4;
+}
+
+td.transactions.column-transactions a {
+    padding-left: 2vw;
+    text-decoration: underline;
 }

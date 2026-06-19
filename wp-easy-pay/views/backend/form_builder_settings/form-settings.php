@@ -71,6 +71,7 @@ $enable_terms_condition     = get_post_meta( get_the_ID(), 'enableTermsCondition
 $enable_quantity            = get_post_meta( get_the_ID(), 'enableQuantity', true );
 $enable_coupon              = get_post_meta( get_the_ID(), 'enableCoupon', true );
 $enable_square_product_sync = get_post_meta( get_the_ID(), 'enableSquareProductSync', true );
+$wpep_show_form_header      = get_post_meta( get_the_ID(), 'wpep_show_form_header', true );
 
 $terms_label = ! empty( get_post_meta( get_the_ID(), 'termsLabel', true ) ) ? get_post_meta( get_the_ID(), 'termsLabel', true ) : '';
 $terms_link  = ! empty( get_post_meta( get_the_ID(), 'termsLink', true ) ) ? get_post_meta( get_the_ID(), 'termsLink', true ) : '';
@@ -155,9 +156,19 @@ if ( 'on' === $wpep_enable_mailchimp && $api_key && $server ) {
 
 				<div class="form-group">
 					<label>Form description:</label>
-					<textarea type="text" class="form-control form-control-textarea"
+					<textarea type="text" class="form-control form-control-textarea form-description-field"
 								placeholder="Please enter description"
 								name="post_content"><?php echo esc_html( $wpep_content ); ?></textarea>
+					<div class="wizard-form-checkbox">
+						<input name="wpep_show_form_header" id="wpep_show_form_header" value="on" type="checkbox"
+						<?php
+						if ( 'on' === $wpep_show_form_header ) {
+							echo 'checked';
+						}
+						?>
+						>
+						<label for="wpep_show_form_header">Show form title and description on front page</label>
+					</div>
 				</div>
 
 				<div class="form-group" id="popupWrapper">

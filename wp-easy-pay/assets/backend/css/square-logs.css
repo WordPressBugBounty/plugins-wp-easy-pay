@@ -307,6 +307,7 @@ ease-in-out;
     padding: 15px 0px !important;
 }
 
-.wp-easy-pay_page_square-logs .wrap h1{
+.wpep-onboarding_page_square-logs .wrap h1,
+.wp-easy-pay_page_square-logs .wrap h1 {
     display: none;
 }

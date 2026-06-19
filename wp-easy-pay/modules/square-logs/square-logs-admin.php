@@ -12,8 +12,8 @@ echo '<h1>' . esc_html__( 'Square Logs', 'wp_easy_pay' ) . '</h1>';
 
 // Tabs nav
 echo '<h2 class="nav-tab-wrapper">';
-echo '<a href="?post_type=wp_easy_pay&page=square-logs&tab=logs" class="squareLogTabs nav-tab ' . ( 'logs' === $current_tab ? 'nav-tab-active' : '' ) . '">' . esc_html__( 'Logs', 'wp_easy_pay' ) . '</a>';
-echo '<a href="?post_type=wp_easy_pay&page=square-logs&tab=email" class="squareLogTabs nav-tab ' . ( 'email' === $current_tab ? 'nav-tab-active' : '' ) . '">' . esc_html__( 'Alerts', 'wp_easy_pay' ) . '</a>';
+echo '<a href="' . esc_url( admin_url( 'admin.php?page=square-logs&tab=logs' ) ) . '" class="squareLogTabs nav-tab ' . ( 'logs' === $current_tab ? 'nav-tab-active' : '' ) . '">' . esc_html__( 'Logs', 'wp_easy_pay' ) . '</a>';
+echo '<a href="' . esc_url( admin_url( 'admin.php?page=square-logs&tab=email' ) ) . '" class="squareLogTabs nav-tab ' . ( 'email' === $current_tab ? 'nav-tab-active' : '' ) . '">' . esc_html__( 'Alerts', 'wp_easy_pay' ) . '</a>';
 echo '</h2>';
 
 // Load tab content

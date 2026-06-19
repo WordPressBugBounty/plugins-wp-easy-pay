@@ -8,6 +8,13 @@
 
 $wpep_form_theme_color = ! empty( get_post_meta( get_the_ID(), 'wpep_form_theme_color', true ) ) ? get_post_meta( get_the_ID(), 'wpep_form_theme_color', true ) : '#5d97ff';
 $wpep_show_shadow      = get_post_meta( get_the_ID(), 'wpep_show_shadow', true );
+$shadow_meta           = get_post_meta( get_the_ID(), 'wpep_show_shadow', false );
+$global_default_after  = (int) get_option( 'wpep_global_default_after', 0 );
+$post_created_at       = (int) get_the_date( 'U', get_the_ID() );
+
+if ( array() === $shadow_meta && $global_default_after > 0 && $post_created_at >= $global_default_after ) {
+	$wpep_show_shadow = 'on';
+}
 $wpep_btn_theme        = get_post_meta( get_the_ID(), 'wpep_btn_theme', true );
 $wpep_btn_label        = get_post_meta( get_the_ID(), 'wpep_payment_btn_label', true );
 ?>

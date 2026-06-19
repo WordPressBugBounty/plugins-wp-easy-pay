@@ -10,7 +10,7 @@ if ( ! function_exists( 'wepp_fs' ) ) {
 	 * Create a helper function for easy SDK access.
 	 */
 	function wepp_fs() {
-		$settings_url = 'edit.php?post_type=wp_easy_pay';
+		$settings_url = 'admin.php?page=wpep-onboarding';
 		global  $wepp_fs;
 
 		if ( ! isset( $wepp_fs ) ) {
@@ -27,7 +27,7 @@ if ( ! function_exists( 'wepp_fs' ) ) {
 					'has_addons'      => false,
 					'has_paid_plans'  => false,
 					'menu'            => array(
-						'slug'       => 'edit.php?post_type=wp_easy_pay',
+						'slug'       => 'wpep-onboarding',
 						'first-path' => $settings_url,
 						'contact'    => false,
 						'support'    => false,

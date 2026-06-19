@@ -31,11 +31,13 @@
 							);
 							$forms = get_posts( $args );
 
+							$exportable_payment_types = array( 'simple', 'donation', 'donation_recurring', 'subscription' );
+
 							if ( ! empty( $forms ) ) {
 								foreach ( $forms as $form ) {
 									$payment_type = get_post_meta( $form->ID, 'wpep_square_payment_type', true );
 
-									if ( in_array( $payment_type, array( 'simple', 'donation' ), true ) ) {
+									if ( in_array( $payment_type, $exportable_payment_types, true ) ) {
 										$form_title = ! empty( trim( $form->post_title ) ) ? $form->post_title : 'Payment Form - ' . $form->ID;
 										?>
 										<option value="<?php echo esc_attr( $form->ID ); ?>">

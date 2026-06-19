@@ -1,51 +1,71 @@
+<?php
+/**
+ * Donation goals frontend progress bar and messaging.
+ *
+ * @package WP_Easy_Pay
+ */
+
+?>
 <div class="form-group cusPaymentSec donationGoalWrapper">
 	<div class="s_ft">
-		<h2 class="">Donation Goal</h2>
+		<?php
+		$form_id             = ! empty( $wpep_current_form_id ) ? absint( $wpep_current_form_id ) : get_the_ID();
+		$organization_name   = get_post_meta( $form_id, 'wpep_organization_name', true );
+		$goal_message        = get_post_meta( $form_id, 'wpep_donation_goal_message', true );
+		$goal_message_switch = get_post_meta( $form_id, 'wpep_donation_goal_message_switch', true );
+
+		if ( ! empty( $organization_name ) ) {
+			echo '<h2 class="">' . esc_html( $organization_name ) . '</h2>';
+		}
+
+		if ( 'checked' === $goal_message_switch && ! empty( $goal_message ) ) {
+			echo '<p class="goal-message-front-view">' . esc_html( $goal_message ) . '</p>';
+		}
+		?>
 	</div>
 
 	<div class="donationGoalBar">
 		<span class="donationGoalProgressBar">
 			<?php
-			/**
-			 * Filename: donation-goals.php
-			 * Description: donation goals frontend.
-			 *
-			 * @package WP_Easy_Pay
-			 */
-
 			$wpep_donation_goal_amount   = floatval( $wpep_donation_goal_amount );
 			$wpep_donation_goal_achieved = floatval( $wpep_donation_goal_achieved );
 			$percentage                  = 0.00;
 
-			$goal_is_achieve = false;
 			if ( $wpep_donation_goal_achieved > 0 && $wpep_donation_goal_amount > 0 ) {
 				if ( $wpep_donation_goal_achieved < $wpep_donation_goal_amount ) {
 					$percentage = ( $wpep_donation_goal_achieved / $wpep_donation_goal_amount ) * 100;
 				} else {
 					$percentage = 100;
 				}
-
-				if ( $wpep_donation_goal_achieved === $wpep_donation_goal_amount ) {
-					$goal_is_achieve = true;
-				}
 			}
 			?>
-			<span style="width: <?php echo esc_attr( round( $percentage, 2 ) ); ?>%"></span>
+			<span style="width: <?php echo esc_attr( (string) round( $percentage, 2 ) ); ?>%"></span>
 		</span>
 		<div class="donationGoalDetails">
 			<?php
+			$achieved_formatted = number_format( $wpep_donation_goal_achieved, 2 );
+			$goal_formatted     = number_format( $wpep_donation_goal_amount, 2 );
+
 			if ( 'symbol' === $currency_symbol_type ) {
-				?>
-				<?php echo esc_attr( $square_currency ) . esc_attr( number_format( $wpep_donation_goal_achieved, 2 ) ); ?> <small>of <?php echo esc_attr( $square_currency ) . esc_attr( number_format( $wpep_donation_goal_amount, 2 ) ); ?>  raised</small>
-				<?php
+				printf(
+					'%1$s%2$s <small>of %1$s%3$s raised</small>',
+					esc_html( (string) $square_currency ),
+					esc_html( $achieved_formatted ),
+					esc_html( $goal_formatted )
+				);
 			} elseif ( 'code' === $currency_symbol_type ) {
-				?>
-				<?php echo esc_attr( number_format( $wpep_donation_goal_achieved, 2 ) ) . ' ' . esc_attr( $square_currency ); ?> <small>of <?php echo esc_attr( number_format( $wpep_donation_goal_amount, 2 ) ) . ' ' . esc_attr( $square_currency ); ?> raised</small>
-				<?php
+				printf(
+					'%1$s %2$s <small>of %3$s %2$s raised</small>',
+					esc_html( $achieved_formatted ),
+					esc_html( (string) $square_currency ),
+					esc_html( $goal_formatted )
+				);
 			} else {
-				?>
-				<?php echo esc_attr( number_format( $wpep_donation_goal_achieved, 2 ) ); ?> <small>of <?php echo esc_attr( number_format( $wpep_donation_goal_amount, 2 ) ); ?> raised</small>
-				<?php
+				printf(
+					'%1$s <small>of %2$s raised</small>',
+					esc_html( $achieved_formatted ),
+					esc_html( $goal_formatted )
+				);
 			}
 			?>
 		</div>

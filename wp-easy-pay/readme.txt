@@ -3,8 +3,8 @@ Contributors: wpexpertsio
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=pay@objects.ws&item_name=DonationForPlugin
 Tags: square payment form, credit card payments , payment form, donation form, square payments
 Requires at least: 5.6.0
-Tested up to: 6.9.4
-Stable tag: 4.4.0
+Tested up to: 7.0
+Stable tag: 4.5.0
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -249,11 +249,11 @@ Following are a few popular use cases for WP Easy Pay payment forms that show ho
 
 **Reason 05: Advanced Reporting and Data Exporting**
 
-☑️ Access detailed transaction reports for better insights into your sales and customer activity.
+☑️ Access detailed transaction details for better insights into your sales and customer activity.
 
 ☑️ Export transaction data with customizable fields, perfect for accounting and record-keeping.
 
-☑️ Filter reports by transaction type, date, or customer, making it easy to find specific data quickly.
+☑️ Filter transactions by form type, date, or customer, making it easy to find specific data quickly.
 
 ☑️ Email notifications with transaction IDs ensure you and your customers receive real-time updates on payments.
 
@@ -404,27 +404,37 @@ Please report security bugs found in the source code of the undefined plugin thr
 
 == Changelog ==
 
+= 4.5.0 - 06/19/26 =
+
+Added - Onboarding screen.
+Added - New Transactions page to view, filter, export, and manage payment transactions.
+Added - Transactions column in the All Forms table with clickable transaction counts.
+Added - Organization name and donation goal description display on donation forms.
+Added - Option to display form title and description on the frontend payment form.
+Fixed - A vulnerability reported by Patchstack.
+Improvement - Optimized code for better performance.
+
 = 4.4.0 - 04/29/2026 = 
 
-Added - Beaver builder block support 
-Added - Elementor block support
-Fixed - A vulnerability reported by Patchstack
-Fixed - Gutenberg block dropdown issue
+Added - Beaver builder block support.
+Added - Elementor block support.
+Fixed - A vulnerability reported by Patchstack.
+Fixed - Gutenberg block dropdown issue.
 
 = 4.3.0 - 03/24/2026
 
-Added - Square Connection Logs
+Added - Square Connection Logs.
 Improvement - plugin settings UI.
 Fixed - Form Email Validation.
-Fixed - A vulnerability reported by Patchstack
+Fixed - A vulnerability reported by Patchstack.
 
 = 4.2.12 - 02/03/2025
 
-Improvements - Enhanced security measures 
+Improvements - Enhanced security measures.
 Fixed - Minor support-related fixes and improvements.
 
 = 4.2.11 - 12/09/2025 =
-Update – Tested with WordPress version 6.9
+Update – Tested with WordPress version 6.9.
 Improvement – Updated Freemius SDK to the latest version.
 Improvement – Optimized code for better performance.
 
@@ -437,7 +447,7 @@ Improvement - Optimized code for better performance.
 Improvement - Updated Freemius SDK to the latest version.
 
 = 4.2.7 - 12/16/2024 =
-Fixed - Resolved console error: "OnTokenization" ACH payment
+Fixed - Resolved console error: "OnTokenization" ACH payment.
 
 = 4.2.6 - 11/13/2024 =
 Improvement - Optimized code for better performance.
