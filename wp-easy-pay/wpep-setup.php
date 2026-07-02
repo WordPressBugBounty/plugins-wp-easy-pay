@@ -944,9 +944,13 @@ function wpep_save_add_form_fields( $post_ID, $post, $update ) {  // phpcs:ignor
 		return;
 	}
 
-	// Verify nonce if it exists (required for security)
-	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-		exit;
+	// Verify WordPress post save nonce (native admin form uses _wpnonce, not wp_global_nonce).
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'update-post_' . $post_ID ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		return;
+	}
+
+	if ( ! current_user_can( 'edit_post', $post_ID ) ) {
+		return;
 	}
 
 	$post_custom  = $_POST; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -1285,7 +1289,7 @@ function wpep_create_connect_url( $origin ) {
 		$connection_url = add_query_arg( $url_identifiers, admin_url( 'post.php' ) );
 	}
 
-	return $connection_url;
+	return wp_nonce_url( $connection_url, 'wpep_connect_square', '_wpnonce' );
 }
 
 /**
@@ -1336,7 +1340,7 @@ function wpep_create_connect_sandbox_url( $origin ) {
 		$connection_url = add_query_arg( $url_identifiers, admin_url( 'admin.php' ) );
 	}
 
-	return $connection_url;
+	return wp_nonce_url( $connection_url, 'wpep_connect_square', '_wpnonce' );
 }
 
 /**
@@ -1609,6 +1613,67 @@ function wpep_custom_post_updated_messages( $messages ) {
 add_filter( 'post_updated_messages', 'wpep_custom_post_updated_messages' );
 
 /**
+ * Verifies the AJAX nonce for form mutation handlers.
+ *
+ * Accepts wp_global_nonce or legacy nonce field from localized script data.
+ *
+ * @return void
+ */
+function wpep_ajax_verify_global_nonce() {
+	$nonce = '';
+	if ( ! empty( $_POST['wp_global_nonce'] ) ) {
+		$nonce = sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) );
+	} elseif ( ! empty( $_POST['nonce'] ) ) {
+		$nonce = sanitize_text_field( wp_unslash( $_POST['nonce'] ) );
+	}
+	if ( ! $nonce || ! wp_verify_nonce( $nonce, 'wp_global_nonce' ) ) {
+		wp_send_json(
+			array(
+				'success' => false,
+				'message' => 'Security check failed.',
+			)
+		);
+	}
+}
+/**
+ * Validates nonce, payment form post type, and user capability for AJAX form actions.
+ *
+ * @param string $capability Required capability for the target post.
+ * @return WP_Post
+ */
+function wpep_ajax_get_valid_payment_form( $capability ) {
+	wpep_ajax_verify_global_nonce();
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in wpep_ajax_verify_global_nonce().
+	$form_id = isset( $_POST['form_id'] ) ? absint( wp_unslash( $_POST['form_id'] ) ) : 0;
+	if ( ! $form_id ) {
+		wp_send_json(
+			array(
+				'success' => false,
+				'message' => 'Invalid post ID or post does not exist.',
+			)
+		);
+	}
+	$post = get_post( $form_id );
+	if ( ! $post || 'wp_easy_pay' !== $post->post_type ) {
+		wp_send_json(
+			array(
+				'success' => false,
+				'message' => 'Invalid post ID or post does not exist.',
+			)
+		);
+	}
+	if ( ! current_user_can( $capability, $form_id ) ) {
+		wp_send_json(
+			array(
+				'success' => false,
+				'message' => 'You do not have permission to perform this action.',
+			)
+		);
+	}
+	return $post;
+}
+
+/**
  * Updates a specified form's post status to 'publish' via AJAX (restore from draft).
  *
  * This function verifies a nonce for security, then sets the status of a post (form)
@@ -1618,12 +1683,8 @@ add_filter( 'post_updated_messages', 'wpep_custom_post_updated_messages' );
  * @return void Outputs JSON response with success status and message.
  */
 function funct_wpep_restore_confirm() {
-	global $post_custom;
-	$post_custom = $_POST; // phpcs:ignore
-	if ( isset( $post_custom['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $post_custom['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-		exit;
-	}
-	$form_id   = isset( $_POST['form_id'] ) ? sanitize_text_field( wp_unslash( $_POST['form_id'] ) ) : '';
+	$post      = wpep_ajax_get_valid_payment_form( 'publish_post' );
+	$form_id   = $post->ID;
 	$post_data = array(
 		'ID'          => $form_id,
 		'post_status' => 'publish',
@@ -1655,10 +1716,8 @@ function funct_wpep_restore_confirm() {
  * @return void Outputs JSON response with success status and message.
  */
 function funct_wpep_delete_confirm() {
-	if ( isset( $post_custom['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $post_custom['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-		exit;
-	}
-	$form_id = isset( $_POST['form_id'] ) ? sanitize_text_field( wp_unslash( $_POST['form_id'] ) ) : 0;
+	$post    = wpep_ajax_get_valid_payment_form( 'delete_post' );
+	$form_id = $post->ID;
 	if ( get_post_status( $form_id ) ) {
 		wp_delete_post( $form_id, true );
 		if ( ! get_post_status( $form_id ) ) {
@@ -1692,10 +1751,8 @@ function funct_wpep_delete_confirm() {
  * @return void Outputs JSON response with success status and message.
  */
 function funct_wpep_draft_confirm() {
-	if ( isset( $post_custom['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $post_custom['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-		exit;
-	}
-	$form_id   = isset( $_POST['form_id'] ) ? sanitize_text_field( wp_unslash( $_POST['form_id'] ) ) : '';
+	$post      = wpep_ajax_get_valid_payment_form( 'edit_post' );
+	$form_id   = $post->ID;
 	$post_data = array(
 		'ID'          => $form_id,
 		'post_status' => 'draft',

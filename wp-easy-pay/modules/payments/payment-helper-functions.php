@@ -100,17 +100,7 @@ function wpep_create_square_customer_card( $api_client, $square_customer_id, $no
  */
 function wpep_create_square_customer( $api_client ) {
 
-	if ( isset( $post['wp_payment_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $post['wp_payment_nonce'] ) ), 'payment_nonce' ) ) {
-		$error = array(
-			'status' => 'failed',
-			'code'   => '',
-			'detail' => 'Sorry! Your request cannot be completed.',
-		);
-
-		wp_die( wp_json_encode( $error ) );
-	}
-
-	$post = $_POST;
+	$post = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified in wpep_payment_request().
 
 	$api_instance = new SquareConnect\Api\CustomersApi( $api_client );
 	$body         = new \SquareConnect\Model\CreateCustomerRequest();
@@ -971,10 +961,8 @@ function wpep_update_cards_on_file( $api_client, $square_customer_id, $wp_user_i
  * @return void Outputs a success or error message based on the operation result.
  */
 function wpep_delete_cof() {
-	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-		exit;
-	}
-	$post = $_POST;
+	wpep_require_payment_post_nonce();
+	$post = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 	$square_customer_id = $post['customer_id'];
 	$card_on_file       = str_replace( 'doc:', 'ccof:', $post['card_on_file'] );
@@ -1005,15 +993,13 @@ add_action( 'wp_ajax_nopriv_wpep_delete_cof', 'wpep_delete_cof' );
  */
 function wpep_apply_coupon() {
 
-	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-		exit;
-	}
+	wpep_require_payment_post_nonce();
 
-	$post = $_POST;
+	$post = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 	if ( isset( $post['cp_submit'] ) && 'Apply' === sanitize_text_field( $post['cp_submit'] ) ) {
 
-		if ( isset( $post['coupon_code'] ) && isset( $post['total_amount'] ) && ! empty( $post['coupon_code'] ) && ! empty( $_POST['total_amount'] ) ) {
+		if ( isset( $post['coupon_code'] ) && isset( $post['total_amount'] ) && ! empty( $post['coupon_code'] ) && ! empty( $post['total_amount'] ) ) {
 
 			$today        = gmdate( 'Y-m-d' );
 			$total_amount = sanitize_text_field( $post['total_amount'] );
@@ -1155,10 +1141,9 @@ add_action( 'wp_ajax_nopriv_wpep_apply_coupon', 'wpep_apply_coupon' );
  */
 function wpep_calculate_fee_data() {
 
-	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-		exit;
-	}
+	wpep_require_payment_post_nonce();
 
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verified above.
 	if ( isset( $_POST['current_form_id'] ) && isset( $_POST['total_amount'] ) && ! empty( $_POST['current_form_id'] ) && ! empty( $_POST['total_amount'] ) ) {
 
 		$sub_total_amount = floatval( $_POST['total_amount'] );
@@ -1235,6 +1220,7 @@ function wpep_calculate_fee_data() {
 
 		wp_die();
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Missing
 }
 
 add_action( 'wp_ajax_wpep_calculate_fee_data', 'wpep_calculate_fee_data' );

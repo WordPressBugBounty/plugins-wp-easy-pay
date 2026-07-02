@@ -80,7 +80,8 @@ jQuery( 'document' ).ready(
 						'action': 'wpep_payment_refund',
 						'transaction_id': transaction_id,
 						'amount': amount,
-						'post_id': postid
+						'post_id': postid,
+						'wp_global_nonce': wpep_reports_data.nonce
 					};
 
 

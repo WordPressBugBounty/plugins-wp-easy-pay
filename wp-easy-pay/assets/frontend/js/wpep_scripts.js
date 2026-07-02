@@ -7,7 +7,13 @@ jQuery( document ).ready(
 				e.preventDefault();
 				var form_id = jQuery( this ).data( 'btn-id' );
 
-				jQuery( '#wpep_popup-' + form_id ).fadeIn();
+				jQuery( '#wpep_popup-' + form_id ).fadeIn(
+					function () {
+						if ( typeof window.wpepScheduleTurnstileInit === 'function' ) {
+							window.wpepScheduleTurnstileInit( form_id );
+						}
+					}
+				);
 
 			}
 		);

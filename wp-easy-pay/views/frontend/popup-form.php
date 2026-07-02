@@ -81,9 +81,6 @@ add_action( 'wp_footer', 'wpep_popup_into_footer' );
  */
 function wpep_popup_into_footer() {
 
-	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-		exit;
-	}
 	if ( isset( $_SESSION['form_ids'] ) ) {
 		$form_ids = array_map( 'intval', $_SESSION['form_ids'] );
 		foreach ( array_unique( $form_ids ) as $ids ) {
@@ -194,6 +191,7 @@ function wpep_popup_into_footer() {
 												data-delay="<?php echo esc_attr( $redirection_delay ); ?>"
 												data-postal="<?php echo esc_attr( $postal_ph ); ?>" data-user-email="<?php echo esc_attr( $user_email ); ?>"
 												data-redirectionurl="<?php echo esc_url( $wpep_payment_success_url ); ?>">
+											<input type="hidden" class="wpep-payment-nonce-field" name="wpep_payment_nonce" value="<?php echo esc_attr( wp_create_nonce( 'payment_nonce' ) ); ?>" />
 
 											<style>
 												:root {

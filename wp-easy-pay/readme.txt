@@ -3,8 +3,8 @@ Contributors: wpexpertsio
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=pay@objects.ws&item_name=DonationForPlugin
 Tags: square payment form, credit card payments , payment form, donation form, square payments
 Requires at least: 5.6.0
-Tested up to: 7.0
-Stable tag: 4.5.0
+Tested up to: 7.0.0
+Stable tag: 4.5.1
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -404,21 +404,27 @@ Please report security bugs found in the source code of the undefined plugin thr
 
 == Changelog ==
 
-= 4.5.0 - 06/19/26 =
+= 4.5.1 - 2/07/2026 =
+
+Added - Support for unlimited recurring subscription cycles.
+Fixed – Security enhancement.
+Fixed - Cloudflare Turnstile validation issue.
+
+= 4.5.0 - 06/18/26 =
 
 Added - Onboarding screen.
 Added - New Transactions page to view, filter, export, and manage payment transactions.
 Added - Transactions column in the All Forms table with clickable transaction counts.
 Added - Organization name and donation goal description display on donation forms.
 Added - Option to display form title and description on the frontend payment form.
-Fixed - A vulnerability reported by Patchstack.
+Fixed – Security enhancement.
 Improvement - Optimized code for better performance.
 
 = 4.4.0 - 04/29/2026 = 
 
 Added - Beaver builder block support.
 Added - Elementor block support.
-Fixed - A vulnerability reported by Patchstack.
+Fixed – Security enhancement.
 Fixed - Gutenberg block dropdown issue.
 
 = 4.3.0 - 03/24/2026
@@ -426,7 +432,7 @@ Fixed - Gutenberg block dropdown issue.
 Added - Square Connection Logs.
 Improvement - plugin settings UI.
 Fixed - Form Email Validation.
-Fixed - A vulnerability reported by Patchstack.
+Fixed – Security enhancement.
 
 = 4.2.12 - 02/03/2025
 
@@ -463,7 +469,7 @@ Improvement - add a capability check current_user_can( WordFence )
 
 = 4.2.3 - 24/06/2024 =
 Improvement - Added conditional based digital wallet initialization
-Fixed - Vulnerability reported by WordFence team
+Fixed – Security enhancement.
 Fixed - Deprecated warnings in the Square Connect module
 Fixed - After Pay not initializing on default custom payment
 Fixed - After Pay shows the wrong error on the USD currency

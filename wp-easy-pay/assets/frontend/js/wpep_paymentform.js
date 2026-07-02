@@ -3,10 +3,221 @@ let afterpay = {};
 let cashAppPay = {};
 let applePay = {};
 let recaptcha = '';
+window.wpepTurnstileWidgets = window.wpepTurnstileWidgets || {};
+window.wpepTurnstileReadyQueue = window.wpepTurnstileReadyQueue || [];
+
+/**
+ * Check whether the Turnstile container is actually visible to the user.
+ *
+ * @param {HTMLElement} container Turnstile container element.
+ * @return {boolean}
+ */
+window.wpepIsTurnstileContainerVisible = function (container) {
+	if (!container) {
+		return false;
+	}
+
+	var node = container;
+	while (node && node !== document.documentElement) {
+		var style = window.getComputedStyle(node);
+		if (style.display === 'none' || style.visibility === 'hidden') {
+			return false;
+		}
+		node = node.parentElement;
+	}
+
+	return container.getClientRects().length > 0;
+};
+
+/**
+ * Check whether Turnstile render API is ready.
+ *
+ * @return {boolean}
+ */
+window.wpepIsTurnstileApiReady = function () {
+	return typeof turnstile !== 'undefined' && typeof turnstile.render === 'function';
+};
+
+/**
+ * Ensure Turnstile api.js is available without loading duplicates.
+ *
+ * @param {Function} callback Callback when turnstile.render is available.
+ */
+window.wpepEnsureTurnstileApi = function (callback) {
+	if (window.wpepIsTurnstileApiReady()) {
+		callback();
+		return;
+	}
+
+	window.wpepTurnstileReadyQueue.push(callback);
+	if (window.wpepTurnstileScriptLoading) {
+		return;
+	}
+	window.wpepTurnstileScriptLoading = true;
+
+	var flushReadyQueue = function () {
+		var queue = window.wpepTurnstileReadyQueue || [];
+		window.wpepTurnstileReadyQueue = [];
+		for (var i = 0; i < queue.length; i++) {
+			if (typeof queue[i] === 'function') {
+				queue[i]();
+			}
+		}
+	};
+
+	var waitForTurnstile = function (attempts) {
+		if (window.wpepIsTurnstileApiReady()) {
+			window.wpepTurnstileScriptLoading = false;
+			flushReadyQueue();
+			return;
+		}
+		if (attempts <= 0) {
+			window.wpepTurnstileScriptLoading = false;
+			return;
+		}
+		setTimeout(function () {
+			waitForTurnstile(attempts - 1);
+		}, 200);
+	};
+
+	if (document.querySelector('script[src*="challenges.cloudflare.com/turnstile/v0/api.js"]')) {
+		waitForTurnstile(50);
+		return;
+	}
+
+	var script = document.createElement('script');
+	script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+	script.setAttribute('data-cfasync', 'false');
+	script.onload = function () {
+		waitForTurnstile(20);
+	};
+	script.onerror = function () {
+		window.wpepTurnstileScriptLoading = false;
+	};
+	document.head.appendChild(script);
+};
+
+/**
+ * Render Cloudflare Turnstile explicitly for a WPEP form widget container.
+ *
+ * @param {number|string} currentFormId Form post ID.
+ */
+window.wpepInitTurnstile = function (currentFormId) {
+	if (typeof wpep_local_vars === 'undefined' || wpep_local_vars.captcha_provider !== 'turnstile') {
+		return;
+	}
+
+	var siteKey = wpep_local_vars.turnstile_site_key;
+	if (!siteKey) {
+		return;
+	}
+
+	var containerId = 'wpep-turnstile-' + currentFormId;
+	var container = document.getElementById(containerId);
+	if (!container || !window.wpepIsTurnstileContainerVisible(container)) {
+		return;
+	}
+
+	if (window.wpepTurnstileWidgets[currentFormId]) {
+		return;
+	}
+
+	if (container.querySelector('iframe, input[name="cf-turnstile-response"]')) {
+		window.wpepTurnstileWidgets[currentFormId] = true;
+		return;
+	}
+
+	window.wpepEnsureTurnstileApi(function () {
+		if (!window.wpepIsTurnstileApiReady() || window.wpepTurnstileWidgets[currentFormId]) {
+			return;
+		}
+
+		if (!window.wpepIsTurnstileContainerVisible(container)) {
+			return;
+		}
+
+		// Do not use turnstile.ready() — Formidable and other plugins load
+		// api.js with async/defer, which breaks turnstile.ready().
+		try {
+			window.wpepTurnstileWidgets[currentFormId] = turnstile.render('#' + containerId, {
+				sitekey: siteKey,
+				theme: 'light',
+			});
+		} catch (e) {
+			delete window.wpepTurnstileWidgets[currentFormId];
+		}
+	});
+};
+
+/**
+ * Retry Turnstile init until the widget container becomes visible (popup/wizard).
+ *
+ * @param {number|string} formId Form post ID.
+ * @param {number} attempt Current retry count.
+ */
+window.wpepScheduleTurnstileInit = function (formId, attempt) {
+	if (typeof wpep_local_vars === 'undefined' || wpep_local_vars.captcha_provider !== 'turnstile') {
+		return;
+	}
+
+	attempt = attempt || 0;
+	if (attempt > 30) {
+		return;
+	}
+
+	var container = document.getElementById('wpep-turnstile-' + formId);
+	if (!container) {
+		return;
+	}
+
+	window.wpepInitTurnstile(formId);
+
+	if (window.wpepTurnstileWidgets[formId] || container.querySelector('iframe')) {
+		return;
+	}
+
+	if (window.wpepIsTurnstileContainerVisible(container)) {
+		setTimeout(function () {
+			window.wpepScheduleTurnstileInit(formId, attempt + 1);
+		}, 250);
+		return;
+	}
+
+	setTimeout(function () {
+		window.wpepScheduleTurnstileInit(formId, attempt + 1);
+	}, 250);
+};
+
 const payments = initializePayments(wpep_local_vars.square_application_id, wpep_local_vars.square_location_id_in_use);
+
+function wpepGetPaymentNonce(current_form_id) {
+	var nonceField = jQuery('#theForm-' + current_form_id + ' input.wpep-payment-nonce-field');
+	if (!nonceField.length) {
+		nonceField = jQuery('form.wpep_payment_form[data-id="' + current_form_id + '"] input.wpep-payment-nonce-field');
+	}
+	if (nonceField.length) {
+		return nonceField.val();
+	}
+	if (typeof wpep_local_vars !== 'undefined') {
+		if (wpep_local_vars.wpep_payment_nonce) {
+			return wpep_local_vars.wpep_payment_nonce;
+		}
+		if (wpep_local_vars.wp_payment_nonce) {
+			return wpep_local_vars.wp_payment_nonce;
+		}
+	}
+	return '';
+}
 
 document.addEventListener('DOMContentLoaded', async function () {
 	jQuery('.loader').hide();
+	jQuery(document).on('click', '.form-wizard-next-btn', function () {
+		var formId = jQuery(this).parents('form').data('id');
+		window.wpepScheduleTurnstileInit(formId);
+	});
+	jQuery(document).on('click', '.wpep-popup-btn', function () {
+		window.wpepScheduleTurnstileInit(jQuery(this).data('btn-id'));
+	});
 	jQuery('#cash_app_pay_v1_element').bind('click', function (e) {
 		e.preventDefault();
 		e.stopImmediatePropagation();
@@ -23,6 +234,10 @@ document.addEventListener('DOMContentLoaded', async function () {
 				var current_form_id = jQuery(this).data('id');
 				var currency = jQuery(this).data('currency');
 				let card;
+
+				if (wpep_local_vars.captcha_provider === 'turnstile') {
+					window.wpepScheduleTurnstileInit(current_form_id);
+				}
 
 				calculate(current_form_id, currency);
 
@@ -267,23 +482,29 @@ document.addEventListener('DOMContentLoaded', async function () {
 				try {
 
 					let ach;
+					const creditCardDisabled = wpep_local_vars.disable_credit_card === true
+						|| wpep_local_vars.disable_credit_card === 1
+						|| wpep_local_vars.disable_credit_card === '1';
 					jQuery('.loader').show();
-					card = await initializeCard(payments, current_form_id);
-					jQuery('.loader').hide();
-					jQuery('.wpep-single-form-' + current_form_id).click(async function (event) {
-						event.preventDefault();
-						var current_form_id = jQuery(this).parents('form').data('id');
-						paymentButtonClicked(event, card, current_form_id, currency);
-					});
+					if (!creditCardDisabled) {
+						card = await initializeCard(payments, current_form_id);
+						jQuery('.wpep-single-form-' + current_form_id).click(async function (event) {
+							event.preventDefault();
+							var current_form_id = jQuery(this).parents('form').data('id');
+							paymentButtonClicked(event, card, current_form_id, currency);
+						});
 
-					jQuery('.wpep-wizard-form-' + current_form_id).click(async function (event) {
-						event.preventDefault();
-						var current_form_id = jQuery(this).parents('form').data('id');
-						paymentButtonClicked(event, card, current_form_id, currency);
-					});
+						jQuery('.wpep-wizard-form-' + current_form_id).click(async function (event) {
+							event.preventDefault();
+							var current_form_id = jQuery(this).parents('form').data('id');
+							paymentButtonClicked(event, card, current_form_id, currency);
+						});
+					}
+					jQuery('.loader').hide();
 					if (wpep_local_vars.achDebit == 'on') {
 						ach = await initializeACH(payments);
 						const achButton = document.getElementById('ach-button-' + current_form_id);
+						if (achButton) {
 						achButton.addEventListener('click', async function (event) {
 							event.preventDefault();
 
@@ -308,6 +529,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 								// ACH with the `accountHolderName` as an option.
 							}
 						});
+						}
 					}
 
 
@@ -370,10 +592,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 			return hcaptcha_response;
 		}
 
-		// Turnstile validation - use hidden input only (Cloudflare auto-fills cf-turnstile-response)
+		// Turnstile validation — token must belong to this WPEP form only.
 		if (captcha_provider === 'turnstile') {
-			var turnstile_response = jQuery("#theForm-" + current_form_id).find('input[name="cf-turnstile-response"]').val() ||
-				jQuery('input[name="cf-turnstile-response"]').val() || '';
+			var turnstile_response = jQuery("#theForm-" + current_form_id).find('input[name="cf-turnstile-response"]').val() || '';
 
 			if (!turnstile_response || turnstile_response.length === 0) {
 				jQuery("#theForm-" + current_form_id + " .paymentsBlocks-" + current_form_id)
@@ -1022,7 +1243,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 			'currency': currency,
 			'card_on_file': cof,
 			'buyer_verification': verifyToken,
-			'wp_payment_nonce': wpep_local_vars.wp_payment_nonce,
+			'wpep_payment_nonce': wpepGetPaymentNonce(current_form_id),
+			'wp_payment_nonce': wpepGetPaymentNonce(current_form_id),
 			'wp_payment_recapcha': recaptcha
 		};
 
@@ -1031,8 +1253,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 				'action': 'wpep_square_product_validation_request',
 				'form_values': form_values,
 				'form_id': current_form_id,
-				'wp_payment_nonce': wpep_local_vars.wp_payment_nonce,
-			}
+				'wpep_payment_nonce': wpepGetPaymentNonce(current_form_id),
+				'wp_payment_nonce': wpepGetPaymentNonce(current_form_id),
+			};
 			jQuery.ajax({
 				url: wpep_local_vars.ajax_url,
 				type: 'post',
@@ -1050,6 +1273,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 								}
 								fd.append('file_upload', 'true');
 								fd.append('action', 'wpep_file_upload');
+								fd.append('wpep_payment_nonce', wpepGetPaymentNonce(current_form_id));
+								fd.append('wp_payment_nonce', wpepGetPaymentNonce(current_form_id));
 
 								jQuery.ajax({
 									url: wpep_local_vars.ajax_url,
@@ -1118,6 +1343,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 					}
 					fd.append('file_upload', 'true');
 					fd.append('action', 'wpep_file_upload');
+					fd.append('wpep_payment_nonce', wpepGetPaymentNonce(current_form_id));
+					fd.append('wp_payment_nonce', wpepGetPaymentNonce(current_form_id));
 
 					jQuery.ajax({
 						url: wpep_local_vars.ajax_url,
@@ -2127,7 +2354,9 @@ jQuery(window).on('load', function () {
 			'extra_fee': jQuery(element).parents('form.wpep_payment_form').find('.is_extra_fee').val(),
 			'discounted': discount,
 			'currency': currency,
-			'cp_submit': jQuery(element).val()
+			'cp_submit': jQuery(element).val(),
+			'wpep_payment_nonce': wpepGetPaymentNonce(form_id),
+			'wp_payment_nonce': wpepGetPaymentNonce(form_id)
 		};
 
 		jQuery.post(
@@ -2312,7 +2541,9 @@ function wpep_update_amount_with_quantity(current_form_id, value) {
 		'extra_fee': jQuery(this).parents('form.wpep_payment_form').find('.is_extra_fee').val(),
 		'discounted': discount,
 		'currency': currency,
-		'cp_submit': jQuery('.cp-apply').val()
+		'cp_submit': jQuery('.cp-apply').val(),
+		'wpep_payment_nonce': wpepGetPaymentNonce(current_form_id),
+		'wp_payment_nonce': wpepGetPaymentNonce(current_form_id)
 	};
 
 	jQuery.post(
@@ -2662,6 +2893,8 @@ function wpep_calculate_fee_data_ajax(form_id, amount, discount) {
 		'coupon_type': jQuery('input[name="wpep-coupon-type"]').val(),
 		'discount': discount,
 		'currency': wpep_local_vars.wpep_square_currency_new,
+		'wpep_payment_nonce': wpepGetPaymentNonce(form_id),
+		'wp_payment_nonce': wpepGetPaymentNonce(form_id),
 	};
 	is_wpep_calculate_fee_data_ajax_InProgress = true;
 	jQuery.post(
@@ -2720,7 +2953,9 @@ function wpep_delete_cof(customer_id, card_on_file, current_form_id, delete_id) 
 		'action': 'wpep_delete_cof',
 		'customer_id': customer_id,
 		'card_on_file': card_on_file,
-		'current_form_id': current_form_id
+		'current_form_id': current_form_id,
+		'wpep_payment_nonce': wpepGetPaymentNonce(current_form_id),
+		'wp_payment_nonce': wpepGetPaymentNonce(current_form_id)
 	};
 
 	jQuery.post(

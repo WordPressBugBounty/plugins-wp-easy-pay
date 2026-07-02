@@ -119,6 +119,75 @@ function wpep_print_textarea( $textarea ) {
 }
 
 /**
+ * Check whether a Cloudflare Turnstile script is already registered or enqueued.
+ *
+ * @return bool
+ */
+function wpep_is_turnstile_script_registered() {
+	global $wp_scripts;
+
+	if ( ! is_object( $wp_scripts ) || ! isset( $wp_scripts->registered ) || ! is_array( $wp_scripts->registered ) ) {
+		return false;
+	}
+
+	foreach ( $wp_scripts->registered as $script ) {
+		if ( empty( $script->src ) ) {
+			continue;
+		}
+		if ( false !== strpos( $script->src, 'challenges.cloudflare.com/turnstile' ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Enqueue Cloudflare Turnstile once using explicit render mode.
+ *
+ * Skips loading when another plugin (e.g. Formidable) already registered the script.
+ *
+ * @return bool True when WPEP enqueued the script, false when an existing script is reused.
+ */
+function wpep_enqueue_turnstile_script() {
+	if ( wpep_is_turnstile_script_registered() ) {
+		return false;
+	}
+
+	wp_enqueue_script(
+		'wpep-cloudflare-turnstile',
+		'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit',
+		array(),
+		null,
+		true
+	);
+
+	add_filter( 'script_loader_tag', 'wpep_turnstile_script_loader_tag', 10, 3 );
+
+	return true;
+}
+
+/**
+ * Add async/defer attributes to the WPEP Turnstile script tag.
+ *
+ * @param string $tag    Script tag HTML.
+ * @param string $handle Script handle.
+ * @param string $src    Script source URL.
+ * @return string
+ */
+function wpep_turnstile_script_loader_tag( $tag, $handle = '', $src = '' ) {
+	if ( 'wpep-cloudflare-turnstile' !== $handle ) {
+		return $tag;
+	}
+
+	if ( false !== strpos( $tag, ' async' ) ) {
+		return $tag;
+	}
+
+	return str_replace( ' src', ' async defer src', $tag );
+}
+
+/**
  * Print the credit card fields for a payment form.
  *
  * This function prints the credit card fields for a specific payment form on the frontend.
@@ -203,13 +272,13 @@ function wpep_print_recaptcha_fields( $current_form_id ) { // phpcs:ignore
 		}
 	}
 	
-	// Cloudflare Turnstile
+	// Cloudflare Turnstile (explicit render — initialized from wpep_paymentform.js).
 	if ( 'turnstile' === $captcha_provider ) {
 		$turnstile_site_key = get_option( 'wpep_turnstile_site_key' );
 		if ( ! empty( $turnstile_site_key ) ) {
 			?>
 			<div class="wpep-captcha-wrapper">
-				<div class="cf-turnstile" data-sitekey="<?php echo esc_attr( $turnstile_site_key ); ?>"></div>
+				<div id="wpep-turnstile-<?php echo esc_attr( $current_form_id ); ?>" class="wpep-turnstile-widget"></div>
 			</div>
 			<?php
 		}

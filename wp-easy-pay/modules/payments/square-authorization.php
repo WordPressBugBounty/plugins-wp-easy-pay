@@ -20,9 +20,13 @@ add_action( 'admin_init', 'wpep_square_disconnect' );
  */
 function wpep_authorize_with_square() {
 
-	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-		exit;
+	if ( empty( $_GET['wpep_prepare_connection_call'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return;
 	}
+
+	wpep_require_manage_options();
+	wpep_require_request_nonce( 'wpep_connect_square' );
+
 	unset( $_REQUEST['cp_admin_page_nonce'] );
 	$request = $_REQUEST;
 
@@ -76,6 +80,7 @@ function wpep_authorize_with_square() {
 			$query_arg      = array_merge( $url_identifiers, $query_arg );
 			$disconnect_url = admin_url( $url_identifiers['wpep_admin_url'] );
 			$disconnect_url = add_query_arg( $query_arg, $disconnect_url );
+			$disconnect_url = wp_nonce_url( $disconnect_url, 'wpep_disconnect_square', '_wpnonce' );
 
 			if ( isset( $url_identifiers['wpep_sandbox'] ) ) {
 
@@ -95,6 +100,7 @@ function wpep_authorize_with_square() {
 			$query_arg      = array_merge( $url_identifiers, $query_arg );
 			$disconnect_url = admin_url( $url_identifiers['wpep_admin_url'] );
 			$disconnect_url = add_query_arg( $query_arg, $disconnect_url );
+			$disconnect_url = wp_nonce_url( $disconnect_url, 'wpep_disconnect_square', '_wpnonce' );
 
 			update_post_meta( $query_arg['wpep_form_id'], 'wpep_square_disconnect_url', $disconnect_url );
 
@@ -111,11 +117,13 @@ function wpep_authorize_with_square() {
  */
 function wpep_square_callback_success() {
 
-	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-		exit;
+	$request = $_REQUEST;
+
+	if ( empty( $request['access_token'] ) || empty( $request['token_type'] ) || empty( $request['wpep_square_token_nonce'] ) || 'bearer' !== $request['token_type'] ) {
+		return;
 	}
 
-	$request = $_REQUEST;
+	wpep_require_manage_options();
 
 	if ( ! empty( $request['access_token'] ) && ! empty( $request['token_type'] ) && ! empty( $request['wpep_square_token_nonce'] ) && 'bearer' === $request['token_type'] ) {
 
@@ -252,9 +260,12 @@ function wpep_square_callback_success() {
  */
 function wpep_square_disconnect() {
 
-	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-		exit;
+	if ( empty( $_REQUEST['wpep_disconnect_square'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return;
 	}
+
+	wpep_require_manage_options();
+	wpep_require_request_nonce( 'wpep_disconnect_square' );
 
 	$request = $_REQUEST;
 
@@ -355,10 +366,6 @@ function wpep_square_disconnect() {
  * @param bool   $sandbox      Whether to revoke the token in the sandbox environment or not.
  */
 function wpep_revoke_access_token( $access_token, $sandbox ) {
-
-	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-		exit;
-	}
 
 	$api_url    = 'https://connect.apiexperts.io/';
 	$oauth_data = array(

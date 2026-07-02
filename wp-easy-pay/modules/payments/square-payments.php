@@ -71,11 +71,17 @@ function wpep_validate_required_file_upload_submission( $current_form_id, $form_
  * Handle file upload.
  */
 function wpep_file_upload() {
-	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-		exit;
+	if ( ! wpep_verify_payment_post_nonce() ) {
+		wp_die(
+			wp_json_encode(
+				array(
+					'error' => __( 'Security check failed.', 'wp_easy_pay' ),
+				)
+			)
+		);
 	}
 
-	if ( empty( $_FILES['file'] ) ) {
+	if ( empty( $_FILES['file'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		wp_die(
 			wp_json_encode(
 				array(
@@ -85,7 +91,7 @@ function wpep_file_upload() {
 		);
 	}
 
-	$files             = $_FILES['file'];
+	$files             = $_FILES['file']; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 	$uploaded_fileurls = array();
 	$upload_overrides  = array(
 		'test_form' => false,
@@ -150,17 +156,19 @@ function wpep_file_upload() {
  */
 function wpep_payment_request() {
 
-	if ( isset( $_POST['wp_payment_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_payment_nonce'] ) ), 'payment_nonce' ) ) {
-		$error = array(
-			'status' => 'failed',
-			'code'   => '',
-			'detail' => 'Sorry! Your request cannot be completed.',
+	if ( ! wpep_verify_payment_post_nonce() ) {
+		wp_die(
+			wp_json_encode(
+				array(
+					'status' => 'failed',
+					'code'   => '',
+					'detail' => 'Sorry! Your request cannot be completed.',
+				)
+			)
 		);
-
-		wp_die( wp_json_encode( $error ) );
 	}
 
-	$post            = $_POST;
+	$post            = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 	$payment_type    = $post['payment_type'];
 	$save_card       = $post['save_card'];
 	$cof             = $post['card_on_file'];
@@ -185,8 +193,8 @@ function wpep_payment_request() {
 
 	if ( isset( $cof ) && ! empty( $cof ) && 'false' !== $cof ) {
 
-		if ( isset( $_POST['email'] ) ) {
-			$email = sanitize_text_field( wp_unslash( $_POST['email'] ) );
+		if ( isset( $post['email'] ) ) {
+			$email = sanitize_text_field( wp_unslash( $post['email'] ) );
 		}
 
 		$cof        = str_replace( 'doc:', 'ccof:', $cof );
@@ -231,12 +239,8 @@ function wpep_payment_request() {
  */
 function wpep_single_square_payment( $square_customer_id = false, $square_customer_card_on_file = false, $current_form_id = false, $amount = false ) {
 
-	// if recaptch enable.
-	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-		exit;
-	}
-
-	$post                   = $_POST;
+	// Payment nonce is verified in wpep_payment_request() before this handler runs.
+	$post                   = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 	$subscription           = false;
 	$scheduled_subscription = false;
 	$form_values            = $post['form_values'];
@@ -334,8 +338,8 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 	$body->setAmountMoney( $amount_money );
 	$body->setLocationId( $location_id );
 
-	if ( isset( $_POST['save_card'] ) ) {
-		$save_card = sanitize_text_field( wp_unslash( $_POST['save_card'] ) );
+	if ( isset( $_POST['save_card'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$save_card = sanitize_text_field( wp_unslash( $_POST['save_card'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 	}
 
 	if ( 'single' === $payment_type && 'true' !== $save_card ) {
@@ -556,11 +560,6 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
  * @return array|null An array containing the credentials or null if not found.
  */
 function wpep_get_creds( $wpep_current_form_id ) {
-
-	if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-		exit;
-	}
-	$post = $_POST;
 
 	if ( empty( $wpep_current_form_id ) ) {
 		$form_payment_global = 'on';

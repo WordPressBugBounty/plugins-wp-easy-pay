@@ -264,6 +264,7 @@ if ( 'on' === $wpep_open_in_popup ) {
 						data-delay="<?php echo esc_attr( $redirection_delay ); ?>"
 						data-user-email="<?php echo esc_html( $wpep_user_email ); ?>"
 						data-redirectionurl="<?php echo esc_url( $wpep_payment_success_url ); ?>">
+					<input type="hidden" class="wpep-payment-nonce-field" name="wpep_payment_nonce" value="<?php echo esc_attr( wp_create_nonce( 'payment_nonce' ) ); ?>" />
 					<style>
 						:root {
 							--wpep-theme-color: '';

@@ -86,7 +86,9 @@ if ( 'on' === $wpep_payment_mode ) {
 
 
 // Create a new URL with the updated parameters
-$wpep_disconnect_url = get_site_url() . '/wp-admin/post.php?' . http_build_query( $query_params );
+$wpep_disconnect_url = wpep_get_disconnect_url(
+	get_site_url() . '/wp-admin/post.php?' . http_build_query( $query_params )
+);
 
 
 
@@ -156,9 +158,6 @@ $wpep_create_connect_sandbox_url = wpep_create_connect_sandbox_url( 'individual_
 						<div class="squareConnectwrap">
 							<h2>Connect your square (sandbox) account now!</h2>
 							<?php
-							if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( $_POST['wp_global_nonce'] ), 'wp_global_nonce' ) ) {
-								exit;
-							}
 								$get = $_GET;
 							if ( isset( $get['type'] ) && 'bad_request.missing_parameter' === $get['type'] ) {
 								?>

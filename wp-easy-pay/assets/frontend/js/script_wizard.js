@@ -297,6 +297,9 @@ jQuery( document ).ready(
 								}
 							}
 						);
+						if (typeof window.wpepScheduleTurnstileInit === 'function') {
+							window.wpepScheduleTurnstileInit(form_id);
+						}
 					}
 				}
 			}

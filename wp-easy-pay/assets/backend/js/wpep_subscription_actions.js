@@ -40,7 +40,8 @@ jQuery(document).ready(function(){
 	
 				'action': 'wpep_subscription_action_update',
 				'subscription_action': subscription_action,
-				'subscription_id': subscription_id
+				'subscription_id': subscription_id,
+				'wp_global_nonce': wpep_subscription_admin_vars.wp_global_nonce
 	
 			};
 	

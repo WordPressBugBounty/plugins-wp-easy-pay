@@ -7,7 +7,8 @@ jQuery(document).on( 'click', '.wpep_subscription_action', function () {
 
 			'action': 'wpep_subscription_action_update',
 			'subscription_action': subscription_action,
-			'subscription_id': subscription_id
+			'subscription_id': subscription_id,
+			'wp_subscription_nonce': wpep_subscription_vars.wp_subscription_nonce
 		};
 
 		jQuery.post(
@@ -77,7 +78,8 @@ jQuery('.sub_details').on('click', function(e){
 	var data = {
 
 		'action': 'get_wpep_subscription_details',
-		'subscription_id': subscription_id
+		'subscription_id': subscription_id,
+		'wp_subscription_nonce': wpep_subscription_vars.wp_subscription_nonce
 
 	};
 	

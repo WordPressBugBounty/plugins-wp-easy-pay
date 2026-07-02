@@ -11,14 +11,15 @@
  * @link     http://wpeasypay.com/
  */
 
-if ( isset( $_POST['wp_global_nonce'] ) && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wp_global_nonce'] ) ), 'wp_global_nonce' ) ) {
-	exit;
+if ( isset( $_POST['wpep_email_notification'] ) || isset( $_POST['wpep_square_payment_mode_global'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	wpep_require_manage_options();
+	wpep_require_global_post_nonce();
 }
 
-$get = array_map( 'sanitize_text_field', wp_unslash( $_GET ) );
+$get = array_map( 'sanitize_text_field', wp_unslash( $_GET ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-if ( isset( $_POST ) && ! empty( $_POST ) ) {
-	$post_custom            = wp_unslash( $_POST ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+if ( isset( $_POST ) && ! empty( $_POST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	$post_custom            = wp_unslash( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	$payment_mode           = 0;
 	$wpep_square_google_pay = 0;
 	$wpep_square_apple_pay  = 0;
@@ -256,6 +257,7 @@ $wpep_square_live_token = get_option( 'wpep_live_token_upgraded' );
 ?>
 
 <form class="wpeasyPay-form" method="post" action="#">
+	<?php wp_nonce_field( 'wp_global_nonce', 'wp_global_nonce' ); ?>
 	<div class="contentWrapGlobal wpeasyPay">
 	<div class="contentHeaderGlobal">
 		<h3 class="blocktitle">Square Connect</h3>
@@ -273,7 +275,7 @@ $wpep_square_live_token = get_option( 'wpep_live_token_upgraded' );
 			if ( $disconnect_url ) {
 				?>
 				<div class="disconnect-btn-header">
-					<a href="<?php echo esc_url( $disconnect_url ); ?>" class="btn btnDisconnect btn-sm">Disconnect Square</a>
+					<a href="<?php echo esc_url( wpep_get_disconnect_url( $disconnect_url ) ); ?>" class="btn btnDisconnect btn-sm">Disconnect Square</a>
 				</div>
 				<?php
 			}
@@ -558,7 +560,7 @@ endif;
 				</div>
 				<div class="btnFooter d-btn">
 					<button type="submit" class="btn btn-primary saveSettingSquareConnectionBtn"> Save Settings </button>
-					<a href="<?php echo esc_url( get_option( 'wpep_square_test_disconnect_url', false ) ); ?>" class="btn btnDisconnect">Disconnect
+					<a href="<?php echo esc_url( wpep_get_disconnect_url( get_option( 'wpep_square_test_disconnect_url', false ) ) ); ?>" class="btn btnDisconnect">Disconnect
 					Square</a>
 				</div>
 			</div>
@@ -857,7 +859,7 @@ endif;
 		<?php } ?>
 		<div class="btnFooter d-btn">
 			<button type="submit" class="btn btn-primary saveSettingSquareConnectionBtn"> Save Settings </button>
-			<a href="<?php echo esc_url( get_option( 'wpep_square_disconnect_url', false ) ); ?>" class="btn btnDisconnect">Disconnect
+			<a href="<?php echo esc_url( wpep_get_disconnect_url( get_option( 'wpep_square_disconnect_url', false ) ) ); ?>" class="btn btnDisconnect">Disconnect
 			Square</a>
 		</div>
 			

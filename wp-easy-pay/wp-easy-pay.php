@@ -8,7 +8,7 @@
  * without coding it yourself or hiring a developer. Skip setting up a complex shopping cart system.
  * Author: WP Easy Pay
  * Author URI: https://wpeasypay.com/
- * Version: 4.5.0
+ * Version: 4.5.1
  * Text Domain: wp_easy_pay
  * License: GPLv2 or later
  *
@@ -74,6 +74,7 @@ function wpep_plugin_activation() {
 	wpep_set_dashboard_transient_data();
 }
 
+require_once WPEP_ROOT_PATH . 'modules/security/request-validation.php';
 require_once WPEP_ROOT_PATH . 'wpep-setup.php';
 
 /**

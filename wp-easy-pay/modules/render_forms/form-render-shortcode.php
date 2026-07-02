@@ -401,6 +401,7 @@ function wpep_form_backend_parent_scripts() {
 				'giftcard'                        => isset( $giftcard_available ) && true === $giftcard_available ? $giftcard : '',
 				'achDebit'                        => isset( $achDebit_available ) && true === $achDebit_available ? $achDebit : '',
 				'wpep_square_user_defined_amount' => $user_defined_amount,
+				'wpep_payment_nonce'              => wp_create_nonce( 'payment_nonce' ),
 				'wp_payment_nonce'                => wp_create_nonce( 'payment_nonce' ),
 				'captcha_provider'                => 'none',
 				'recaptcha_version'               => $recaptcha_version,
