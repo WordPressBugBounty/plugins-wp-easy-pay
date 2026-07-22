@@ -27,10 +27,10 @@ function wpep_authorize_with_square() {
 	wpep_require_manage_options();
 	wpep_require_request_nonce( 'wpep_connect_square' );
 
-	unset( $_REQUEST['cp_admin_page_nonce'] );
-	$request = $_REQUEST;
+	unset( $_REQUEST['cp_admin_page_nonce'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified above via wpep_require_request_nonce().
+	$request = wp_unslash( $_REQUEST ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified above; values used only to build OAuth redirect args.
 
-	if ( ! empty( $_GET['wpep_prepare_connection_call'] ) ) {
+	if ( ! empty( $_GET['wpep_prepare_connection_call'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Gate already verified by early return + nonce check above.
 
 		$url_identifiers                  = $request;
 		$url_identifiers['oauth_version'] = 2;
@@ -117,7 +117,7 @@ function wpep_authorize_with_square() {
  */
 function wpep_square_callback_success() {
 
-	$request = $_REQUEST;
+	$request = wp_unslash( $_REQUEST ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- OAuth callback; nonce verified below via wpep_square_token_nonce.
 
 	if ( empty( $request['access_token'] ) || empty( $request['token_type'] ) || empty( $request['wpep_square_token_nonce'] ) || 'bearer' !== $request['token_type'] ) {
 		return;
@@ -267,7 +267,7 @@ function wpep_square_disconnect() {
 	wpep_require_manage_options();
 	wpep_require_request_nonce( 'wpep_disconnect_square' );
 
-	$request = $_REQUEST;
+	$request = wp_unslash( $_REQUEST ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified above via wpep_require_request_nonce().
 
 	if ( ! empty( $request['wpep_disconnect_square'] ) ) {
 

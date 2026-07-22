@@ -81,7 +81,7 @@ function wpep_file_upload() {
 		);
 	}
 
-	if ( empty( $_FILES['file'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	if ( empty( $_FILES['file'] ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing -- Presence check only; fields sanitized below.
 		wp_die(
 			wp_json_encode(
 				array(
@@ -91,7 +91,8 @@ function wpep_file_upload() {
 		);
 	}
 
-	$files             = $_FILES['file']; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing -- $_FILES structure; name sanitized via sanitize_file_name before wp_handle_upload().
+	$files             = $_FILES['file'];
 	$uploaded_fileurls = array();
 	$upload_overrides  = array(
 		'test_form' => false,
@@ -106,11 +107,11 @@ function wpep_file_upload() {
 			}
 
 			$uploadedfile = array(
-				'name'     => $files['name'][ $index ],
-				'type'     => $files['type'][ $index ],
+				'name'     => sanitize_file_name( $files['name'][ $index ] ),
+				'type'     => sanitize_text_field( $files['type'][ $index ] ),
 				'tmp_name' => $files['tmp_name'][ $index ],
-				'error'    => $files['error'][ $index ],
-				'size'     => $files['size'][ $index ],
+				'error'    => absint( $files['error'][ $index ] ),
+				'size'     => absint( $files['size'][ $index ] ),
 			);
 
 			$movefile = wp_handle_upload( $uploadedfile, $upload_overrides );
@@ -122,7 +123,14 @@ function wpep_file_upload() {
 			}
 		}
 	} else {
-		$movefile = wp_handle_upload( $files, $upload_overrides );
+		$uploadedfile = array(
+			'name'     => sanitize_file_name( $files['name'] ),
+			'type'     => sanitize_text_field( $files['type'] ),
+			'tmp_name' => $files['tmp_name'],
+			'error'    => absint( $files['error'] ),
+			'size'     => absint( $files['size'] ),
+		);
+		$movefile = wp_handle_upload( $uploadedfile, $upload_overrides );
 		if ( $movefile && ! isset( $movefile['error'] ) ) {
 			$uploaded_fileurls[] = $movefile['url'];
 		} else {
@@ -277,8 +285,12 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 	$api_client  = wpep_setup_square_configuration_by_form_id( $current_form_id );
 	$location_id = wpep_get_location_by_form_id( $current_form_id );
 
-	$payments_api = new \SquareConnect\Api\PaymentsApi( $api_client );
-	$body         = new \SquareConnect\Model\CreatePaymentRequest();
+	$body = new \Square\Payments\Requests\CreatePaymentRequest(
+		array(
+			'sourceId'       => 'pending',
+			'idempotencyKey' => uniqid(),
+		)
+	);
 
 	if ( ! empty( $post ) && false === $amount && isset( $post['nonce'] ) ) {
 		$nonce = $post['nonce'];
@@ -322,7 +334,7 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 	}
 
 	$square_currency = wpep_get_currency( $current_form_id );
-	$amount_money    = new \SquareConnect\Model\Money();
+	$amount_money    = new \Square\Types\Money();
 
 	if ( 'JPY' !== $square_currency ) {
 		$amount = $amount * 100;
@@ -447,7 +459,7 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 
 			$body->setOrderId( $order_id );
 
-			$result = $payments_api->createPayment( $body );
+			$result = $api_client->payments->create( $body );
 
 			delete_option( 'cof_to_use' );
 			delete_option( 'customer_id_to_use' );
@@ -528,11 +540,12 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 
 			wp_die( wp_json_encode( $response ) );
 
-		} catch ( \SquareConnect\ApiException $e ) {
+		} catch ( \Square\Exceptions\SquareApiException $e ) {
 
-			wpep_write_log( wp_json_encode( $e->getResponseBody()->errors[0] ) );
+			$square_error = wpep_square_exception_error( $e );
+			wpep_write_log( wp_json_encode( $square_error ) );
 
-			if ( 'too_many_requests' === $e->getResponseBody()->errors[0]->code ) {
+			if ( wpep_square_is_rate_limited( $square_error ) ) {
 				++$attempts;
 				sleep( 5 );
 				continue;
@@ -540,8 +553,8 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 
 			$error = array(
 				'status' => 'failed',
-				'code'   => $e->getResponseBody()->errors[0]->code,
-				'detail' => $e->getResponseBody()->errors[0]->detail,
+				'code'   => $square_error->code,
+				'detail' => $square_error->detail,
 			);
 
 			wp_die( wp_json_encode( $error ) );

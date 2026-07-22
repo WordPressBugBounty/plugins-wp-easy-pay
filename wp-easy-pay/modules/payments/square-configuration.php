@@ -1,39 +1,87 @@
 <?php
 /**
  * Filename: square-configuration.php,
- * Description: silence is golden.
+ * Description: Square SDK client configuration helpers.
  *
  * @package WP_Easy_Pay
  */
 
-require_once WPEP_ROOT_PATH . 'square-sdk/autoload.php';
+if ( file_exists( WPEP_ROOT_PATH . 'vendor/autoload.php' ) ) {
+	require_once WPEP_ROOT_PATH . 'vendor/autoload.php';
+}
+
+/**
+ * Build a SquareClient for the given access token and environment.
+ *
+ * @param string $access_token Square access token.
+ * @param bool   $sandbox      Whether to use the sandbox environment.
+ * @return \Square\SquareClient
+ */
+function wpep_create_square_client( $access_token, $sandbox = false ) {
+	$base_url = $sandbox
+		? \Square\Environments::Sandbox->value
+		: \Square\Environments::Production->value;
+
+	return new \Square\SquareClient(
+		(string) $access_token,
+		null,
+		array(
+			'baseUrl' => $base_url,
+		)
+	);
+}
+
+/**
+ * Normalize a Square exception into a stdClass with code/detail for legacy callers.
+ *
+ * @param \Throwable $e Exception thrown by the Square SDK or HTTP layer.
+ * @return object
+ */
+function wpep_square_exception_error( $e ) {
+	$error         = new stdClass();
+	$error->code   = 'UNKNOWN';
+	$error->detail = $e->getMessage();
+
+	if ( $e instanceof \Square\Exceptions\SquareApiException ) {
+		$errors = $e->getErrors();
+		if ( ! empty( $errors[0] ) ) {
+			$error->code     = $errors[0]->getCode();
+			$error->detail   = $errors[0]->getDetail() ? $errors[0]->getDetail() : $e->getMessage();
+			$error->category = $errors[0]->getCategory();
+		}
+	}
+
+	return $error;
+}
+
+/**
+ * Whether a Square API error indicates rate limiting.
+ *
+ * @param object|string $error Error object or code string.
+ * @return bool
+ */
+function wpep_square_is_rate_limited( $error ) {
+	$code = is_object( $error ) && isset( $error->code ) ? (string) $error->code : (string) $error;
+	$code = strtoupper( $code );
+
+	return in_array( $code, array( 'TOO_MANY_REQUESTS', 'RATE_LIMITED' ), true );
+}
 
 /**
  * Set up the Square API configuration based on the payment mode (live or test).
  *
- * @return \SquareConnect\ApiClient|null An instance of the Square API client or null if there is an error.
+ * @return \Square\SquareClient|null An instance of the Square client or null if there is an error.
  */
 function wpep_setup_square_configuration() {
 	$live_mode = get_option( 'wpep_square_payment_mode_global' );
 
-	$api_config = new \SquareConnect\Configuration();
-
 	if ( 'on' === $live_mode ) {
-
 		$access_token = get_option( 'wpep_live_token_upgraded' );
-		$api_config->setHost( 'https://connect.squareup.com' );
-		$api_config->setAccessToken( $access_token );
-
-	} else {
-
-		$access_token = get_option( 'wpep_square_test_token_global' );
-		$api_config->setHost( 'https://connect.squareupsandbox.com' );
-		$api_config->setAccessToken( $access_token );
+		return wpep_create_square_client( $access_token, false );
 	}
 
-	$api_client = new \SquareConnect\ApiClient( $api_config );
-
-	return $api_client;
+	$access_token = get_option( 'wpep_square_test_token_global' );
+	return wpep_create_square_client( $access_token, true );
 }
 
 /**
@@ -41,40 +89,25 @@ function wpep_setup_square_configuration() {
  *
  * @param string $wpep_access_token The Square access token to use for API authentication.
  * @param bool   $wpep_sandbox      Optional. Set to true to use the Square sandbox environment. Default is false.
- * @return \SquareConnect\ApiClient|null An instance of the Square API client or null if there is an error.
+ * @return \Square\SquareClient|null An instance of the Square client or null if there is an error.
  */
 function wpep_setup_square_with_access_token( $wpep_access_token, $wpep_sandbox = false ) {
+	$sandbox = ( 'yes' === $wpep_sandbox || true === $wpep_sandbox );
 
-	$api_config = new \SquareConnect\Configuration();
-
-	if ( 'yes' === $wpep_sandbox ) {
-
-		$api_config->setHost( 'https://connect.squareupsandbox.com' );
-
-	} else {
-
-		$api_config->setHost( 'https://connect.squareup.com' );
-
-	}
-
-	$api_config->setAccessToken( $wpep_access_token );
-
-	$api_client = new \SquareConnect\ApiClient( $api_config );
-
-	return $api_client;
+	return wpep_create_square_client( $wpep_access_token, $sandbox );
 }
 
 /**
  * Set up the Square API configuration based on the form ID.
  *
  * @param int $current_form_id The ID of the current form.
- * @return \SquareConnect\ApiClient|null An instance of the Square API client or null if there is an error.
+ * @return \Square\SquareClient|null An instance of the Square client or null if there is an error.
  */
 function wpep_setup_square_configuration_by_form_id( $current_form_id ) {
 
-	$api_config = new \SquareConnect\Configuration();
-
 	$wpep_individual_form_global = get_post_meta( $current_form_id, 'wpep_individual_form_global', true );
+	$access_token                = '';
+	$sandbox                     = true;
 
 	/* If form is using global settings */
 	if ( 'on' === $wpep_individual_form_global ) {
@@ -84,19 +117,13 @@ function wpep_setup_square_configuration_by_form_id( $current_form_id ) {
 		if ( 'on' === $wpep_payment_mode ) {
 			/* if live is on */
 			$access_token = get_option( 'wpep_live_token_upgraded', true );
-			$api_config->setHost( 'https://connect.squareup.com' );
-			$api_config->setAccessToken( $access_token );
-			$square_currency = get_option( 'wpep_square_currency_new', true );
-
+			$sandbox      = false;
 		}
 
 		if ( 'on' !== $wpep_payment_mode ) {
 			/* if test is on */
 			$access_token = get_option( 'wpep_square_test_token_global', true );
-			$api_config->setHost( 'https://connect.squareupsandbox.com' );
-			$api_config->setAccessToken( $access_token );
-			$square_currency = get_option( 'wpep_square_currency_test', true );
-
+			$sandbox      = true;
 		}
 	}
 
@@ -106,27 +133,19 @@ function wpep_setup_square_configuration_by_form_id( $current_form_id ) {
 		$wpep_payment_mode = get_post_meta( $current_form_id, 'wpep_payment_mode', true );
 
 		if ( 'on' === $wpep_payment_mode ) {
-
 			/* if live is on */
 			$access_token = get_post_meta( $current_form_id, 'wpep_live_token_upgraded', true );
-			$api_config->setHost( 'https://connect.squareup.com' );
-			$api_config->setAccessToken( $access_token );
-
+			$sandbox      = false;
 		}
 
 		if ( 'on' !== $wpep_payment_mode ) {
-
 			/* if test is on */
 			$access_token = get_post_meta( $current_form_id, 'wpep_square_test_token', true );
-			$api_config->setHost( 'https://connect.squareupsandbox.com' );
-			$api_config->setAccessToken( $access_token );
-
+			$sandbox      = true;
 		}
 	}
 
-	$api_client = new \SquareConnect\ApiClient( $api_config );
-
-	return $api_client;
+	return wpep_create_square_client( $access_token, $sandbox );
 }
 
 /**

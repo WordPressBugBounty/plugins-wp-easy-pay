@@ -158,8 +158,9 @@ $wpep_create_connect_sandbox_url = wpep_create_connect_sandbox_url( 'individual_
 						<div class="squareConnectwrap">
 							<h2>Connect your square (sandbox) account now!</h2>
 							<?php
-								$get = $_GET;
-							if ( isset( $get['type'] ) && 'bad_request.missing_parameter' === $get['type'] ) {
+							// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- OAuth redirect error flag from Square callback query string.
+							$oauth_error_type = isset( $_GET['type'] ) ? sanitize_text_field( wp_unslash( $_GET['type'] ) ) : '';
+							if ( 'bad_request.missing_parameter' === $oauth_error_type ) {
 								?>
 
 							<p style="color: red;"> You have denied WP EASY PAY the permission to access your Square account. Please connect again to and click allow to complete OAuth. </p>

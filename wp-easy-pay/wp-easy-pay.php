@@ -1,15 +1,16 @@
 <?php
 /**
  * WP EASY PAY
- * PHP version 7
- * Plugin Name: WP Easy Pay (Free)
+ * PHP version 8.1
+ * Plugin Name: WP Easy Pay – Payment and Donation Form Builder for Square
  * Plugin URI: https://wpeasypay.com/demo/
  * Description: Easily collect payments for Simple Payment or donations online
  * without coding it yourself or hiring a developer. Skip setting up a complex shopping cart system.
  * Author: WP Easy Pay
  * Author URI: https://wpeasypay.com/
- * Version: 4.5.1
- * Text Domain: wp_easy_pay
+ * Version: 4.5.2
+ * Requires PHP: 8.1
+ * Text Domain: wp-easy-pay
  * License: GPLv2 or later
  *
  * Category: Wordpress_Plugin
@@ -22,6 +23,17 @@
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
+}
+
+// Soft-fail if PHP is below Square SDK requirement (avoid fatal on update).
+if ( version_compare( PHP_VERSION, '8.1', '<' ) ) {
+	add_action(
+		'admin_notices',
+		static function () {
+			echo '<div class="notice notice-error"><p>' . esc_html( sprintf( 'WP Easy Pay requires PHP 8.1 or higher (current: %s). Upgrade PHP or restore the previous plugin version.', PHP_VERSION ) ) . '</p></div>';
+		}
+	);
+	return;
 }
 
 require_once 'square-freemius.php';

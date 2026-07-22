@@ -80,7 +80,7 @@
 						<td style="width:260px;padding:20px;vertical-align:top;background:white">
 							<div class="payment_box">
 								<div class="payment_box_icon">
-									<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/Time Circle.png' ); ?>" class="wpep_logo">
+									<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/time-circle.png' ); ?>" class="wpep_logo">
 								</div>
 								<div class="payment_box_heading">
 									<p style="font-size:20px;font-family: 'circular'">Donation Recurring</p>
@@ -112,7 +112,7 @@
 					<td style="width:100%;padding:20px;vertical-align:top;background:white">
 						<div class="payment_box">
 							<div class="payment_box_icon">
-								<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/icon@img-56.png' ); ?>" class="wpep_logo">
+								<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/icon-img-56.png' ); ?>" class="wpep_logo">
 							</div>
 							<div class="payment_box_heading">
 								<p style="font-size:20px;font-family: 'circular'">Total Amount</p>
@@ -223,7 +223,7 @@
 			</table>
 		</div>
 		<div class="wp_logo" style="text-align: -webkit-center;margin-top: 20px;">
-			<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/wpeasy_white_icon 3.png' ); ?>" class="wpep_logo">
+			<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/wpeasy-white-icon-3.png' ); ?>" class="wpep_logo">
 		</div>
 	</div>
 </div>

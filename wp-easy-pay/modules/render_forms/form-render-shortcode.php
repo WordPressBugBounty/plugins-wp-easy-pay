@@ -376,6 +376,8 @@ function wpep_form_backend_parent_scripts() {
 		$cashapp               = sanitize_text_field( $cashapp );
 		$giftcard              = sanitize_text_field( $giftcard );
 		$achDebit              = sanitize_text_field( $achDebit );
+		$wpep_show_credit_card    = apply_filters( 'wpep_show_credit_card', true, $current_form_code_id );
+		$wpep_disable_credit_card = apply_filters( 'wpep_disable_credit_card', ! $wpep_show_credit_card, $current_form_code_id );
 		wp_localize_script(
 			'square_payment_form_internal',
 			'wpep_local_vars',
@@ -400,6 +402,7 @@ function wpep_form_backend_parent_scripts() {
 				'cashapp'                         => isset( $cashapp_available ) && true === $cashapp_available ? $cashapp : '',
 				'giftcard'                        => isset( $giftcard_available ) && true === $giftcard_available ? $giftcard : '',
 				'achDebit'                        => isset( $achDebit_available ) && true === $achDebit_available ? $achDebit : '',
+				'disable_credit_card'             => (bool) $wpep_disable_credit_card,
 				'wpep_square_user_defined_amount' => $user_defined_amount,
 				'wpep_payment_nonce'              => wp_create_nonce( 'payment_nonce' ),
 				'wp_payment_nonce'                => wp_create_nonce( 'payment_nonce' ),

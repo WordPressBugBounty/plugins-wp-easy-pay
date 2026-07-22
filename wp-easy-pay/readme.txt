@@ -1,15 +1,15 @@
-===  WP Easy Pay – Payment and Donation form Builder for Square  ===
+===  WP Easy Pay – Payment and Donation Form Builder for Square  ===
 Contributors: wpexpertsio
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=pay@objects.ws&item_name=DonationForPlugin
 Tags: square payment form, credit card payments , payment form, donation form, square payments
 Requires at least: 5.6.0
-Tested up to: 7.0.0
-Stable tag: 4.5.1
-Requires PHP: 7.0
+Tested up to: 7.0
+Stable tag: 4.5.2
+Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Integrate Square with WordPress easily, quickly, and securely. The Square Payment Form Builder for WordPress to accept Subscriptions, Donations and One time Square payments on WordPress.
+Accept Square payments, donations, and subscriptions on WordPress with a secure payment form builder.
 
 == Description ==
 
@@ -274,7 +274,7 @@ Before installing [WP Easy Pay](https://wpeasypay.com/), make sure your setup me
 
 * **WordPress Version:** 4.5.0 or higher
 
-* **PHP Version:** 7.0 or higher
+* **PHP Version:** 8.1 or higher
 
 * **Square Account:** An active Square account is required for integration.
 
@@ -403,6 +403,10 @@ Please report security bugs found in the source code of the undefined plugin thr
 
 
 == Changelog ==
+
+= 4.5.2 - 16/07/2026 =
+* Update - Square SDK
+* Fixed – Security enhancement on behalf of CVE ID: CVE-2026-12738
 
 = 4.5.1 - 2/07/2026 =
 

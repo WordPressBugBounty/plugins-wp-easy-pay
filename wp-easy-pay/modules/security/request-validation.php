@@ -95,11 +95,11 @@ function wpep_require_global_post_nonce() {
  */
 function wpep_get_payment_post_nonce_value() {
 	if ( isset( $_POST['wpep_payment_nonce'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		return (string) wp_unslash( $_POST['wpep_payment_nonce'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		return sanitize_text_field( wp_unslash( $_POST['wpep_payment_nonce'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 	}
 
 	if ( isset( $_POST['wp_payment_nonce'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		return (string) wp_unslash( $_POST['wp_payment_nonce'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		return sanitize_text_field( wp_unslash( $_POST['wp_payment_nonce'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 	}
 
 	return '';

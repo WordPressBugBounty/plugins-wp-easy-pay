@@ -95,15 +95,26 @@ if ( 'on' === $ach_debit ) {
 	$ach_debit_available = is_available( 'achDebit', $square_currency );
 }
 
+/**
+ * Filter whether the credit/debit card payment tab and fields are shown.
+ *
+ * @param bool $show                 Whether to show credit card UI.
+ * @param int  $wpep_current_form_id Payment form post ID.
+ */
+$wpep_show_credit_card = apply_filters( 'wpep_show_credit_card', true, $wpep_current_form_id );
+$wpep_ach_tab_default  = ! $wpep_show_credit_card && 'on' === $ach_debit && isset( $ach_debit_available ) && true === $ach_debit_available;
+
 ?>
 	<div class="paymentsBlocks-<?php echo esc_attr( $wpep_current_form_id ); ?>">
 		<ul class="wpep_tabs wpep_tabs-<?php echo esc_attr( $wpep_current_form_id ); ?>">
+			<?php if ( $wpep_show_credit_card ) : ?>
 			<li class="tab-link current" data-tab="creditCard-<?php echo esc_attr( $wpep_current_form_id ); ?>">
 				<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/frontend/img/Debit-Card.png' ); ?>" alt="Avatar" width="45"
 					class="doneorder" alt="Credit Card">
 				<!-- <h4 class="">Credit Card</h4> -->
 				<span>Credit/Debit Card</span>
 			</li>
+			<?php endif; ?>
 			<?php
 			if ( 'on' === $gpay && true === $gpay_available && 'subscription' !== $payment_type && 'donation_recurring' !== $payment_type ) {
 				?>
@@ -169,7 +180,7 @@ if ( 'on' === $ach_debit ) {
 
 			if ( 'on' === $ach_debit && true === $ach_debit_available && 'subscription' !== $payment_type && 'donation_recurring' !== $payment_type ) {
 				?>
-				<li class="tab-link" data-tab="achdebit-<?php echo esc_attr( $wpep_current_form_id ); ?>">
+				<li class="tab-link<?php echo $wpep_ach_tab_default ? ' current' : ''; ?>" data-tab="achdebit-<?php echo esc_attr( $wpep_current_form_id ); ?>">
 					<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/frontend/img/ach-pay.png' ); ?>" alt="Avatar" width="45"
 						class="doneorder" alt="Cash App">
 					<span> ACH Debit </span>
@@ -179,6 +190,7 @@ if ( 'on' === $ach_debit ) {
 			?>
 		</ul>
 
+		<?php if ( $wpep_show_credit_card ) : ?>
 		<div id="creditCard-<?php echo esc_attr( $wpep_current_form_id ); ?>" class="tab-content tab-content-<?php echo esc_attr( $wpep_current_form_id ); ?> current">
 			<div class="clearfix">
 				<h3 style="display:none">Credit Card</h3>
@@ -226,6 +238,7 @@ if ( 'on' === $ach_debit ) {
 				</div>
 			</div>
 		</div>
+		<?php endif; ?>
 		<?php if ( isset( $gpay_available ) && true === $gpay_available ) { ?>
 		<div id="googlePay-<?php echo esc_attr( $wpep_current_form_id ); ?>" class="tab-content tab-content-<?php echo esc_attr( $wpep_current_form_id ); ?> ">
 			<div id="google-pay-button-<?php echo esc_attr( $wpep_current_form_id ); ?>" class="wp-square-wallet" style="text-align: center;"></div>
@@ -256,7 +269,7 @@ if ( 'on' === $ach_debit ) {
 		}
 		if ( isset( $ach_debit_available ) && true === $ach_debit_available ) {
 			?>
-		<div id="achdebit-<?php echo esc_attr( $wpep_current_form_id ); ?>" class="tab-content tab-content-<?php echo esc_attr( $wpep_current_form_id ); ?>">
+		<div id="achdebit-<?php echo esc_attr( $wpep_current_form_id ); ?>" class="tab-content tab-content-<?php echo esc_attr( $wpep_current_form_id ); ?><?php echo $wpep_ach_tab_default ? ' current' : ''; ?>">
 		<div class="wp-square-wallet-ach">
 			<button id="ach-button-<?php echo esc_attr( $wpep_current_form_id ); ?>"> <img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/frontend/img/plaid.png' ); ?>" alt="Avatar" class="doneorder" alt="Plaid"> Pay With ACH</button>
 		</div>	

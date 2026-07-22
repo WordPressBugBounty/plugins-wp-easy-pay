@@ -82,7 +82,7 @@ if ( isset( $currency ) && ! empty( $currency ) ) {
 					</div>
 					<div class="payment_box">
 						<div class="payment_box_icon">
-							<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/Time Circle.png' ); ?>" class="wpep_logo">
+							<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/time-circle.png' ); ?>" class="wpep_logo">
 						</div>
 						<div class="payment_box_heading">
 							<p>Donation Recurring</p>
@@ -168,7 +168,7 @@ if ( isset( $currency ) && ! empty( $currency ) ) {
 					</div>
 					<div class="payment_box after_div2">
 						<div class="payment_box_icon">
-							<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/2 User.png' ); ?>" class="wpep_logo">
+							<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/2-user.png' ); ?>" class="wpep_logo">
 						</div>
 						<div class="payment_box_heading">
 							<p>Customers</p>
@@ -179,7 +179,7 @@ if ( isset( $currency ) && ! empty( $currency ) ) {
 					</div>
 					<div class="payment_box after_div3">
 						<div class="payment_box_icon">
-							<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/Tick Square.png' ); ?>" class="wpep_logo">
+							<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/tick-square.png' ); ?>" class="wpep_logo">
 						</div>
 						<div class="payment_box_heading">
 							<p>Successful Transactions</p>
@@ -231,7 +231,7 @@ if ( isset( $currency ) && ! empty( $currency ) ) {
 					<div class="payment_chart_overlay">
 					<div class="unclock_pro_div">
 						<div class="center-button-icon">
-							<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/pngwing 1.png' ); ?>" class="wpep_logo">
+							<img src="<?php echo esc_url( WPEP_ROOT_URL . 'assets/backend/img/pngwing-1.png' ); ?>" class="wpep_logo">
 						</div>
 						<div class="center-button-div">
 							<a href="https://wpeasypay.com/pricing/?utm_source=plugin&utm_medium=dashboard">

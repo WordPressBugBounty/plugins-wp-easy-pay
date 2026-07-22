@@ -32,9 +32,8 @@ function wpep_transactions_list_form_filter_dropdown( $post_type ) {
 		return;
 	}
 
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	$current_form_id = isset( $_GET[ WPEP_REPORTS_FILTER_FORM_QUERY_ARG ] )
-		? absint( wp_unslash( $_GET[ WPEP_REPORTS_FILTER_FORM_QUERY_ARG ] ) )
+	$current_form_id = isset( $_GET[ WPEP_REPORTS_FILTER_FORM_QUERY_ARG ] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Admin list-table filter query arg (read-only); capability checked above.
+		? absint( wp_unslash( $_GET[ WPEP_REPORTS_FILTER_FORM_QUERY_ARG ] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		: 0;
 
 	$forms = get_posts(

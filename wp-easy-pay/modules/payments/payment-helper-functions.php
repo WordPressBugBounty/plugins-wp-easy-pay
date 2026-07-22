@@ -52,9 +52,14 @@ function wpep_generate_random_password() {
  */
 function wpep_retrieve_square_customer_to_verify( $api_client, $square_customer_id ) {
 
-	$api_instance = new SquareConnect\Api\CustomersApi( $api_client );
 	try {
-		$result = $api_instance->retrieveCustomer( $square_customer_id );
+		$result = $api_client->customers->get(
+			new \Square\Customers\Requests\GetCustomersRequest(
+				array(
+					'customerId' => $square_customer_id,
+				)
+			)
+		);
 		return $result->getCustomer()->getId();
 	} catch ( Exception $e ) {
 		return false;
@@ -74,20 +79,27 @@ function wpep_retrieve_square_customer_to_verify( $api_client, $square_customer_
  */
 function wpep_create_square_customer_card( $api_client, $square_customer_id, $nonce, $first_name, $last_name, $verification_token ) { // phpcs:ignore
 
-	$api_instance     = new SquareConnect\Api\CustomersApi( $api_client );
 	$card_holder_name = $first_name . ' ' . $last_name;
 
-	$body = new \SquareConnect\Model\CreateCustomerCardRequest();
-	$body->setCardNonce( $nonce );
-	$body->setCardholderName( $card_holder_name );
+	$request_values = array(
+		'customerId'     => $square_customer_id,
+		'cardNonce'      => $nonce,
+		'cardholderName' => $card_holder_name,
+	);
+
+	if ( ! empty( $verification_token ) ) {
+		$request_values['verificationToken'] = $verification_token;
+	}
+
+	$body = new \Square\Customers\Cards\Requests\CreateCustomerCardRequest( $request_values );
 
 	try {
 
-		$result = $api_instance->createCustomerCard( $square_customer_id, $body );
+		$result = $api_client->customers->cards->create( $body );
 		return $result->getCard()->getId();
 
 	} catch ( Exception $e ) {
-		wp_die( wp_json_encode( $e->getResponseBody()->errors[0] ) );
+		wp_die( wp_json_encode( wpep_square_exception_error( $e ) ) );
 	}
 }
 
@@ -102,23 +114,24 @@ function wpep_create_square_customer( $api_client ) {
 
 	$post = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified in wpep_payment_request().
 
-	$api_instance = new SquareConnect\Api\CustomersApi( $api_client );
-	$body         = new \SquareConnect\Model\CreateCustomerRequest();
-	$unique_key   = uniqid() . 'wpexperts';
-
-	$body->setIdempotencyKey( $unique_key );
-	$body->setGivenName( $post['first_name'] );
-	$body->setFamilyName( $post['last_name'] );
-	$body->setEmailAddress( $post['email'] );
-	$body->setReferenceId( $unique_key );
+	$unique_key = uniqid() . 'wpexperts';
+	$body       = new \Square\Customers\Requests\CreateCustomerRequest(
+		array(
+			'idempotencyKey' => $unique_key,
+			'givenName'      => $post['first_name'],
+			'familyName'     => $post['last_name'],
+			'emailAddress'   => $post['email'],
+			'referenceId'    => $unique_key,
+		)
+	);
 
 	try {
 
-		$result = $api_instance->createCustomer( $body );
+		$result = $api_client->customers->create( $body );
 		return $result->getCustomer()->getId();
 
 	} catch ( Exception $e ) {
-		wp_die( wp_json_encode( $e->getResponseBody()->errors[0] ) );
+		wp_die( wp_json_encode( wpep_square_exception_error( $e ) ) );
 	}
 }
 
@@ -871,8 +884,13 @@ function wpep_retrieve_square_customer( $api_client, $square_customer_id ) {
 
 	try {
 
-		$api_instance = new SquareConnect\Api\CustomersApi( $api_client );
-		$result       = $api_instance->retrieveCustomer( $square_customer_id );
+		$result = $api_client->customers->get(
+			new \Square\Customers\Requests\GetCustomersRequest(
+				array(
+					'customerId' => $square_customer_id,
+				)
+			)
+		);
 		return $result->getCustomer()->getId();
 
 	} catch ( Exception $e ) {
@@ -892,9 +910,13 @@ function wpep_retrieve_square_customer_result( $api_client, $square_customer_id 
 
 	try {
 
-		$api_instance = new SquareConnect\Api\CustomersApi( $api_client );
-		$result       = $api_instance->retrieveCustomer( $square_customer_id );
-		return $result;
+		return $api_client->customers->get(
+			new \Square\Customers\Requests\GetCustomersRequest(
+				array(
+					'customerId' => $square_customer_id,
+				)
+			)
+		);
 
 	} catch ( Exception $e ) {
 
@@ -913,9 +935,20 @@ function wpep_retrieve_square_customer_result( $api_client, $square_customer_id 
 function wpep_retrieve_customer_cards( $api_client, $square_customer_id ) {
 	try {
 
-		$api_instance = new SquareConnect\Api\CustomersApi( $api_client );
-		$result       = $api_instance->retrieveCustomer( $square_customer_id );
-		return $result->getCustomer()->getCards();
+		$cards = array();
+		foreach (
+			$api_client->cards->list(
+				new \Square\Cards\Requests\ListCardsRequest(
+					array(
+						'customerId' => $square_customer_id,
+					)
+				)
+			) as $card
+		) {
+			$cards[] = $card;
+		}
+
+		return $cards;
 
 	} catch ( Exception $e ) {
 		return false;
@@ -935,19 +968,22 @@ function wpep_update_cards_on_file( $api_client, $square_customer_id, $wp_user_i
 
 	$square_cards_on_file           = wpep_retrieve_customer_cards( $api_client, $square_customer_id );
 	$card_on_files_to_store_locally = array();
-	foreach ( $square_cards_on_file as $card ) {
 
-		$card_container                     = array();
-		$card_container['card_customer_id'] = $square_customer_id;
-		$card_container['card_id']          = $card->getId();
-		$card_container['card_holder_name'] = $card->getCardholderName();
-		$card_container['card_brand']       = $card->getCardBrand();
-		$card_container['card_last_4']      = $card->getLast4();
-		$card_container['card_exp_month']   = $card->getExpMonth();
-		$card_container['card_exp_year']    = $card->getExpYear();
+	if ( ! empty( $square_cards_on_file ) && is_array( $square_cards_on_file ) ) {
+		foreach ( $square_cards_on_file as $card ) {
 
-		array_push( $card_on_files_to_store_locally, $card_container );
+			$card_container                     = array();
+			$card_container['card_customer_id'] = $square_customer_id;
+			$card_container['card_id']          = $card->getId();
+			$card_container['card_holder_name'] = $card->getCardholderName();
+			$card_container['card_brand']       = $card->getCardBrand();
+			$card_container['card_last_4']      = $card->getLast4();
+			$card_container['card_exp_month']   = $card->getExpMonth();
+			$card_container['card_exp_year']    = $card->getExpYear();
 
+			array_push( $card_on_files_to_store_locally, $card_container );
+
+		}
 	}
 
 	$current_user = wp_get_current_user();
@@ -968,18 +1004,24 @@ function wpep_delete_cof() {
 	$card_on_file       = str_replace( 'doc:', 'ccof:', $post['card_on_file'] );
 	$current_form_id    = $post['current_form_id'];
 	$api_client         = wpep_setup_square_configuration_by_form_id( $current_form_id );
-	$api_instance       = new SquareConnect\Api\CustomersApi( $api_client );
 
 	try {
 
-		$result = $api_instance->deleteCustomerCard( $square_customer_id, $card_on_file );
+		$api_client->customers->cards->delete(
+			new \Square\Customers\Cards\Requests\DeleteCardsRequest(
+				array(
+					'customerId' => $square_customer_id,
+					'cardId'     => $card_on_file,
+				)
+			)
+		);
 		wpep_update_cards_on_file( $api_client, $square_customer_id, get_current_user_id() );
 		echo 'success';
 		wp_die();
 
 	} catch ( Exception $e ) {
 		wpep_update_cards_on_file( $api_client, $square_customer_id, get_current_user_id() );
-		wp_die( wp_json_encode( $e->getResponseBody()->errors[0] ) );
+		wp_die( wp_json_encode( wpep_square_exception_error( $e ) ) );
 	}
 }
 

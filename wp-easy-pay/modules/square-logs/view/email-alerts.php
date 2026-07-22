@@ -17,10 +17,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 		
 		<?php
-		if ( isset( $_POST['wpep_alerts_nonce'] ) && wp_verify_nonce( $_POST['wpep_alerts_nonce'], 'save_wpep_alerts' ) ) {
-			// Save settings
+		if (
+			isset( $_POST['wpep_alerts_nonce'] )
+			&& wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wpep_alerts_nonce'] ) ), 'save_wpep_alerts' )
+		) {
+			// Save settings.
 			$square_connection = isset( $_POST['logAlertEmail'] ) ? 1 : 0;
-			$alert_email       = sanitize_email( $_POST['my_alert_email'] );
+			$alert_email       = isset( $_POST['my_alert_email'] )
+				? sanitize_email( wp_unslash( $_POST['my_alert_email'] ) )
+				: '';
 
 			update_option( 'logAlertEmail', $square_connection );
 			update_option( 'my_alert_email', $alert_email );
