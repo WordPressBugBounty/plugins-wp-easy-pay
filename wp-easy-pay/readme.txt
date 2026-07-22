@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=pay@obje
 Tags: square payment form, credit card payments , payment form, donation form, square payments
 Requires at least: 5.6.0
 Tested up to: 7.0
-Stable tag: 4.5.2
+Stable tag: 4.5.3
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -404,9 +404,21 @@ Please report security bugs found in the source code of the undefined plugin thr
 
 == Changelog ==
 
+= 4.5.3 - 22/07/2026 =
+
+Improvement - Reduced plugin package size by removing unused legacy SquareConnect SDK.
+Improvement – Updated Freemius SDK to the latest version.
+Fixed - Composer autoload path so the Square SDK loads correctly from vendor.
+
 = 4.5.2 - 16/07/2026 =
-* Update - Square SDK
-* Fixed – Security enhancement on behalf of CVE ID: CVE-2026-12738
+
+Updated - Square PHP SDK to 46.0.1.20260715 (replaces legacy SquareConnect).
+Changed - Minimum PHP version requirement to 8.1 or higher.
+Fixed - Authorization and capability checks for draft/delete/restore AJAX form actions (CVE-2026-12738).
+Fixed - Plugin Check security and input sanitization warnings.
+Fixed - README Tested up to format and short description length.
+Fixed - Composer platform lock so builds no longer require PHP 8.4.
+Added - Soft PHP version guard so sites below PHP 8.1 do not fatally break on update.
 
 = 4.5.1 - 2/07/2026 =
 

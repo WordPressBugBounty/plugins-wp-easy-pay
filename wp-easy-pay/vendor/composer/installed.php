@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => 'dev-bugfix/WPEP-1560-security-checks-fixes-n-square-freemius-SDK-updated',
-        'version' => 'dev-bugfix/WPEP-1560-security-checks-fixes-n-square-freemius-SDK-updated',
-        'reference' => '9064dc7f7dde37da06e49cff2875f555b016c3ac',
+        'pretty_version' => 'dev-bugfix/WPEP-1560-security-checks-size-reduce',
+        'version' => 'dev-bugfix/WPEP-1560-security-checks-size-reduce',
+        'reference' => '9ad6a029d538563ff9ff7b9e292c983a294d9b53',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => 'dev-bugfix/WPEP-1560-security-checks-fixes-n-square-freemius-SDK-updated',
-            'version' => 'dev-bugfix/WPEP-1560-security-checks-fixes-n-square-freemius-SDK-updated',
-            'reference' => '9064dc7f7dde37da06e49cff2875f555b016c3ac',
+            'pretty_version' => 'dev-bugfix/WPEP-1560-security-checks-size-reduce',
+            'version' => 'dev-bugfix/WPEP-1560-security-checks-size-reduce',
+            'reference' => '9ad6a029d538563ff9ff7b9e292c983a294d9b53',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

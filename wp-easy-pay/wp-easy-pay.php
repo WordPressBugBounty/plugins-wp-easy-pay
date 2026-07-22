@@ -8,7 +8,7 @@
  * without coding it yourself or hiring a developer. Skip setting up a complex shopping cart system.
  * Author: WP Easy Pay
  * Author URI: https://wpeasypay.com/
- * Version: 4.5.2
+ * Version: 4.5.3
  * Requires PHP: 8.1
  * Text Domain: wp-easy-pay
  * License: GPLv2 or later
@@ -277,7 +277,9 @@ if ( ! function_exists( 'add_viewport_meta_tag' ) ) {
 	}
 }
 add_action( 'wp_head', 'add_viewport_meta_tag', '1' );
-require_once WPEP_ROOT_PATH . 'modules/vendor/autoload.php';
+if ( file_exists( WPEP_ROOT_PATH . 'vendor/autoload.php' ) ) {
+	require_once WPEP_ROOT_PATH . 'vendor/autoload.php';
+}
 require_once WPEP_ROOT_PATH . 'modules/payments/square-authorization.php';
 require_once WPEP_ROOT_PATH . 'modules/payments/square-payments.php';
 require_once WPEP_ROOT_PATH . 'modules/render_forms/form-render-shortcode.php';
