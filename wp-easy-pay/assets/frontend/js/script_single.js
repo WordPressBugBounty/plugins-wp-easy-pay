@@ -532,8 +532,13 @@ jQuery( document ).ready(
 					jQuery(`#amount_display_${form_id}`).show();
 					// jQuery(`#amount_display_${current_form_id}`).text(jQuery(`#amount_display_${current_form_id}`).siblings('input[name="wpep-selected-amount"]').val());
 				}
-				jQuery( 'form[data-id="' + form_id + '"] .display' ).next().next( 'input[name="one_unit_cost"]' ).val( jQuery( this ).text() ).trigger('change');
-				jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( jQuery( this ).text() ).trigger('change');
+				var selectedAmountText = jQuery( this ).text().trim();
+				var selectedAmountValue = parseFloat( selectedAmountText.replace( /[^0-9.]/g, '' ) );
+				if ( isNaN( selectedAmountValue ) ) {
+					selectedAmountValue = 0;
+				}
+				jQuery( 'form[data-id="' + form_id + '"] .display' ).next().next( 'input[name="one_unit_cost"]' ).val( selectedAmountText ).trigger('change');
+				jQuery( 'form[data-id="' + form_id + '"] .display' ).next( 'input[name="wpep-selected-amount"]' ).val( selectedAmountValue.toFixed( 2 ) ).trigger('change');
 				//jQuery( '#one_unit_cost' ).val( jQuery( this ).text().trim() );
 				jQuery( '#wpep_quantity_' + form_id ).val( 1 );
 				jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-submit-btn' ).removeClass( 'wpep-disabled' );

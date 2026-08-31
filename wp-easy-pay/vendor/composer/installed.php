@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => 'dev-bugfix/WPEP-1560-security-checks-size-reduce',
-        'version' => 'dev-bugfix/WPEP-1560-security-checks-size-reduce',
-        'reference' => '9ad6a029d538563ff9ff7b9e292c983a294d9b53',
+        'pretty_version' => 'dev-release/WPEP-1581',
+        'version' => 'dev-release/WPEP-1581',
+        'reference' => 'd5c8a207a7cc876fa6fd3faa49df59bbfce2bc18',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => 'dev-bugfix/WPEP-1560-security-checks-size-reduce',
-            'version' => 'dev-bugfix/WPEP-1560-security-checks-size-reduce',
-            'reference' => '9ad6a029d538563ff9ff7b9e292c983a294d9b53',
+            'pretty_version' => 'dev-release/WPEP-1581',
+            'version' => 'dev-release/WPEP-1581',
+            'reference' => 'd5c8a207a7cc876fa6fd3faa49df59bbfce2bc18',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

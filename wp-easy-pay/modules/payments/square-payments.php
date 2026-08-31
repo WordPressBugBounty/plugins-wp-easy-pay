@@ -8,6 +8,7 @@
 
 require_once WPEP_ROOT_PATH . 'modules/payments/square-configuration.php';
 require_once WPEP_ROOT_PATH . 'modules/payments/payment-helper-functions.php';
+require_once WPEP_ROOT_PATH . 'modules/payments/payment-amount-validation.php';
 require_once WPEP_ROOT_PATH . 'modules/error-logging.php';
 
 add_action( 'wp_ajax_wpep_payment_request', 'wpep_payment_request' );
@@ -199,6 +200,26 @@ function wpep_payment_request() {
 		wp_die( wp_json_encode( $error ) );
 	}
 
+	$resolved_amount = wpep_validate_payment_amount( absint( $current_form_id ), $post );
+	if ( is_wp_error( $resolved_amount ) ) {
+		wp_die(
+			wp_json_encode(
+				array(
+					'status' => 'failed',
+					'code'   => '',
+					'detail' => $resolved_amount->get_error_message(),
+				)
+			)
+		);
+	}
+	$amount                = $resolved_amount['amount'];
+	$post['amount']        = $amount;
+	$post['signup_amount'] = $resolved_amount['signup_amount'];
+	$post['discount']      = $resolved_amount['discount'];
+	$_POST['amount']        = $amount; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	$_POST['signup_amount'] = $resolved_amount['signup_amount']; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	$_POST['discount']      = $resolved_amount['discount']; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
 	if ( isset( $cof ) && ! empty( $cof ) && 'false' !== $cof ) {
 
 		if ( isset( $post['email'] ) ) {
@@ -274,7 +295,7 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 
 	$refresh_token_details = wpep_refresh_token_details( $current_form_id );
 
-	if ( 0 !== count( $refresh_token_details ) ) {
+	if ( ! empty( $refresh_token_details['expires_at'] ) && ! empty( $refresh_token_details['refresh_token'] ) ) {
 		$expires_at    = $refresh_token_details['expires_at'];
 		$refresh_token = $refresh_token_details['refresh_token'];
 		$type          = $refresh_token_details['type'];
@@ -293,24 +314,16 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 	);
 
 	if ( ! empty( $post ) && false === $amount && isset( $post['nonce'] ) ) {
-		$nonce = $post['nonce'];
-		if ( false !== strpos( $post['amount'], '$' ) ) {
-			$amount = str_replace( '$', '', $post['amount'] );
-			$amount = trim( $amount, ' ' );
-		} else {
-			$amount = $post['amount'];
-		}
-
-		$amount = str_replace( ',', '', $amount );
-
-		$signup_amount = ( isset( $post['signup_amount'] ) ) ? floatval( str_replace( ',', '', $post['signup_amount'] ) ) : '';
+		$nonce         = $post['nonce'];
+		$amount        = wpep_parse_payment_amount( $post['amount'] );
+		$signup_amount = isset( $post['signup_amount'] ) ? wpep_parse_payment_amount( $post['signup_amount'] ) : 0;
 
 		$body->setSourceId( $nonce );
 	}
 
 	if ( ! empty( $post ) && isset( $post['card_on_file'] ) && 'false' !== $post['card_on_file'] ) {
 		$amount        = $amount;
-		$signup_amount = $post['signup_amount'];
+		$signup_amount = isset( $post['signup_amount'] ) ? (float) $post['signup_amount'] : 0;
 
 		if ( 'false' !== $post['save_customer_id'] ) {
 				$save_customer_id = $post['save_customer_id'];
@@ -335,6 +348,8 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 
 	$square_currency = wpep_get_currency( $current_form_id );
 	$amount_money    = new \Square\Types\Money();
+	$amount          = wpep_parse_payment_amount( $amount );
+	$wpep_trusted_report_amount = $amount;
 
 	if ( 'JPY' !== $square_currency ) {
 		$amount = $amount * 100;
@@ -343,7 +358,7 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 	$amount = (int) ( round( $amount ) );
 
 	$signup_amount        = (float) $signup_amount;
-	$report_amount        = $amount;
+	$report_amount        = $wpep_trusted_report_amount;
 	$report_signup_amount = $signup_amount;
 	$amount_money->setAmount( $amount );
 	$amount_money->setCurrency( $square_currency );
@@ -374,6 +389,10 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 				if ( 'Email' === $label ) {
 					$label = 'user_email';
 					$to    = $value;
+				}
+				if ( in_array( $label, array( 'Uploaded URL', 'Uploaded File URL' ), true ) ) {
+					$note = str_replace( array( '[uploaded_url]', '[file_upload]' ), $value, $note );
+					continue;
 				}
 				$tag  = '[' . str_replace( ' ', '_', strtolower( $label ) ) . ']';
 				$note = str_replace( $tag, $value, $note );
@@ -447,15 +466,42 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 			$response_code = wp_remote_retrieve_response_code( $response );
 			$response_body = wp_remote_retrieve_body( $response );
 
-			// Check for errors.
 			if ( is_wp_error( $response ) ) {
-				echo esc_html( 'Error: ' . $response->get_error_message() );
+				wp_die(
+					wp_json_encode(
+						array(
+							'status' => 'failed',
+							'code'   => 'ORDER_CREATE_FAILED',
+							'detail' => $response->get_error_message(),
+						)
+					)
+				);
 			}
 
-			// Now you can handle the response as needed.
-			$result = json_decode( $response_body );
+			$order_response = json_decode( $response_body );
+			$order_id       = null;
 
-			$order_id = $result->order->id;
+			if ( is_object( $order_response ) && isset( $order_response->order ) && is_object( $order_response->order ) && ! empty( $order_response->order->id ) ) {
+				$order_id = $order_response->order->id;
+			}
+
+			if ( empty( $order_id ) ) {
+				$order_error_detail = __( 'Unable to create Square order.', 'wp_easy_pay' );
+
+				if ( is_object( $order_response ) && ! empty( $order_response->errors[0]->detail ) ) {
+					$order_error_detail = $order_response->errors[0]->detail;
+				}
+
+				wp_die(
+					wp_json_encode(
+						array(
+							'status' => 'failed',
+							'code'   => 'ORDER_CREATE_FAILED',
+							'detail' => $order_error_detail,
+						)
+					)
+				);
+			}
 
 			$body->setOrderId( $order_id );
 
@@ -482,16 +528,6 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 
 			/* Adding Single Transaction Report */
 			if ( 'single' === $payment_type || 'donation' === $payment_type ) {
-
-				foreach ( $form_values as $value ) {
-
-					if ( isset( $value['label'] ) ) {
-
-						if ( 'total_amount' === $value['label'] ) {
-							$report_amount = $value['value'];
-						}
-					}
-				}
 
 				$type_of_payment = get_post_meta( $current_form_id, 'wpep_square_payment_type', true );
 				if ( 'donation' === $type_of_payment ) {

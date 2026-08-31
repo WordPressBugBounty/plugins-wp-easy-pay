@@ -6,21 +6,24 @@
  * @package WP_Easy_Pay
  */
 
+if ( ! function_exists( 'wpep_email_file_upload_bits' ) ) {
+	require_once __DIR__ . '/admin-email.php';
+}
+
 /**
  * Sends a user email.
  *
- * @param int   $current_form_id  The ID of the current form.
- * @param array $form_values      The values submitted in the form.
- * @param int   $transaction_id   The ID of the transaction.
- * @param int   $currency   The currency of the current form.
+ * @param int    $current_form_id The ID of the current form.
+ * @param array  $form_values     The values submitted in the form.
+ * @param string $transaction_id  The ID of the transaction.
+ * @param string $currency        The currency of the current form.
  */
 function wpep_send_user_email( $current_form_id, $form_values, $transaction_id, $currency ) {
 
-	$from              = get_post_meta( $current_form_id, 'wpep_square_user_email_from_field', true );
-	$subject           = get_post_meta( $current_form_id, 'wpep_square_user_email_subject_field', true );
-	$message           = get_post_meta( $current_form_id, 'wpep_square_user_email_content_field', true );
-	$html_content_type = get_post_meta( $current_form_id, 'wpep_square_user_email_content_type_html', true );
-	$current_user      = wp_get_current_user();
+	$from    = get_post_meta( $current_form_id, 'wpep_square_user_email_from_field', true );
+	$subject = get_post_meta( $current_form_id, 'wpep_square_user_email_subject_field', true );
+	$message = get_post_meta( $current_form_id, 'wpep_square_user_email_content_field', true );
+	$to      = '';
 
 	$img_url = WPEP_ROOT_URL . 'assets/frontend/img/payment-done.png';
 
@@ -28,7 +31,8 @@ function wpep_send_user_email( $current_form_id, $form_values, $transaction_id, 
 	$message         = str_replace( '[wpep_email_body]', $message, $message );
 	$transaction_tag = '[transaction_id]';
 
-	$form_values = (object) $form_values;
+	$form_values_raw = $form_values;
+	$form_values     = (object) $form_values;
 
 	/* Parsing Tags */
 	foreach ( $form_values as $form_value ) {
@@ -39,6 +43,10 @@ function wpep_send_user_email( $current_form_id, $form_values, $transaction_id, 
 			$value = $form_value['value'];
 
 			if ( null !== $label ) {
+
+				if ( in_array( $label, array( 'Uploaded URL', 'Uploaded File URL' ), true ) ) {
+					continue;
+				}
 
 				if ( 'Email' === $label ) {
 					$label = 'user_email';
@@ -79,19 +87,20 @@ function wpep_send_user_email( $current_form_id, $form_values, $transaction_id, 
 					}
 				}
 				$message = str_replace( $tag, $value, $message );
-
 				$subject = str_replace( $tag, $value, $subject );
 			}
 		}
 	}
 
-		$message = str_replace( $transaction_tag, $transaction_id, $message );
-		$subject = str_replace( $transaction_tag, $transaction_id, $subject );
+	$message = str_replace( $transaction_tag, $transaction_id, $message );
+	$subject = str_replace( $transaction_tag, $transaction_id, $subject );
 
-		$headers  = 'From: ' . get_bloginfo( 'name' ) . ' <' . wp_strip_all_tags( $from ) . ">\r\n";
-		$headers .= 'Reply-To: ' . wp_strip_all_tags( $from ) . "\r\n";
-		$headers .= "MIME-Version: 1.0\r\n";
-		$headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-		$message  = nl2br( $message );
-		wp_mail( $to, $subject, $message, $headers );
+	list( $message, $subject, $attachments ) = wpep_email_file_upload_bits( $message, $subject, $form_values_raw );
+
+	$headers  = 'From: ' . get_bloginfo( 'name' ) . ' <' . wp_strip_all_tags( $from ) . ">\r\n";
+	$headers .= 'Reply-To: ' . wp_strip_all_tags( $from ) . "\r\n";
+	$headers .= "MIME-Version: 1.0\r\n";
+	$headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+	$message  = nl2br( $message );
+	wp_mail( $to, $subject, $message, $headers, $attachments );
 }

@@ -840,21 +840,10 @@ document.addEventListener('DOMContentLoaded', async function () {
 		var first_name = jQuery("#theForm-" + current_form_id + " input[name='wpep-first-name-field']").val();
 		var last_name = jQuery("#theForm-" + current_form_id + " input[name='wpep-last-name-field']").val();
 		var email = jQuery("#theForm-" + current_form_id + " input[name='wpep-email-field']").val();
-		var currencies = ['CAD', 'USD', 'EUR', 'JPY', 'AUD', 'GBP'];
-		var currency_symbols = ['C$', 'A$', '¥', '£', '€', '$'];
-		var amount = jQuery('#amount_display_' + current_form_id).text();
-		if (jQuery.inArray(currency, currencies) !== -1) {
-			if (wpep_local_vars.currencySymbolType == 'code') {
-				amount = amount.trim();
-				amount = amount.split(' ');
-				amount = amount[0];
-				amount = amount.replace(currency + " ", "");
-			} else {
-				amount = amount.trim();
-				amount = amount.split(' ');
-				amount = amount[0];
-				amount = amount.replace(wpep_local_vars.wpep_currency_symbol, "");
-			}
+		var rawAmount = jQuery('input[name="wpep-selected-amount"]').val() || jQuery('#amount_display_' + current_form_id).text();
+		var amount = parseFloat(String(rawAmount).replace(/[^0-9.]/g, ''));
+		if (isNaN(amount)) {
+			amount = 0;
 		}
 
 		var payment_type = jQuery('#wpep_payment_form_type_' + current_form_id).val();
@@ -1233,6 +1222,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 			'email': email,
 			'discount': discount,
 			'amount': amount,
+			'base_amount': jQuery('#theForm-' + current_form_id + ' input[name="one_unit_cost"]').val()
+				|| jQuery('#theForm-' + current_form_id + ' input[name="gross_total"]').val() || amount,
+			'coupon_code': jQuery('#theForm-' + current_form_id + ' input[name="wpep-coupon"]').val() || '',
 			'save_card': jQuery('#saveCardLater').is(':checked'),
 			'save_customer_id': jQuery('#wpep_square_customer_id').val(),
 			'payment_type': payment_type,
@@ -2084,8 +2076,13 @@ document.addEventListener('DOMContentLoaded', async function () {
 				jQuery('#giftcard_text_' + form_id).remove();
 				jQuery(`#amount_display_${form_id}`).show();
 			}
-			jQuery('form[data-id="' + form_id + '"] .display').next().next('input[name="one_unit_cost"]').val(jQuery(this).text()).trigger('change');
-			jQuery('form[data-id="' + form_id + '"] .display').next('input[name="wpep-selected-amount"]').val(jQuery(this).text()).trigger('change');
+			var selectedAmountText = jQuery(this).text().trim();
+			var selectedAmountValue = parseFloat(selectedAmountText.replace(/[^0-9.]/g, ''));
+			if (isNaN(selectedAmountValue)) {
+				selectedAmountValue = 0;
+			}
+			jQuery('form[data-id="' + form_id + '"] .display').next().next('input[name="one_unit_cost"]').val(selectedAmountText).trigger('change');
+			jQuery('form[data-id="' + form_id + '"] .display').next('input[name="wpep-selected-amount"]').val(selectedAmountValue.toFixed(2)).trigger('change');
 			jQuery('#wpep_quantity_' + form_id).val(1);
 			jQuery(`#wpep_coupon_applied_${form_id}`).hide();
 			// jQuery( 'form[data-id="' + form_id + '"] .wpep-single-form-' + current_form_id).removeClass( 'wpep-disabled' );
@@ -2258,20 +2255,24 @@ document.addEventListener('DOMContentLoaded', async function () {
 		if (!$other.length || !$other.is(':visible') || $other.val() === '') {
 			window.wpep_other_amount_pending_verification = false;
 		}
+
+		var $submitBtns = jQuery('button.wpep-single-form-submit-btn, button.wpep-wizard-form-submit-btn');
+
 		if (window.wpep_other_amount_pending_verification) {
-			jQuery('button.wpep-single-form-submit-btn').addClass('wpep-disabled');
-			jQuery('button.wpep-wizard-form-submit-btn').addClass('wpep-disabled');
+			$submitBtns.addClass('wpep-disabled');
 			return;
 		}
-		let wpepSelectedAmountHiddenVal = jQuery('input[name="wpep-selected-amount"]')
-		if (
-			(wpep_local_vars.wpep_square_amount_type === 'tabular_layout_for_square' ||
-				wpep_local_vars.wpep_square_amount_type === 'payment_tabular') &&
-			(wpepSelectedAmountHiddenVal.val() === '' || parseFloat(wpepSelectedAmountHiddenVal.val()) === 0)
-		) {
-			jQuery('button.wpep-single-form-submit-btn').addClass('wpep-disabled');
-		} else if (wpepSelectedAmountHiddenVal.val() > 0) {
-			jQuery('button.wpep-single-form-submit-btn').removeClass('wpep-disabled');
+
+		var rawAmount = jQuery('input[name="wpep-selected-amount"]').val() || '';
+		var amount = parseFloat(String(rawAmount).replace(/[^0-9.]/g, ''));
+		var isTabular =
+			wpep_local_vars.wpep_square_amount_type === 'tabular_layout_for_square' ||
+			wpep_local_vars.wpep_square_amount_type === 'payment_tabular';
+
+		if (isTabular && (!amount || amount === 0)) {
+			$submitBtns.addClass('wpep-disabled');
+		} else if (amount > 0) {
+			$submitBtns.removeClass('wpep-disabled');
 		}
 	}
 
@@ -2840,9 +2841,9 @@ jQuery(window).on('load', function () {
 		jQuery(`#amount_display_${form_id}`).siblings('input[name="wpep-selected-amount"]').val(parseFloat(total_amount).toFixed(2));
 		if (wpep_local_vars.currencySymbolType == 'symbol') {
 			var currency = wpep_local_vars.wpep_currency_symbol;
-			jQuery(`#amount_display_${form_id}`).text(currency + parseFloat(total_amount).toFixed(2));
-			jQuery(`#theForm-${form_id}`).find('.wpep-fee-subtotal .fee_value').text(currency + unit_cost);
-			jQuery(`#theForm-${form_id}`).find('.wpep-fee-total .fee_value').text(currency + parseFloat(total_amount).toFixed(2));
+			jQuery(`#amount_display_${form_id}`).text(currency + ' ' + parseFloat(total_amount).toFixed(2));
+			jQuery(`#theForm-${form_id}`).find('.wpep-fee-subtotal .fee_value').text(currency + ' ' + unit_cost);
+			jQuery(`#theForm-${form_id}`).find('.wpep-fee-total .fee_value').text(currency + ' ' + parseFloat(total_amount).toFixed(2));
 		} else if (wpep_local_vars.currencySymbolType == 'code') {
 			var currency = wpep_local_vars.wpep_square_currency_new;
 			jQuery(`#amount_display_${form_id}`).text(parseFloat(total_amount).toFixed(2) + ' ' + currency);
@@ -2914,7 +2915,7 @@ function wpep_calculate_fee_data_ajax(form_id, amount, discount) {
 				var get_total = rrr.subtotal;
 			}
 			if (wpep_local_vars.currencySymbolType == 'symbol') {
-				jQuery(`#amount_display_${form_id}`).text(wpep_local_vars.wpep_currency_symbol + get_total);
+				jQuery(`#amount_display_${form_id}`).text(wpep_local_vars.wpep_currency_symbol + ' ' + get_total);
 			} else if (wpep_local_vars.currencySymbolType == 'code') {
 				jQuery(`#amount_display_${form_id}`).text(get_total + ' ' + wpep_local_vars.wpep_square_currency_new);
 			} else {

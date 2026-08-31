@@ -1296,7 +1296,7 @@ label.subscrition_cycle_label {
 }
 
 .singlepage .orderCompleted .form-wizard-submit {
-  opacity: 0.7;
+  opacity: 1;
 }
 
 .singlepage ul.wpep_tabs {

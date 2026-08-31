@@ -3,8 +3,8 @@ Contributors: wpexpertsio
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=pay@objects.ws&item_name=DonationForPlugin
 Tags: square payment form, credit card payments , payment form, donation form, square payments
 Requires at least: 5.6.0
-Tested up to: 7.0
-Stable tag: 4.5.3
+Tested up to: 7.1
+Stable tag: 4.5.4
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -403,6 +403,14 @@ Please report security bugs found in the source code of the undefined plugin thr
 
 
 == Changelog ==
+
+= 4.5.4 - 31/08/2026 =
+Fixed - Currency symbol mode amount not showing/sending on Pay button.
+Fixed - Square token refresh warnings when expires_at is empty or invalid.
+Fixed - Trashed transactions restore UX.
+Fixed - Duplicate amount parser fatal error after merge.
+Added - Server-side wpep_parse_payment_amount() for formatted amounts.
+Changed - Amount normalized before Square API charge; token refresh guarded.
 
 = 4.5.3 - 22/07/2026 =
 

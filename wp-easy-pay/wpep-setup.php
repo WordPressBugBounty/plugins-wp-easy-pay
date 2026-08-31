@@ -17,6 +17,7 @@ add_action( 'manage_wp_easy_pay_posts_custom_column', 'wpep_add_columns_data_add
 add_action( 'init', 'wpep_create_reports_post_type' );
 add_filter( 'manage_wpep_reports_posts_columns', 'wpep_modify_column_names_reports' );
 add_action( 'manage_wpep_reports_posts_custom_column', 'wpep_add_columns_data_reports', 9, 2 );
+add_filter( 'wp_untrash_post_status', 'wpep_reports_restore_to_publish', 10, 3 );
 add_action( 'admin_menu', 'wpep_add_submenu' );
 add_action( 'admin_enqueue_scripts', 'wpep_onboarding_admin_assets', 5 );
 add_action( 'admin_head', 'wpep_onboarding_admin_head_preconnect', 1 );
@@ -565,6 +566,24 @@ function wpep_create_reports_post_type() {
 	register_post_type( 'wpep_reports', $args );
 }
 
+/**
+ * Restore trashed transactions as published (not draft).
+ *
+ * @param string $new_status      Status WordPress would assign on untrash.
+ * @param int    $post_id         Post ID.
+ * @param string $previous_status Status before trash.
+ * @return string
+ */
+function wpep_reports_restore_to_publish( $new_status, $post_id, $previous_status ) {
+	unset( $previous_status );
+
+	if ( 'wpep_reports' === get_post_type( $post_id ) ) {
+		return 'publish';
+	}
+
+	return $new_status;
+}
+
 function wpep_reports_search_title_and_meta( $query ) {
 	if ( is_admin() && $query->is_main_query() && $query->is_search() ) {
 		$post_type = $query->get('post_type');
@@ -724,7 +743,11 @@ function wpep_add_columns_data_reports( $column, $post_id ) {
 	switch ( $column ) {
 
 		case 'post_id':
-			echo "<a href='" . esc_url( $view_url ) . "' class='wpep-blue' title='Details'>#" . esc_html( $post_id ) . '</a>';
+			if ( 'trash' === get_post_status( $post_id ) ) {
+				echo '#' . esc_html( $post_id );
+			} else {
+				echo "<a href='" . esc_url( $view_url ) . "' class='wpep-blue' title='Details'>#" . esc_html( $post_id ) . '</a>';
+			}
 			break;
 		case 'customer_email':
 			echo ! empty( $email ) ? esc_html( $email ) : '&ndash;';
@@ -742,8 +765,17 @@ function wpep_add_columns_data_reports( $column, $post_id ) {
 			echo ! empty( $display_amount ) ? esc_html( $display_amount ) : '&ndash;';
 			break;
 		case 'actions':
+			$post_status = get_post_status( $post_id );
+
 			echo '<a href="' . esc_url( get_delete_post_link( $post_id ) ) . '" class="deleteIcon" title="Delete report"> Delete </a>';
-			if ( $view_url ) {
+
+			if ( 'trash' === $post_status ) {
+				$restore_url = wp_nonce_url(
+					admin_url( 'post.php?action=untrash&post=' . $post_id ),
+					'untrash-post_' . $post_id
+				);
+				echo ' <a href="' . esc_url( $restore_url ) . '" class="restoreIcon" title="Restore transaction" style="margin: 0px 0px 0px -8px !important;"> Restore </a>';
+			} elseif ( $view_url ) {
 				echo ' <a href="' . esc_url( $view_url ) . '" title="Details" style="margin: 0px 0px 0px -8px !important;"><img src="' . esc_url( WPEP_ROOT_URL . 'assets/backend/img/eye.png' ) . '" alt="Details" style="width:18px; height:18px;"></a>';
 			}
 			break;

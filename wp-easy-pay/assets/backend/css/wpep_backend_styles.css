@@ -1912,7 +1912,7 @@ ul.striped > :nth-child(odd) {
   box-shadow: none;
   border: 1px solid #f0f3ff;
   border-radius: 4px;
-  background: #f0f3ff;
+  background: #dbe2ff;
   width: 18px;
   min-width: 18px;
   height: 18px;
@@ -1923,7 +1923,7 @@ ul.striped > :nth-child(odd) {
   box-shadow: none;
   border: 1px solid #f0f3ff;
   border-radius: 4px;
-  background: #f0f3ff;
+  background: #dbe2ff;
   width: 18px;
   min-width: 18px;
   height: 18px;
@@ -2019,7 +2019,18 @@ table.widefat {
 .widefat td ul {
   font-size: 14px;
   line-height: normal;
-  vertical-align: middle;
+  vertical-align: middle !important;
+  border-top: 1px solid #d9d9d9;
+  height: 53px;
+}
+
+.widefat th,
+.widefat th ol,
+.widefat th p,
+.widefat th ul {
+  font-size: 14px;
+  line-height: normal;
+  vertical-align: middle !important;
   border-top: 1px solid #d9d9d9;
   height: 53px;
 }

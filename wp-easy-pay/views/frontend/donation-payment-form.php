@@ -202,6 +202,7 @@ $currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currency
 		require WPEP_ROOT_PATH . 'views/frontend/donation-goals.php';
 	}
 
+	$wpep_form_display_currency = $square_currency;
 	require WPEP_ROOT_PATH . 'views/frontend/payment-methods.php';
 	?>
 
@@ -210,7 +211,7 @@ $currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currency
 		<a href="javascript:;" class="form-wizard-previous-btn float-left noSingle">Previous</a>		
 		<div style="display:flex">
 			<?php
-			$sub_total_amount        = isset( $show_default_amount ) ? floatval( str_replace( $square_currency, '', $show_default_amount ) ) : 0.00;
+			$sub_total_amount        = isset( $show_default_amount ) ? floatval( preg_replace( '/[^0-9.]/', '', $show_default_amount ) ) : 0.00;
 			$total_amount            = $sub_total_amount;
 			$currency                = isset( $square_currency ) ? $square_currency : '$';
 			$fees_data               = get_post_meta( $wpep_current_form_id, 'fees_data', true );
@@ -225,7 +226,7 @@ $currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currency
 						<li class="wpep-fee-subtotal">
 							<span class="fee_name"><?php echo esc_html__( 'Subtotal', 'wp_easy_pay' ); ?></span>
 							<?php if ( 'symbol' === $currency_symbol_type ) { ?>
-								<span class="fee_value"><?php echo esc_attr( $square_currency ) . esc_attr( number_format( $sub_total_amount, 2 ) ); ?></span>
+								<span class="fee_value"><?php echo esc_attr( $wpep_form_display_currency ) . ' ' . esc_attr( number_format( $sub_total_amount, 2 ) ); ?></span>
 							<?php } elseif ( 'code' === $currency_symbol_type ) { ?>
 								<span class="fee_value"><?php echo esc_attr( number_format( $sub_total_amount, 2 ) ) . ' ' . esc_attr( $square_currency ); ?></span>
 							<?php } else { ?>
@@ -239,7 +240,7 @@ $currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currency
 						<li class="wpep-fee-onetime">
 							<span class="fee_name"><?php echo esc_html__( 'Signup Fee', 'wp_easy_pay' ); ?></span>
 							<?php if ( 'symbol' === $currency_symbol_type ) { ?>
-								<span class="fee_value"><?php echo esc_attr( $square_currency ) . esc_attr( number_format( $wpep_signup_fees_value, 2 ) ); ?></span>
+								<span class="fee_value"><?php echo esc_attr( $wpep_form_display_currency ) . ' ' . esc_attr( number_format( $wpep_signup_fees_value, 2 ) ); ?></span>
 							<?php } elseif ( 'code' === $currency_symbol_type ) { ?>
 								<span class="fee_value"><?php echo esc_attr( number_format( $wpep_signup_fees_value, 2 ) ) . ' ' . esc_attr( $square_currency ); ?></span>
 							<?php } else { ?>
@@ -265,7 +266,7 @@ $currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currency
 								<li>
 									<span class="fee_name"><?php echo esc_html( $fees_data[0]['name'][ $key ] ); ?></span>
 									<?php if ( 'symbol' === $currency_symbol_type ) { ?>
-										<span class="fee_value"><?php echo esc_attr( $square_currency ) . esc_attr( number_format( $wpep_tax, 2 ) ); ?></span>
+										<span class="fee_value"><?php echo esc_attr( $wpep_form_display_currency ) . ' ' . esc_attr( number_format( $wpep_tax, 2 ) ); ?></span>
 									<?php } elseif ( 'code' === $currency_symbol_type ) { ?>
 										<span class="fee_value"><?php echo esc_attr( number_format( $wpep_tax, 2 ) ) . ' ' . esc_attr( $square_currency ); ?></span>
 									<?php } else { ?>
@@ -279,7 +280,7 @@ $currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currency
 						<li class="wpep-fee-total">
 							<span class="fee_name"><?php echo esc_html__( 'Total', 'wp_easy_pay' ); ?></span>
 							<?php if ( 'symbol' === $currency_symbol_type ) { ?>
-								<span class="fee_value"><?php echo esc_attr( $square_currency ) . esc_attr( number_format( $total_amount, 2 ) ); ?></span>
+								<span class="fee_value"><?php echo esc_attr( $wpep_form_display_currency ) . ' ' . esc_attr( number_format( $total_amount, 2 ) ); ?></span>
 							<?php } elseif ( 'code' === $currency_symbol_type ) { ?>
 								<span class="fee_value"><?php echo esc_attr( number_format( $total_amount, 2 ) ) . ' ' . esc_attr( $square_currency ); ?></span>
 							<?php } else { ?>
@@ -312,16 +313,22 @@ $currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currency
 																	<?php
 																	if ( ( ! empty( $fees_data[0]['check'] ) && in_array( 'yes', $fees_data[0]['check'], true ) && isset( $total_amount ) ) || 'yes' === $wpep_enable_signup_fees ) :
 																		if ( 'symbol' === $currency_symbol_type ) {
-																			echo esc_html( $square_currency . number_format( $total_amount, 2 ) );
+																			echo esc_html( $wpep_form_display_currency . ' ' . number_format( $total_amount, 2 ) );
 																		} elseif ( 'code' === $currency_symbol_type ) {
-																			echo esc_html( number_format( $total_amount, 2 ) . ' ' . $square_currency );
+																			echo esc_html( number_format( $total_amount, 2 ) . ' ' . $wpep_form_display_currency );
 																		} else {
 																			echo esc_html( number_format( $total_amount, 2 ) );
 																		}
-																		elseif ( isset( $show_default_amount ) ) :
-																			echo esc_html( $show_default_amount );
-																		endif;
-																		?>
+																	elseif ( isset( $show_default_amount ) ) :
+																		if ( 'symbol' === $currency_symbol_type ) {
+																			echo esc_html( $wpep_form_display_currency . ' ' . number_format( $total_amount, 2 ) );
+																		} elseif ( 'code' === $currency_symbol_type ) {
+																			echo esc_html( number_format( $total_amount, 2 ) . ' ' . $wpep_form_display_currency );
+																		} else {
+																			echo esc_html( number_format( $total_amount, 2 ) );
+																		}
+																	endif;
+																	?>
 																		</small>
 					<input type="hidden" id="wpep-selected-amount-<?php echo esc_attr( $wpep_current_form_id ); ?>" name="wpep-selected-amount"
 						value="

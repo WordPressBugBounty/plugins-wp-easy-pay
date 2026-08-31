@@ -11,6 +11,28 @@
  */
 require_once WPEP_ROOT_PATH . 'modules/payments/square-configuration.php';
 
+if ( ! function_exists( 'wpep_parse_payment_amount' ) ) {
+	/**
+	 * Normalize a payment amount that may include currency symbols or codes.
+	 *
+	 * @param mixed $amount Raw amount from POST or display text.
+	 * @return float
+	 */
+	function wpep_parse_payment_amount( $amount ) {
+		if ( is_array( $amount ) ) {
+			return 0.0;
+		}
+
+		if ( is_numeric( $amount ) ) {
+			return floatval( $amount );
+		}
+
+		$amount = preg_replace( '/[^0-9.]/', '', str_replace( ',', '', (string) $amount ) );
+
+		return '' === $amount ? 0.0 : floatval( $amount );
+	}
+}
+
 /**
  * Creates a WordPress user.
  *
@@ -825,12 +847,30 @@ function wpep_square_refresh_token( $expires_at, $refresh_access_token, $type, $
  */
 function wpep_check_give_square_expiry( $expires_at, $current_form_id ) {
 
-	$date_time    = explode( 'T', $expires_at );
-	$date_time[1] = str_replace( 'Z', '', $date_time[1] );
-	$expires_at   = strtotime( $date_time[0] . ' ' . $date_time[1] );
-	$today        = strtotime( 'now' );
+	if ( empty( $expires_at ) ) {
+		return 'expired';
+	}
 
-	if ( $today >= $expires_at ) {
+	if ( is_numeric( $expires_at ) ) {
+		$expires_timestamp = (int) $expires_at;
+	} else {
+		$date_time = explode( 'T', (string) $expires_at, 2 );
+
+		if ( isset( $date_time[1] ) ) {
+			$time_part         = str_replace( 'Z', '', $date_time[1] );
+			$expires_timestamp = strtotime( $date_time[0] . ' ' . $time_part );
+		} else {
+			$expires_timestamp = strtotime( $date_time[0] );
+		}
+	}
+
+	if ( false === $expires_timestamp ) {
+		return 'expired';
+	}
+
+	$today = strtotime( 'now' );
+
+	if ( $today >= $expires_timestamp ) {
 
 		return 'expired';
 
