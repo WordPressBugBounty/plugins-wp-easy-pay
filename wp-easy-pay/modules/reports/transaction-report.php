@@ -16,7 +16,7 @@
  * @param int   $post_id The ID of the transaction post.
  * @param array $personal_information An array containing personal information of the user.
  */
-function wpep_single_transaction_report( $transaction_data, $post_id, $personal_information ) {
+function wpep_single_transaction_report( $transaction_data, $post_id, $personal_information, $transaction_type_override = null ) {
 
 	$transaction_report = array(
 
@@ -40,7 +40,9 @@ function wpep_single_transaction_report( $transaction_data, $post_id, $personal_
 	}
 
 	$transaction_report_id = wp_insert_post( $transaction_report );
-	$payment_type          = get_post_meta( $personal_information['current_form_id'], 'wpep_square_payment_type', true );
+	$payment_type          = null !== $transaction_type_override
+		? $transaction_type_override
+		: get_post_meta( $personal_information['current_form_id'], 'wpep_square_payment_type', true );
 	$current_user          = wp_get_current_user();
 	update_post_meta( $transaction_report_id, 'wpep_first_name', $personal_information['first_name'] );
 	update_post_meta( $transaction_report_id, 'wpep_last_name', $personal_information['last_name'] );
@@ -76,7 +78,7 @@ function wpep_single_transaction_report( $transaction_data, $post_id, $personal_
  * @param string $error_message The error message related to the failed transaction.
  * @return void
  */
-function wpep_failed_single_transaction_report( $post_id, $personal_information, $error_message ) {
+function wpep_failed_single_transaction_report( $post_id, $personal_information, $error_message, $transaction_type_override = null ) {
 
 	$transaction_report = array(
 		'post_title'  => '---',
@@ -85,7 +87,9 @@ function wpep_failed_single_transaction_report( $post_id, $personal_information,
 	);
 
 	$transaction_report_id = wp_insert_post( $transaction_report );
-	$payment_type          = get_post_meta( $personal_information['current_form_id'], 'wpep_square_payment_type', true );
+	$payment_type          = null !== $transaction_type_override
+		? $transaction_type_override
+		: get_post_meta( $personal_information['current_form_id'], 'wpep_square_payment_type', true );
 	$current_user          = wp_get_current_user();
 
 	update_post_meta( $transaction_report_id, 'wpep_first_name', $personal_information['first_name'] );

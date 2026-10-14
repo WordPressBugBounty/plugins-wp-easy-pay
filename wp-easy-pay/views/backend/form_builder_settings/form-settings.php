@@ -44,7 +44,7 @@ $wpep_square_payment_box_3 = get_post_meta( get_the_ID(), 'wpep_square_payment_b
 $wpep_square_payment_box_4 = get_post_meta( get_the_ID(), 'wpep_square_payment_box_4', true );
 $default_price_selected    = ! empty( get_post_meta( get_the_ID(), 'defaultPriceSelected', true ) ) ? get_post_meta( get_the_ID(), 'defaultPriceSelected', true ) : '';
 
-$wpep_square_payment_type = get_post_meta( get_the_ID(), 'wpep_square_payment_type', true );
+$wpep_square_payment_type = ! empty( get_post_meta( get_the_ID(), 'wpep_square_payment_type', true ) ) ? get_post_meta( get_the_ID(), 'wpep_square_payment_type', true ) : 'simple';
 
 $wpep_square_user_defined_amount = get_post_meta( get_the_ID(), 'wpep_square_user_defined_amount', true );
 $wpep_square_amount_type         = ! empty( get_post_meta( get_the_ID(), 'wpep_square_amount_type', true ) ) ? get_post_meta( get_the_ID(), 'wpep_square_amount_type', true ) : 'payment_custom';
@@ -87,11 +87,9 @@ $wpep_enable_mailchimp             = get_option( 'wpep_enable_mailchimp', true )
 $api_key                           = get_option( 'wpep_mailchimp_api_key', false );
 $server                            = get_option( 'wpep_mailchimp_server', false );
 $mailchimp_audience                = get_post_meta( get_the_ID(), 'wpep_mailchimp_audience', true );
+$audience                          = null;
 
-if ( 'on' === $wpep_enable_mailchimp && $api_key && $server ) {
-
-	$api_key = get_option( 'wpep_mailchimp_api_key', false );
-	$server  = get_option( 'wpep_mailchimp_server', false );
+if ( 'on' === $wpep_enable_mailchimp && $api_key && $server && class_exists( '\MailchimpMarketing\ApiClient' ) ) {
 
 	try {
 		$client = new MailchimpMarketing\ApiClient();
@@ -105,7 +103,10 @@ if ( 'on' === $wpep_enable_mailchimp && $api_key && $server ) {
 		$audience = $client->lists->getAllLists();
 	} catch ( GuzzleHttp\Exception\ConnectException $e ) {
 
-		echo esc_html( $e );
+		echo esc_html( $e->getMessage() );
+	} catch ( Exception $e ) {
+
+		echo esc_html( $e->getMessage() );
 	}
 }
 ?>
@@ -180,15 +181,20 @@ if ( 'on' === $wpep_enable_mailchimp && $api_key && $server ) {
 
 
 				<div class="form-group">
-					<label>Select payment type:</label><br>
-					<input type="radio" class="paymentTypes" id="paymentTypeSimple" name="wpep_square_payment_type" value="simple"
+					<label>Select payment type:</label>
+					<div class="wpep-payment-type-options">
+					<label class="paymentTypes" for="paymentTypeSimple">
+					<input type="radio" id="paymentTypeSimple" name="wpep_square_payment_type" value="simple"
 					<?php
 					if ( 'simple' === $wpep_square_payment_type ) :
 						echo 'checked';
 					endif;
 					?>
 					>
-					<label class="paymentTypes" for = "paymentTypeSel">Simple payment</label>
+					<span class="radio-checkmark"></span>
+					Simple payment
+					</label>
+					<label class="paymentTypes" for="paymentTypeDonation">
 					<input type="radio" id="paymentTypeDonation" name="wpep_square_payment_type" value="donation"
 					<?php
 					if ( 'donation' === $wpep_square_payment_type ) :
@@ -196,11 +202,25 @@ if ( 'on' === $wpep_enable_mailchimp && $api_key && $server ) {
 					endif;
 					?>
 					>
-					<label class="paymentTypes" for = "paymentTypeSel">Donation payment</label>
+					<span class="radio-checkmark"></span>
+					Donation payment
+					</label>
+					<label class="paymentTypes" for="paymentTypeDonationRecurring">
 					<input type="radio" id="paymentTypeDonationRecurring" name="wpep_square_payment_type" value="donation" disabled>
-					<label class="paymentTypes" for = "paymentTypeDonationRecurring">Donation Recurring<span class="pro_tag" id="pro_tag">Pro</span></label>
+					<span class="radio-checkmark"></span>
+					Donation Recurring<span class="pro_tag" id="pro_tag">Pro</span>
+					</label>
+					<label class="paymentTypes" for="paymentTypeSubscription">
 					<input type="radio" id="paymentTypeSubscription" name="wpep_square_payment_type" value="donation-recurring" disabled>
-					<label class="paymentTypes" for = "paymentTypeSubscription">Subscription Payment<span class="pro_tag" id="pro_tag">Pro</span></label>
+					<span class="radio-checkmark"></span>
+					Subscription Payment<span class="pro_tag" id="pro_tag">Pro</span>
+					</label>
+					<label class="paymentTypes" for="paymentTypeOneTimeRecurring">
+					<input type="radio" id="paymentTypeOneTimeRecurring" name="wpep_square_payment_type" value="one_time_recurring" disabled>
+					<span class="radio-checkmark"></span>
+					One-Time + Recurring Payment <span class="pro_tag">Pro</span>
+					</label>
+					</div>
 				</div>
 
 				<div id="donation" class="drop-payment-select-show-hide">

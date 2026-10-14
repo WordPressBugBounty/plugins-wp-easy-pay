@@ -368,7 +368,7 @@ if ( 'on' === $wpep_open_in_popup ) {
 							<ul class="list-unstyled form-wizard-steps clearfix">
 								<li class="active">
 									<span></span>
-									<small>Basic Info</small>
+									<small><?php echo esc_html( wpep_get_basic_info_heading( $wpep_current_form_id ) ); ?></small>
 								</li>
 								<li>
 									<span></span>
@@ -403,6 +403,12 @@ if ( 'on' === $wpep_open_in_popup ) {
 							if ( 'donation_recurring' === $payment_type ) {
 
 								require WPEP_ROOT_PATH . 'views/frontend/subscription-payment-form.php';
+
+							}
+
+							if ( 'one_time_recurring' === $payment_type ) {
+
+								require WPEP_ROOT_PATH . 'views/frontend/one-time-recurring-payment-form.php';
 
 							}
 						}

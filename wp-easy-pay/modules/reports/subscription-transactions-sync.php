@@ -104,6 +104,9 @@ function wpep_create_subscription_transaction_mirror( $subscription_post_id, $ar
 	}
 
 	$transaction_type = get_post_meta( $form_id, 'wpep_square_payment_type', true );
+	if ( 'one_time_recurring' === $transaction_type ) {
+		$transaction_type = 'subscription';
+	}
 	update_post_meta( $transaction_post_id, 'wpep_form_id', $form_id );
 	update_post_meta( $transaction_post_id, 'wpep_transaction_type', $transaction_type );
 	update_post_meta( $transaction_post_id, 'wpep_transaction_status', $args['transaction_status'] );

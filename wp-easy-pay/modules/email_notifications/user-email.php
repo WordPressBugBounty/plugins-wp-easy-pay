@@ -59,6 +59,7 @@ function wpep_send_user_email( $current_form_id, $form_values, $transaction_id, 
 					$value                    = str_replace( '\"', '"', $value );
 					$value                    = json_decode( $value, true );
 					if ( is_array( $value ) ) {
+						$line_items = '';
 						if ( isset( $wpep_square_payment_type ) && 'simple' === $wpep_square_payment_type ) {
 							$line_items = '<strong>Simple Payment</strong><br><br>';
 						} elseif ( isset( $wpep_square_payment_type ) && 'donation' === $wpep_square_payment_type ) {
@@ -67,6 +68,8 @@ function wpep_send_user_email( $current_form_id, $form_values, $transaction_id, 
 							$line_items = '<strong>Donation Recurring</strong><br><br>';
 						} elseif ( isset( $wpep_square_payment_type ) && 'subscription' === $wpep_square_payment_type ) {
 							$line_items = '<strong>Subscription Payment</strong><br><br>';
+						} elseif ( isset( $wpep_square_payment_type ) && 'one_time_recurring' === $wpep_square_payment_type ) {
+							$line_items = '<strong>One-Time + Recurring Payment</strong><br><br>';
 						}
 
 						foreach ( $value as $val ) {

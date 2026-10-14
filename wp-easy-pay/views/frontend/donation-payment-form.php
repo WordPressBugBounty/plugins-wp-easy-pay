@@ -19,7 +19,7 @@ $currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currency
 
 <fieldset class="wizard-fieldset show">
 	<div class="s_ft noMulti">
-		<h2>Basic Info</h2>
+		<h2><?php echo esc_html( wpep_get_basic_info_heading( $wpep_current_form_id ) ); ?></h2>
 	</div>
 
 	<h5 class="noSingle">Personal Information</h5>
@@ -79,22 +79,6 @@ $currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currency
 		?>
 
 		<input type="hidden" id="wpep_payment_form_type_<?php echo esc_attr( $wpep_current_form_id ); ?>" value="single"/>
-		<?php
-		if ( 'on' === $enable_quantity && 'payment_custom' !== $wpep_amount_layout_type && 'payment_tabular' !== $wpep_amount_layout_type ) {
-			?>
-			<div class="qtyWrapper">
-				<label class="qtylabel" for="">Quantity</label>
-				<div class="inpuQty form-group">
-					<div class="value-button wpep_decreaseValue" id="decrease" value="Decrease Value">-</div>
-					<input type="number" class="form-control" id="wpep_quantity_<?php echo esc_attr( $wpep_current_form_id ); ?>"
-							name="wpep_quantity" value="1"/>
-					<div class="value-button wpep_increaseValue" id="increase" value="Increase Value">+</div>
-				</div>
-			</div>
-
-			<?php
-		}
-		?>
 	</div>
 
 	<div class="btnGroup btnGroupFirst noSingle">
@@ -198,6 +182,21 @@ $currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currency
 		}
 	}
 
+	if ( 'on' === $enable_quantity && 'payment_custom' !== $wpep_amount_layout_type && 'payment_tabular' !== $wpep_amount_layout_type ) {
+		?>
+		<div class="qtyWrapper">
+			<label class="qtylabel" for="">Quantity</label>
+			<div class="inpuQty form-group">
+				<div class="value-button wpep_decreaseValue" id="decrease" value="Decrease Value">-</div>
+				<input type="number" class="form-control" id="wpep_quantity_<?php echo esc_attr( $wpep_current_form_id ); ?>"
+						name="wpep_quantity" value="1"/>
+				<div class="value-button wpep_increaseValue" id="increase" value="Increase Value">+</div>
+			</div>
+		</div>
+
+		<?php
+	}
+
 	if ( 'checked' === $wpep_donation_goal_switch && ! empty( trim( $wpep_donation_goal_amount ) ) ) {
 		require WPEP_ROOT_PATH . 'views/frontend/donation-goals.php';
 	}
@@ -214,7 +213,7 @@ $currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currency
 			$sub_total_amount        = isset( $show_default_amount ) ? floatval( preg_replace( '/[^0-9.]/', '', $show_default_amount ) ) : 0.00;
 			$total_amount            = $sub_total_amount;
 			$currency                = isset( $square_currency ) ? $square_currency : '$';
-			$fees_data               = get_post_meta( $wpep_current_form_id, 'fees_data', true );
+			$fees_data               = get_post_meta( $wpep_current_form_id, 'fees_data', false );
 			$wpep_enable_signup_fees = get_post_meta( $wpep_current_form_id, 'wpep_enable_signup_fees', true );
 
 			if ( ( ! empty( $fees_data[0]['check'] ) && in_array( 'yes', $fees_data[0]['check'], true ) ) || 'yes' === $wpep_enable_signup_fees ) :

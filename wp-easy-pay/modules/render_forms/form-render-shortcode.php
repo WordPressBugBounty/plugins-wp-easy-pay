@@ -245,11 +245,13 @@ function wpep_form_backend_parent_scripts() {
 			wp_enqueue_script( 'wpep_multi_wizard_script', WPEP_ROOT_URL . 'assets/frontend/js/script_wizard.js', array(), WPEP_VERSION, true );
 		}
 
+		$square_js_url = '';
 		if ( empty( $global_form ) ) {
 			/* For single form */
 			if ( empty( $individual_payment_mode ) ) { // For test individual
 				// Condition works on individual form further enhanced to mode setup
-				wp_enqueue_script( 'square_payment_form_external', 'https://sandbox.web.squarecdn.com/v1/square.js', array(), '1.0.0', true );
+				$square_js_url = 'https://sandbox.web.squarecdn.com/v1/square.js';
+				wp_enqueue_script( 'square_payment_form_external', $square_js_url, array(), '1.0.0', true );
 				$square_application_id_in_use = get_post_meta( $current_form_code_id, 'wpep_square_test_app_id', true );
 				$square_location_id_in_use    = get_post_meta( $current_form_code_id, 'wpep_square_test_location_id', true );
 				$square_currency              = get_post_meta( $current_form_code_id, 'wpep_post_square_currency_test', true );
@@ -261,7 +263,8 @@ function wpep_form_backend_parent_scripts() {
 				$achDebit                     = get_post_meta( $current_form_code_id, 'wpep_square_ach_debit', true );
 
 			} else { // For Live individual
-				wp_enqueue_script( 'square_payment_form_external', 'https://web.squarecdn.com/v1/square.js', array(), '1.0.0', true );
+				$square_js_url = 'https://web.squarecdn.com/v1/square.js';
+				wp_enqueue_script( 'square_payment_form_external', $square_js_url, array(), '1.0.0', true );
 				$square_application_id_in_use = WPEP_SQUARE_APP_ID;
 				$square_location_id_in_use    = get_post_meta( $current_form_code_id, 'wpep_square_location_id', true );
 				$square_currency              = get_post_meta( $current_form_code_id, 'wpep_post_square_currency_new', true );
@@ -276,7 +279,8 @@ function wpep_form_backend_parent_scripts() {
 			/* For main form */
 			$is_global_test = ( 'on' !== $global_payment_mode );
 			if ( $is_global_test ) { // For test Global
-				wp_enqueue_script( 'square_payment_form_external', 'https://sandbox.web.squarecdn.com/v1/square.js', array(), '1.0.0', true );
+				$square_js_url = 'https://sandbox.web.squarecdn.com/v1/square.js';
+				wp_enqueue_script( 'square_payment_form_external', $square_js_url, array(), '1.0.0', true );
 				$square_application_id_in_use = get_option( 'wpep_square_test_app_id_global', true );
 				$square_location_id_in_use    = get_option( 'wpep_square_test_location_id_global', true );
 				$square_currency              = get_option( 'wpep_square_currency_test', true );
@@ -288,7 +292,8 @@ function wpep_form_backend_parent_scripts() {
 				$achDebit                     = get_option( 'wpep_square_test_ach_debit', true );
 
 			} else { // For Live Global
-				wp_enqueue_script( 'square_payment_form_external', 'https://web.squarecdn.com/v1/square.js', array(), '1.0.0', true );
+				$square_js_url = 'https://web.squarecdn.com/v1/square.js';
+				wp_enqueue_script( 'square_payment_form_external', $square_js_url, array(), '1.0.0', true );
 				$square_application_id_in_use = WPEP_SQUARE_APP_ID;
 				$square_location_id_in_use    = get_option( 'wpep_square_location_id', true );
 				$square_currency              = get_option( 'wpep_square_currency_new', true );
@@ -342,7 +347,7 @@ function wpep_form_backend_parent_scripts() {
 			$user_email = '';
 		}
 
-		wp_enqueue_script( 'square_payment_form_internal', WPEP_ROOT_URL . 'assets/frontend/js/wpep_paymentform.js?rand=' . wp_rand(), array(), WPEP_VERSION, true );
+		wp_enqueue_script( 'square_payment_form_internal', WPEP_ROOT_URL . 'assets/frontend/js/wpep_paymentform.js', array( 'jquery', 'square_payment_form_external' ), WPEP_VERSION, true );
 		$currency_symbol_type = get_post_meta( $current_form_code_id, 'currencySymbolType', true );
 
 		$currency_symbol_type = sanitize_text_field( $currency_symbol_type );
@@ -385,6 +390,7 @@ function wpep_form_backend_parent_scripts() {
 				'ajax_url'                        => admin_url( 'admin-ajax.php' ),
 				'square_application_id'           => $square_app_id,
 				'square_location_id_in_use'       => $square_location_id,
+				'square_js_url'                   => $square_js_url,
 				'wpep_square_currency_new'        => $square_currency,
 				'wpep_currency_symbol'            => wpep_currency_symbol( $square_currency ),
 				'current_form_id'                 => $current_form_code_id,
@@ -413,6 +419,7 @@ function wpep_form_backend_parent_scripts() {
 				'recaptcha_site_key_v3'           => $recaptcha_site_key_v3,
 				'wpep_show_wizard'                => $show_wizard,
 				'wpep_square_payment_type'        => $payment_type,
+				'wpep_coupons_enabled'            => 'off',
 			)
 		);
 		// Cart script intentionally not enqueued here.
@@ -420,6 +427,28 @@ function wpep_form_backend_parent_scripts() {
 }
 add_action( 'wp_enqueue_scripts', 'wpep_form_backend_parent_scripts' );
 
+/**
+ * Keep Square and the payment script blocking so cache plugins cannot defer them.
+ *
+ * @param string $tag    Script tag HTML.
+ * @param string $handle Script handle.
+ * @return string
+ */
+function wpep_square_script_loader_tag( $tag, $handle ) {
+	if ( 'square_payment_form_external' !== $handle && 'square_payment_form_internal' !== $handle ) {
+		return $tag;
+	}
+
+	$tag = preg_replace( '/\s(?:defer|async)(?:=(["\']).*?\1)?/i', '', $tag );
+
+	if ( false === strpos( $tag, 'nowprocket' ) ) {
+		$tag = str_replace( '<script ', '<script nowprocket data-no-optimize="1" data-noptimize="1" data-cfasync="false" ', $tag );
+	}
+
+	return $tag;
+}
+add_filter( 'script_loader_tag', 'wpep_square_script_loader_tag', 1, 2 );
+add_filter( 'script_loader_tag', 'wpep_square_script_loader_tag', 999, 2 );
 
 /**
  * Check if a payment method is available for a given currency.

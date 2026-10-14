@@ -737,7 +737,7 @@ ease-in-out;
   align-items: center;
   cursor: pointer;
   position: relative;
-  padding-left: 0px; /* Space for custom circle */
+  padding-left: 28px; /* Space for custom circle */
   margin-right: 20px;
   font-size: 16px;
   color: #444;
@@ -746,6 +746,12 @@ ease-in-out;
 /* Hide default radio */
 .paymentTypes input[type="radio"] {
   position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  margin: 0;
   opacity: 0;
   cursor: pointer;
 }
@@ -772,7 +778,7 @@ ease-in-out;
 }
 
 
-input#paymentTypeSimple, input#paymentTypeDonation, input#paymentTypeDonationRecurring, input#paymentTypeSubscription{
+input#paymentTypeSimple, input#paymentTypeDonation, input#paymentTypeDonationRecurring, input#paymentTypeSubscription, input#paymentTypeOneTimeRecurring{
     width: 100%;
 }
 
@@ -836,8 +842,31 @@ input#paymentTypeSimple, input#paymentTypeDonation, input#paymentTypeDonationRec
   color: #647179;
   font-weight: 500;
   margin-bottom: 5px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   font-family: Figtree;
+}
+
+.wpep-payment-type-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.wpep-payment-type-options label.paymentTypes {
+  display: inline-flex !important;
+  align-items: center;
+  position: relative;
+  padding-left: 28px;
+  white-space: nowrap;
+  margin-right: 0;
+  margin-bottom: 0;
+}
+
+.wpep-payment-type-options label.paymentTypes .radio-checkmark {
+  flex-shrink: 0;
 }
 
 

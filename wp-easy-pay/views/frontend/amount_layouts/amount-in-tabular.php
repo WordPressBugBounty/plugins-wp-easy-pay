@@ -68,16 +68,7 @@ $wpep_prods_without_images = get_post_meta( $wpep_current_form_id, 'wpep_prods_w
 
 
 						<div class="headCol pDetails" <?php echo ( 'on' === $wpep_prods_without_images ) ? 'style="margin-left:20px!important"' : ''; ?>>
-					<span class="product_label">
-						<?php
-
-						if ( empty( $product['label'] ) ) {
-							echo esc_html( 'Product Label' );
-						} else {
-							echo esc_html( $product['label'] );
-						}
-						?>
-					</span>
+					<span class="product_label"><?php echo esc_html( ! empty( $product['label'] ) ? $product['label'] : 'Product Label' ); ?></span>
 						</div>
 						<div class="headCol pPrice">
 							<input type="text" name="price" id="price" class="price form-control-em" value="<?php echo ! empty( $product['amount'] ) ? esc_html( $product['amount'] ) : 0; ?>" disabled>

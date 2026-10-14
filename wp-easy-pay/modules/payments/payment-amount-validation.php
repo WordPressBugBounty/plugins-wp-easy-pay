@@ -36,9 +36,9 @@ function wpep_get_form_signup_fee_amount( $form_id ) {
  * @param string $coupon_code Submitted coupon code.
  * @return array
  */
-function wpep_calculate_server_payment_total( $form_id, $subtotal, $coupon_code = '' ) {
+function wpep_calculate_server_payment_total( $form_id, $subtotal, $coupon_code = '', $include_signup_fee = true ) {
 	$subtotal = round( (float) $subtotal, 2 );
-	$signup   = wpep_get_form_signup_fee_amount( $form_id );
+	$signup   = $include_signup_fee ? wpep_get_form_signup_fee_amount( $form_id ) : 0.0;
 	$fees     = 0.0;
 	$fees_row = get_post_meta( $form_id, 'fees_data', true );
 	$fees_row = ( isset( $fees_row['check'] ) ) ? $fees_row : ( ( isset( $fees_row[0]['check'] ) ) ? $fees_row[0] : array() );
@@ -177,7 +177,7 @@ function wpep_get_server_tabular_subtotal( $form_id, $amount_type, $form_values 
 		$products = get_post_meta( $form_id, 'wpep_products_with_labels', true );
 		foreach ( (array) $products as $product ) {
 			if ( ! empty( $product['label'] ) ) {
-				$catalog[ (string) $product['label'] ] = wpep_parse_payment_amount( isset( $product['amount'] ) ? $product['amount'] : 0 );
+				$catalog[ trim( (string) $product['label'] ) ] = wpep_parse_payment_amount( isset( $product['amount'] ) ? $product['amount'] : 0 );
 			}
 		}
 	}
@@ -190,7 +190,7 @@ function wpep_get_server_tabular_subtotal( $form_id, $amount_type, $form_values 
 		}
 		$key = ( 'tabular_layout_for_square' === $amount_type )
 			? ( isset( $item['id'] ) ? (string) $item['id'] : '' )
-			: ( isset( $item['label'] ) ? (string) $item['label'] : '' );
+			: ( isset( $item['label'] ) ? trim( (string) $item['label'] ) : '' );
 		if ( ! isset( $catalog[ $key ] ) || $catalog[ $key ] <= 0 ) {
 			return new WP_Error( 'invalid_amount', __( 'Invalid payment amount.', 'wp_easy_pay' ) );
 		}
@@ -219,6 +219,11 @@ function wpep_validate_payment_amount( $form_id, $post ) {
 	$amount_type = get_post_meta( $form_id, 'wpep_square_amount_type', true );
 	$coupon_code = isset( $post['coupon_code'] ) ? sanitize_text_field( wp_unslash( $post['coupon_code'] ) ) : '';
 	$form_values = isset( $post['form_values'] ) ? (array) $post['form_values'] : array();
+	$include_signup_fee = true;
+	if ( 'one_time_recurring' === get_post_meta( $form_id, 'wpep_square_payment_type', true ) ) {
+		$include_signup_fee = ! empty( $post['customer_recurring_enabled'] )
+			&& filter_var( $post['customer_recurring_enabled'], FILTER_VALIDATE_BOOLEAN );
+	}
 	$presets      = wpep_get_form_preset_amounts( $form_id, $amount_type );
 	$user_defined = ( 'on' === get_post_meta( $form_id, 'wpep_square_user_defined_amount', true ) )
 		|| ( 'payment_custom' === $amount_type && empty( $presets ) );
@@ -230,7 +235,7 @@ function wpep_validate_payment_amount( $form_id, $post ) {
 		if ( is_wp_error( $subtotal ) ) {
 			return $subtotal;
 		}
-		$resolved = wpep_calculate_server_payment_total( $form_id, $subtotal, $coupon_code );
+		$resolved = wpep_calculate_server_payment_total( $form_id, $subtotal, $coupon_code, $include_signup_fee );
 		return wpep_payment_amounts_match( $submitted, $resolved['amount'] )
 			? $resolved
 			: new WP_Error( 'invalid_amount', __( 'Invalid payment amount.', 'wp_easy_pay' ) );
@@ -246,7 +251,15 @@ function wpep_validate_payment_amount( $form_id, $post ) {
 		}
 	}
 
-	$candidates = array();
+	$candidates         = array();
+	$base               = 0;
+	$coupon_active      = ( '' !== $coupon_code );
+	$fees_row           = get_post_meta( $form_id, 'fees_data', true );
+	$fees_row           = ( isset( $fees_row['check'] ) ) ? $fees_row : ( ( isset( $fees_row[0]['check'] ) ) ? $fees_row[0] : array() );
+	$has_extra_charges  = ! empty( $fees_row['check'] ) && in_array( 'yes', $fees_row['check'], true );
+	$has_signup_charge  = $include_signup_fee && wpep_get_form_signup_fee_amount( $form_id ) > 0;
+	$submitted_is_gross = $has_extra_charges || $has_signup_charge;
+
 	foreach ( $presets as $preset ) {
 		$candidates[] = $preset * $quantity;
 	}
@@ -260,7 +273,8 @@ function wpep_validate_payment_amount( $form_id, $post ) {
 		if ( $base >= $min && $base <= $max ) {
 			$candidates[] = $base * $quantity;
 		}
-		if ( $submitted >= $min && $submitted <= $max ) {
+		// With a coupon, the client may send the discounted total as amount — do not treat it as a subtotal candidate.
+		if ( ! $coupon_active && ! $submitted_is_gross && $submitted >= $min && $submitted <= $max ) {
 			$candidates[] = $submitted;
 		}
 	}
@@ -269,15 +283,24 @@ function wpep_validate_payment_amount( $form_id, $post ) {
 		if ( $subtotal <= 0 ) {
 			continue;
 		}
-		$resolved = wpep_calculate_server_payment_total( $form_id, $subtotal, $coupon_code );
-		if ( $resolved['amount'] > 0 && ( wpep_payment_amounts_match( $submitted, $resolved['amount'] ) || wpep_payment_amounts_match( $submitted, $subtotal ) ) ) {
+		$resolved = wpep_calculate_server_payment_total( $form_id, $subtotal, $coupon_code, $include_signup_fee );
+		if ( $resolved['amount'] <= 0 ) {
+			continue;
+		}
+
+		$matches = wpep_payment_amounts_match( $submitted, $resolved['amount'] );
+		if ( ! $matches && ! $coupon_active && ! $submitted_is_gross ) {
+			$matches = wpep_payment_amounts_match( $submitted, $subtotal );
+		}
+
+		if ( $matches ) {
 			return $resolved;
 		}
 	}
 
-	if ( $user_defined ) {
-		$min_total = wpep_calculate_server_payment_total( $form_id, $min, $coupon_code );
-		$max_total = wpep_calculate_server_payment_total( $form_id, $max, $coupon_code );
+	if ( $user_defined && ! $coupon_active ) {
+		$min_total = wpep_calculate_server_payment_total( $form_id, $min, $coupon_code, $include_signup_fee );
+		$max_total = wpep_calculate_server_payment_total( $form_id, $max, $coupon_code, $include_signup_fee );
 		if ( $submitted + 0.009 >= $min_total['amount'] && $submitted - 0.009 <= $max_total['amount'] ) {
 			return array(
 				'amount'        => round( $submitted, 2 ),

@@ -85,7 +85,7 @@ jQuery(document).ready(function() {
 					<th>WPEP form</th>
 				</tr>
 				<tr>
-					<td><?php echo esc_html( $transaction_type ); ?></td>
+					<td><?php echo esc_html( function_exists( 'wpep_get_transaction_type_label' ) ? wpep_get_transaction_type_label( $transaction_type ) : $transaction_type ); ?></td>
 					<td><?php echo esc_html( $transaction_source ); ?></td>
 					<td><?php echo esc_html( get_the_title() ); ?></td>
 					<td><?php echo esc_html( $charge_amount ); ?></td>

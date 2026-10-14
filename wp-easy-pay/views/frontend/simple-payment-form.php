@@ -20,7 +20,7 @@ $currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currency
 ?>
 <fieldset class="wizard-fieldset show">
 	<div class="s_ft noMulti">
-		<h2>Basic Info</h2>
+		<h2><?php echo esc_html( wpep_get_basic_info_heading( $wpep_current_form_id ) ); ?></h2>
 	</div>
 
 	<h5 class="noSingle">Personal Information</h5>
@@ -71,22 +71,6 @@ $currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currency
 
 		<input type="hidden" id="wpep_payment_form_type_<?php echo esc_attr( $wpep_current_form_id ); ?>" value="single"/>
 		<input type="hidden" name="wpep_file_upload_url" id="wpep_file_upload_url" value="no_upload">
-		<?php
-		if ( 'on' === $enable_quantity && 'payment_custom' !== $wpep_amount_layout_type && 'payment_tabular' !== $wpep_amount_layout_type ) {
-			?>
-			<div class="qtyWrapper">
-				<label class="qtylabel" for="">Quantity</label>
-				<div class="inpuQty form-group">
-					<div class="value-button wpep_decreaseValue" id="decrease" value="Decrease Value">-</div>
-					<input type="number" class="form-control" min="1" id="wpep_quantity_<?php echo esc_attr( $wpep_current_form_id ); ?>"
-							name="wpep_quantity" value="1" step="1"/>
-					<div class="value-button wpep_increaseValue" id="increase" value="Increase Value">+</div>
-				</div>
-			</div>
-
-			<?php
-		}
-		?>
 	</div>
 
 	<div class="btnGroup btnGroupFirst noSingle">
@@ -189,6 +173,22 @@ $currency_symbol_type = ! empty( get_post_meta( $wpep_current_form_id, 'currency
 			}
 		}
 	}
+
+	if ( 'on' === $enable_quantity && 'payment_custom' !== $wpep_amount_layout_type && 'payment_tabular' !== $wpep_amount_layout_type ) {
+		?>
+		<div class="qtyWrapper">
+			<label class="qtylabel" for="">Quantity</label>
+			<div class="inpuQty form-group">
+				<div class="value-button wpep_decreaseValue" id="decrease" value="Decrease Value">-</div>
+				<input type="number" class="form-control" min="1" id="wpep_quantity_<?php echo esc_attr( $wpep_current_form_id ); ?>"
+						name="wpep_quantity" value="1" step="1"/>
+				<div class="value-button wpep_increaseValue" id="increase" value="Increase Value">+</div>
+			</div>
+		</div>
+
+		<?php
+	}
+
 	$wpep_square_customer_cof  = get_user_meta( get_current_user_id(), 'wpep_square_customer_cof', true );
 	$wpep_form_display_currency = $square_currency;
 	require WPEP_ROOT_PATH . 'views/frontend/payment-methods.php';

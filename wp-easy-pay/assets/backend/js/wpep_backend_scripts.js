@@ -196,9 +196,10 @@ jQuery('input.panel-radios').on('change', function() {
 	function wpepHandleQuantityBox() {
 		var isDonationRecurring = jQuery('#paymentTypeDonationRecurring').is(':checked');
 		var isSubscription      = jQuery('#paymentTypeSubscription').is(':checked');
+		var isOneTimeRecurring  = jQuery('#paymentTypeOneTimeRecurring').is(':checked');
 		var selectedAmountType  = jQuery('select[name=wpep_square_amount_type]').val();
 
-		if (isDonationRecurring || isSubscription || selectedAmountType === 'payment_tabular' || selectedAmountType === 'payment_custom' || selectedAmountType === 'tabular_layout_for_square') {
+		if (isDonationRecurring || isSubscription || isOneTimeRecurring || selectedAmountType === 'payment_tabular' || selectedAmountType === 'payment_custom' || selectedAmountType === 'tabular_layout_for_square') {
 			jQuery('#quantity_box').hide();
 			jQuery('input[name="enableQuantity"]').prop('checked', false);
 		} else {
@@ -1600,7 +1601,7 @@ jQuery( '.drop-payment-select-show-hide' ).hide();
 var payment_type = jQuery( 'input[name="wpep_square_payment_type"]:checked' ).val();
 
 
-if (payment_type == 'subscription' || payment_type == 'donation_recurring') {
+if (payment_type == 'subscription' || payment_type == 'donation_recurring' || payment_type == 'one_time_recurring') {
 
 	jQuery( '.wpep-signup-heading' ).show();
 	jQuery( '#wpep_signup_charges' ).show();
@@ -1613,6 +1614,39 @@ if (payment_type == 'subscription' || payment_type == 'donation_recurring') {
 	jQuery( '#subscription' ).hide();
 	
 }
+
+function wpepHandleOneTimeRecurringSettings() {
+	if (!jQuery('#one_time_recurring_settings').length) {
+		return;
+	}
+
+	var paymentType = jQuery('input[name="wpep_square_payment_type"]:checked').val();
+	if (paymentType === 'one_time_recurring') {
+		jQuery('#one_time_recurring_settings').show();
+	} else {
+		jQuery('#one_time_recurring_settings').hide();
+		return;
+	}
+
+	var displayMode = jQuery('input[name="wpep_otr_display_mode"]:checked').val();
+	if (displayMode === 'checkbox') {
+		jQuery('#otr_radio_toggle_settings').hide();
+		jQuery('#otr_checkbox_settings').show();
+	} else {
+		jQuery('#otr_radio_toggle_settings').show();
+		jQuery('#otr_checkbox_settings').hide();
+	}
+
+	var cycleLabel = jQuery('select[name="wpep_subscription_cycle"] option:selected').text() || '';
+	var noticeText = jQuery('#wpep_otr_notice_text').val() || '';
+	var previewText = noticeText
+		.replace(/\{Amount\}/g, '100.00')
+		.replace(/\{Subscription Cycle\}/g, cycleLabel.trim());
+	jQuery('#wpep_otr_notice_preview_text').text(previewText);
+}
+
+wpepHandleOneTimeRecurringSettings();
+jQuery('input[name="wpep_otr_display_mode"], #wpep_otr_notice_text, select[name="wpep_subscription_cycle"]').on('change keyup', wpepHandleOneTimeRecurringSettings);
 
 window.addEventListener('load', function () {
 	if (payment_type == 'donation') {
@@ -1700,7 +1734,7 @@ jQuery( 'input[type=radio][name=wpep_square_payment_type]' ).change(
 		
 		}
 
-		if ( this.value == 'subscription' || this.value == 'donation_recurring') {
+		if ( this.value == 'subscription' || this.value == 'donation_recurring' || this.value == 'one_time_recurring') {
 
 			jQuery( '.wpep-signup-heading' ).show();
 			jQuery( '#wpep_signup_charges' ).show();
@@ -1716,6 +1750,7 @@ jQuery( 'input[type=radio][name=wpep_square_payment_type]' ).change(
 
 		}
 
+		wpepHandleOneTimeRecurringSettings();
 	}
 );
 

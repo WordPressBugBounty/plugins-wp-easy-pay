@@ -11,6 +11,55 @@
  */
 require_once WPEP_ROOT_PATH . 'modules/payments/square-configuration.php';
 
+if ( ! function_exists( 'wpep_get_subscription_cycle_label' ) ) {
+	function wpep_get_subscription_cycle_label( $form_id ) {
+		$wpep_subscription_cycle = get_post_meta( $form_id, 'wpep_subscription_cycle', true );
+
+		if ( 'DAILY' === $wpep_subscription_cycle ) {
+			return __( 'daily', 'wp_easy_pay' );
+		} elseif ( 'WEEKLY' === $wpep_subscription_cycle ) {
+			return __( 'weekly', 'wp_easy_pay' );
+		} elseif ( 'EVERY_TWO_WEEKS' === $wpep_subscription_cycle ) {
+			return __( 'every two weeks', 'wp_easy_pay' );
+		} elseif ( 'MONTHLY' === $wpep_subscription_cycle ) {
+			return __( 'monthly', 'wp_easy_pay' );
+		} elseif ( 'EVERY_TWO_MONTHS' === $wpep_subscription_cycle ) {
+			return __( 'every two months', 'wp_easy_pay' );
+		} elseif ( 'QUARTERLY' === $wpep_subscription_cycle ) {
+			return __( 'quarterly', 'wp_easy_pay' );
+		} elseif ( 'EVERY_FOUR_MONTHS' === $wpep_subscription_cycle ) {
+			return __( 'every four months', 'wp_easy_pay' );
+		} elseif ( 'EVERY_SIX_MONTHS' === $wpep_subscription_cycle ) {
+			return __( 'every six months', 'wp_easy_pay' );
+		} elseif ( 'ANNUAL' === $wpep_subscription_cycle ) {
+			return __( 'annually', 'wp_easy_pay' );
+		} elseif ( 'EVERY_TWO_YEARS' === $wpep_subscription_cycle ) {
+			return __( 'every two years', 'wp_easy_pay' );
+		}
+
+		return strtolower( str_replace( '_', ' ', (string) $wpep_subscription_cycle ) );
+	}
+}
+
+if ( ! function_exists( 'wpep_get_transaction_type_label' ) ) {
+	function wpep_get_transaction_type_label( $transaction_type ) {
+		$labels = array(
+			'simple'             => __( 'Simple', 'wp_easy_pay' ),
+			'donation'           => __( 'Donation', 'wp_easy_pay' ),
+			'subscription'       => __( 'Subscription', 'wp_easy_pay' ),
+			'donation_recurring' => __( 'Donation Recurring', 'wp_easy_pay' ),
+			'one_time'           => __( 'One Time', 'wp_easy_pay' ),
+			'one_time_recurring' => __( 'One Time Recurring', 'wp_easy_pay' ),
+		);
+
+		if ( isset( $labels[ $transaction_type ] ) ) {
+			return $labels[ $transaction_type ];
+		}
+
+		return ucwords( str_replace( '_', ' ', (string) $transaction_type ) );
+	}
+}
+
 if ( ! function_exists( 'wpep_parse_payment_amount' ) ) {
 	/**
 	 * Normalize a payment amount that may include currency symbols or codes.
@@ -1067,150 +1116,6 @@ function wpep_delete_cof() {
 
 add_action( 'wp_ajax_wpep_delete_cof', 'wpep_delete_cof' );
 add_action( 'wp_ajax_nopriv_wpep_delete_cof', 'wpep_delete_cof' );
-
-/**
- * Applies a coupon to the total amount and returns the result in JSON format.
- *
- * @return void Outputs a JSON response with the coupon application status and updated total.
- */
-function wpep_apply_coupon() {
-
-	wpep_require_payment_post_nonce();
-
-	$post = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-
-	if ( isset( $post['cp_submit'] ) && 'Apply' === sanitize_text_field( $post['cp_submit'] ) ) {
-
-		if ( isset( $post['coupon_code'] ) && isset( $post['total_amount'] ) && ! empty( $post['coupon_code'] ) && ! empty( $post['total_amount'] ) ) {
-
-			$today        = gmdate( 'Y-m-d' );
-			$total_amount = sanitize_text_field( $post['total_amount'] );
-			$currency     = sanitize_text_field( $post['currency'] );
-			$code         = sanitize_text_field( $post['coupon_code'] );
-			$form_id      = sanitize_text_field( $post['current_form_id'] );
-			$flag         = false;
-			$result       = array(
-				'status'          => '',
-				'message_success' => '',
-				'message_failed'  => '',
-			);
-
-			// check if coupon already applied on the cart.
-			if ( isset( $post['discounted'] ) && 'yes' === $post['discounted'] ) {
-				$result['status']         = 'failed';
-				$result['message_failed'] = 'Coupon already applied!';
-				echo( wp_json_encode( $result ) );
-				wp_die();
-			}
-
-			// get post id by post meta key & value.
-			$args = array(
-				'post_type'   => 'wpep_coupons',
-				'post_status' => array( 'publish' ),
-				'meta_query'  => array( // phpcs:ignore
-					array(
-						'value' => $code,
-					),
-				),
-			);
-
-			$coupon = new WP_Query( $args );
-
-			if ( isset( $coupon->posts[0] ) ) {
-
-				$post_ID = $coupon->posts[0]->ID;
-
-				$wpep_coupons_discount_type = get_post_meta( $post_ID, 'wpep_coupons_discount_type', true );
-				$wpep_coupons_amount        = get_post_meta( $post_ID, 'wpep_coupons_amount', true );
-				$wpep_coupons_expiry        = get_post_meta( $post_ID, 'wpep_coupons_expiry', true );
-				$wpep_coupons_form_include  = get_post_meta( $post_ID, 'wpep_coupons_form_include', true );
-				$wpep_coupons_form_exclude  = get_post_meta( $post_ID, 'wpep_coupons_form_exclude', true );
-
-				if ( ! empty( $wpep_coupons_discount_type ) && ! empty( $wpep_coupons_amount ) && ! empty( $wpep_coupons_expiry ) ) {
-
-					$wpep_coupons_expiry = gmdate( 'Y-m-d', strtotime( $wpep_coupons_expiry ) );
-
-					if ( ! empty( $wpep_coupons_form_exclude ) ) {
-
-						if ( in_array( $form_id, $wpep_coupons_form_exclude, true ) ) {
-							$flag = false;
-						} else {
-							$flag = true;
-						}
-					} else {
-
-						$flag = true;
-
-					}
-
-					if ( ! empty( $wpep_coupons_form_include ) ) {
-
-						if ( in_array( $form_id, $wpep_coupons_form_include, true ) ) {
-							$flag = true;
-						} else {
-							$flag = false;
-						}
-					} else {
-
-						$flag = true;
-
-					}
-
-					if ( true === $flag ) {
-
-						if ( $today > $wpep_coupons_expiry ) {
-
-							$result['status']         = 'failed';
-							$result['message_failed'] = 'Sorry, Your coupon has been expired!';
-
-						} else {
-
-							$total_amount = explode( ' ', $total_amount );
-							$subtotal     = floatval( $total_amount[0] );
-							$currency     = $currency;
-
-							if ( 'percentage' === $wpep_coupons_discount_type ) {
-
-								$discount = ( $wpep_coupons_amount / 100 ) * $subtotal;
-								$total    = $subtotal - $discount;
-							}
-
-							if ( 'fixed' === $wpep_coupons_discount_type ) {
-
-								$discount = $wpep_coupons_amount;
-								$total    = $subtotal - $discount;
-
-							}
-
-							if ( $total < 0 ) {
-								$total = 0;
-							}
-
-							$result['status']          = 'success';
-							$result['message_success'] = 'Congratulation! Coupon applied successfully.';
-							$result['currency']        = $post['currency'];
-							$result['discount']        = $discount;
-							$result['total']           = $total;
-
-						}
-					} else {
-						$result['status']         = 'failed';
-						$result['message_failed'] = 'Sorry, coupon does\'nt exist for this form!';
-					}
-				}
-			} else {
-				$result['status']         = 'failed';
-				$result['message_failed'] = 'Sorry, coupon does\'nt exist!';
-			}
-
-			echo( wp_json_encode( $result ) );
-			wp_die();
-
-		}
-	}
-}
-add_action( 'wp_ajax_wpep_apply_coupon', 'wpep_apply_coupon' );
-add_action( 'wp_ajax_nopriv_wpep_apply_coupon', 'wpep_apply_coupon' );
 
 /**
  * Calculates and displays the fee data for a payment form.

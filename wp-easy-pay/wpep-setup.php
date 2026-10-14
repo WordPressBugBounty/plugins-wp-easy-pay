@@ -753,7 +753,8 @@ function wpep_add_columns_data_reports( $column, $post_id ) {
 			echo ! empty( $email ) ? esc_html( $email ) : '&ndash;';
 			break;
 		case 'type':
-			echo "<span class='" . esc_attr( $transaction_type ) . "'>" . esc_html( str_replace( '_', ' ', $transaction_type ) ) . '</span>';
+			$type_label = function_exists( 'wpep_get_transaction_type_label' ) ? wpep_get_transaction_type_label( $transaction_type ) : str_replace( '_', ' ', $transaction_type );
+			echo "<span class='" . esc_attr( $transaction_type ) . "'>" . esc_html( $type_label ) . '</span>';
 			break;
 		case 'report_date':
 			echo '<span>' . esc_html( get_the_modified_date( 'd/m/Y \a\t g:i a', $post_id ) ) . '</span>';
@@ -1234,6 +1235,15 @@ function wpep_save_add_form_fields( $post_ID, $post, $update ) {  // phpcs:ignor
 		} else {
 			update_post_meta( $post_ID, 'wpep_enable_signup_fees', ( isset( $post_custom['wpep_enable_signup_fees'] ) ? sanitize_text_field( $post_custom['wpep_enable_signup_fees'] ) : '' ) );
 		}
+
+		update_post_meta( $post_ID, 'wpep_otr_display_mode', ( isset( $post_custom['wpep_otr_display_mode'] ) ? sanitize_text_field( $post_custom['wpep_otr_display_mode'] ) : 'radio' ) );
+		update_post_meta( $post_ID, 'wpep_otr_default_choice', ( isset( $post_custom['wpep_otr_default_choice'] ) ? sanitize_text_field( $post_custom['wpep_otr_default_choice'] ) : 'one_time' ) );
+		update_post_meta( $post_ID, 'wpep_otr_one_time_label', ( isset( $post_custom['wpep_otr_one_time_label'] ) ? sanitize_text_field( $post_custom['wpep_otr_one_time_label'] ) : '' ) );
+		update_post_meta( $post_ID, 'wpep_otr_recurring_label', ( isset( $post_custom['wpep_otr_recurring_label'] ) ? sanitize_text_field( $post_custom['wpep_otr_recurring_label'] ) : '' ) );
+		update_post_meta( $post_ID, 'wpep_otr_checkbox_label', ( isset( $post_custom['wpep_otr_checkbox_label'] ) ? sanitize_text_field( $post_custom['wpep_otr_checkbox_label'] ) : '' ) );
+		update_post_meta( $post_ID, 'wpep_otr_checkbox_default', ( isset( $post_custom['wpep_otr_checkbox_default'] ) ? sanitize_text_field( $post_custom['wpep_otr_checkbox_default'] ) : '' ) );
+		update_post_meta( $post_ID, 'wpep_otr_notice_text', ( isset( $post_custom['wpep_otr_notice_text'] ) ? sanitize_textarea_field( $post_custom['wpep_otr_notice_text'] ) : '' ) );
+		update_post_meta( $post_ID, 'wpep_otr_hide_notice', ( isset( $post_custom['wpep_otr_hide_notice'] ) ? sanitize_text_field( $post_custom['wpep_otr_hide_notice'] ) : '' ) );
 
 		// saving addtional charges.
 		if ( isset( $post_custom['wpep_service_fees_name'] ) && ! empty( $post_custom['wpep_service_fees_name'] ) ) {

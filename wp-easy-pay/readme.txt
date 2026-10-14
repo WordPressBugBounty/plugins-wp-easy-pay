@@ -3,8 +3,8 @@ Contributors: wpexpertsio
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=pay@objects.ws&item_name=DonationForPlugin
 Tags: square payment form, credit card payments , payment form, donation form, square payments
 Requires at least: 5.6.0
-Tested up to: 7.1
-Stable tag: 4.5.4
+Tested up to: 7.1.3
+Stable tag: 4.5.5
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -50,7 +50,7 @@ Using a Payment Form Builder to create a custom Square Payment Form or Donation 
 
 ✅ **Improved User Experience:** An intuitive Square Payment Form for WordPress created with a smart Payment Form Builder minimizes steps and improves user experience.
 
-✅ **Flexible Payment Options:** WP Easy Pay allows you to offer custom payments, fixed amounts, and recurring subscriptions, which gives customers the flexibility to choose how they pay.
+✅ **Flexible Payment Options:** Let customers choose how they pay with custom amounts, fixed prices, recurring subscriptions, or a combination of one-time and recurring payments through a single form with WP Easy Pay Pro.
 
 ✅ **Secure Online Transactions:** With features like PCI compliance payment gateway, SCA (Strong Customer Authentication), and CAPTCHA, WP Easy Pay enables secure online transactions, reducing the risk of fraudulent payments.
 
@@ -76,6 +76,10 @@ Set fixed pricing inside your Square Payment Form to standardize Square Payments
 ✅ **Recurring Payments** **(PRO)**
 
 This recurring payment plugin for WordPress enables subscription-based transactions, which are perfect for membership sites, regular donations, or any service with repeat billing.
+
+✅ **Combined One-Time and Recurring Payments** **(PRO)**
+
+Let customers choose between a one-time payment and recurring payments on the same payment form. Customize payment option labels, set a default selection, and display a notice showing the recurring amount and billing cycle. Ideal for memberships, services, and businesses that offer both payment options.
 
 ✅ **Subscription Management** **(PRO)**
 
@@ -403,6 +407,10 @@ Please report security bugs found in the source code of the undefined plugin thr
 
 
 == Changelog ==
+
+= 4.5.5 - 14/10/2026 =
+Fixed – Security enhancement.
+Updated – Freemius SDK to the latest version.
 
 = 4.5.4 - 31/08/2026 =
 Fixed - Currency symbol mode amount not showing/sending on Pay button.

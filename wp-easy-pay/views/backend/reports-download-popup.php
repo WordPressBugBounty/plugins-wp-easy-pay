@@ -31,7 +31,7 @@
 							);
 							$forms = get_posts( $args );
 
-							$exportable_payment_types = array( 'simple', 'donation', 'donation_recurring', 'subscription' );
+							$exportable_payment_types = array( 'simple', 'donation', 'donation_recurring', 'subscription', 'one_time', 'one_time_recurring' );
 
 							if ( ! empty( $forms ) ) {
 								foreach ( $forms as $form ) {

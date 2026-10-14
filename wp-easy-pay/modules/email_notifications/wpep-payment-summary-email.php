@@ -79,8 +79,8 @@ function wpep_send_wpep_payment_summary_email( $current_form_id, $form_title, $s
 			if ( isset( $wpep_transaction_status ) && 'COMPLETED' === $wpep_transaction_status ) {
 				$successful_transactions[ $res->ID ] = $wpep_transaction_status;
 			}
-			if ( isset( $wpep_transaction_type ) && 'simple' === $wpep_transaction_type ) {
-				$payment_type  = 'Simple Payments';
+			if ( isset( $wpep_transaction_type ) && in_array( $wpep_transaction_type, array( 'simple', 'one_time' ), true ) ) {
+				$payment_type  = 'simple' === $wpep_transaction_type ? 'Simple Payments' : 'One Time Payments';
 				$simple_amount = get_post_meta( $res->ID, 'wpep_square_charge_amount', true );
 
 				$simple_payment_total = $simple_payment_total + $simple_amount;

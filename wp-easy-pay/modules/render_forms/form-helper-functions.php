@@ -6,6 +6,12 @@
  * @package WP_Easy_Pay
  */
 
+if ( ! function_exists( 'wpep_get_basic_info_heading' ) ) {
+	function wpep_get_basic_info_heading( $form_id = 0 ) {
+		return apply_filters( 'wpep_basic_info_heading', __( 'Basic Info', 'wp_easy_pay' ), (int) $form_id );
+	}
+}
+
 /**
  * Print the checkbox group field.
  *
