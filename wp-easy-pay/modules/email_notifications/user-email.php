@@ -25,6 +25,10 @@ function wpep_send_user_email( $current_form_id, $form_values, $transaction_id, 
 	$message = get_post_meta( $current_form_id, 'wpep_square_user_email_content_field', true );
 	$to      = '';
 
+	$template_combined        = (string) $message . (string) $subject;
+	$allow_file_attachment    = ( false !== strpos( $template_combined, '[file_upload]' ) );
+	$allow_uploaded_url_tag   = ( false !== strpos( $template_combined, '[uploaded_url]' ) );
+
 	$img_url = WPEP_ROOT_URL . 'assets/frontend/img/payment-done.png';
 
 	$message         = str_replace( '[wpep_payment_received_img]', $img_url, $message );
@@ -89,6 +93,9 @@ function wpep_send_user_email( $current_form_id, $form_values, $transaction_id, 
 						$value = (string) $line_items;
 					}
 				}
+				if ( is_string( $value ) ) {
+					$value = str_replace( array( '[file_upload]', '[uploaded_url]' ), '', $value );
+				}
 				$message = str_replace( $tag, $value, $message );
 				$subject = str_replace( $tag, $value, $subject );
 			}
@@ -98,7 +105,7 @@ function wpep_send_user_email( $current_form_id, $form_values, $transaction_id, 
 	$message = str_replace( $transaction_tag, $transaction_id, $message );
 	$subject = str_replace( $transaction_tag, $transaction_id, $subject );
 
-	list( $message, $subject, $attachments ) = wpep_email_file_upload_bits( $message, $subject, $form_values_raw );
+	list( $message, $subject, $attachments ) = wpep_email_file_upload_bits( $message, $subject, $form_values_raw, $allow_file_attachment, $allow_uploaded_url_tag );
 
 	$headers  = 'From: ' . get_bloginfo( 'name' ) . ' <' . wp_strip_all_tags( $from ) . ">\r\n";
 	$headers .= 'Reply-To: ' . wp_strip_all_tags( $from ) . "\r\n";

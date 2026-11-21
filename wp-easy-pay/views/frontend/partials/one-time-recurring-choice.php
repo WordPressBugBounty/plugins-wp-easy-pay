@@ -79,6 +79,23 @@ if ( 'choice' === $wpep_otr_section || 'full' === $wpep_otr_section ) :
 		<?php endif; ?>
 
 		<input type="hidden" id="customer_recurring_enabled_<?php echo esc_attr( $wpep_current_form_id ); ?>" name="customer_recurring_enabled" value="<?php echo $wpep_otr_is_recurring_default ? 'true' : 'false'; ?>">
+		<?php
+		$wpep_otr_signup_enabled = get_post_meta( $wpep_current_form_id, 'wpep_enable_signup_fees', true );
+		if ( 'yes' === $wpep_otr_signup_enabled ) {
+			$wpep_otr_signup_amount = (float) get_post_meta( $wpep_current_form_id, 'wpep_signup_fees_amount', true );
+			if ( $wpep_otr_signup_amount > 0 ) {
+				$wpep_otr_signup_label = get_post_meta( $wpep_current_form_id, 'wpep_signup_fees_label', true );
+				if ( '' === trim( (string) $wpep_otr_signup_label ) ) {
+					$wpep_otr_signup_label = __( 'Signup Fee', 'wp_easy_pay' );
+				}
+				printf(
+					'<input type="hidden" class="wpep-otr-signup-config" data-amount="%1$s" data-label="%2$s" />',
+					esc_attr( number_format( $wpep_otr_signup_amount, 2, '.', '' ) ),
+					esc_attr( $wpep_otr_signup_label )
+				);
+			}
+		}
+		?>
 	</div>
 	<?php
 endif;

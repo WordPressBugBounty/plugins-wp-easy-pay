@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => 'dev-release/WPEP-1597',
-        'version' => 'dev-release/WPEP-1597',
-        'reference' => '2f8242602c4d3a28e6684a6f1a7ecc6607872210',
+        'pretty_version' => 'dev-d867bc5ff15a5567a903d3c8f09c8b8c005adbc4',
+        'version' => 'dev-d867bc5ff15a5567a903d3c8f09c8b8c005adbc4',
+        'reference' => 'd867bc5ff15a5567a903d3c8f09c8b8c005adbc4',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => 'dev-release/WPEP-1597',
-            'version' => 'dev-release/WPEP-1597',
-            'reference' => '2f8242602c4d3a28e6684a6f1a7ecc6607872210',
+            'pretty_version' => 'dev-d867bc5ff15a5567a903d3c8f09c8b8c005adbc4',
+            'version' => 'dev-d867bc5ff15a5567a903d3c8f09c8b8c005adbc4',
+            'reference' => 'd867bc5ff15a5567a903d3c8f09c8b8c005adbc4',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

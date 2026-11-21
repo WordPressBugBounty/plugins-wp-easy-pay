@@ -1615,7 +1615,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 					action: 'wpep_save_file_upload_url',
 					file_url: fileUrl,
 					data: data,
-					form_id: formId
+					form_id: formId,
+					wpep_payment_nonce: wpepGetPaymentNonce(formId)
 				},
 				success: function (response) {
 					send_payment_request(data, formId);
@@ -2608,7 +2609,22 @@ jQuery(window).on('load', function () {
 				? parsedGross
 				: parseFloat(filterNum($couponForm.find(`small#amount_display_${form_id}`).text()));
 		} else if (unitUsable) {
-			gross_amount = parsedUnit;
+			var qty = parseInt($couponForm.find('#wpep_quantity_' + form_id).val(), 10);
+			if (isNaN(qty) || qty < 1) {
+				qty = parseInt($couponForm.find('input[name="wpep_quantity"]').val(), 10) || 1;
+			}
+			if (qty > 1) {
+				var lineFromSelected = parseFloat(filterNum($couponForm.find('input[name="wpep-selected-amount"]').val()));
+				if (!isNaN(lineFromSelected) && lineFromSelected > 0) {
+					gross_amount = lineFromSelected;
+				} else if (grossUsable && parsedGross > parsedUnit) {
+					gross_amount = parsedGross;
+				} else {
+					gross_amount = parsedUnit * qty;
+				}
+			} else {
+				gross_amount = parsedUnit;
+			}
 		} else {
 			gross_amount = parsedGross;
 		}
@@ -4123,6 +4139,222 @@ function wpepIsOtrRecurringEnabled(formId) {
 	return jQuery('#customer_recurring_enabled_' + formId).val() === 'true';
 }
 
+function wpepGetOtrSignupFeeAmount(formId) {
+	var signupAmt = 0;
+
+	if (typeof wpep_local_vars !== 'undefined' && wpep_local_vars.wpep_signup_fees_enabled === 'yes') {
+		signupAmt = parseFloat(wpep_local_vars.wpep_signup_fees_amount);
+	}
+
+	if (isNaN(signupAmt) || signupAmt <= 0) {
+		var $cfg = jQuery('.wpep-otr-choice-wrapper[data-form-id="' + formId + '"] .wpep-otr-signup-config');
+		if ($cfg.length) {
+			signupAmt = parseFloat($cfg.attr('data-amount'));
+		}
+	}
+
+	return (isNaN(signupAmt) || signupAmt <= 0) ? 0 : signupAmt;
+}
+
+function wpepGetOtrDonationBaseAmount(formId) {
+	if (typeof wpep_local_vars === 'undefined' || wpep_local_vars.wpep_square_payment_type !== 'one_time_recurring') {
+		return 0;
+	}
+
+	var $form = jQuery('#theForm-' + formId);
+	var signupAmt = wpepGetOtrSignupFeeAmount(formId);
+	var storedBase = parseFloat(filterNum($form.find('#gross_total-' + formId).val()));
+
+	if (isNaN(storedBase)) {
+		storedBase = parseFloat(filterNum($form.find('input[name="gross_total"]').val()));
+	}
+
+	var selected = parseFloat(filterNum($form.find('input[name="wpep-selected-amount"]').val()));
+	var hasSignup = $form.find('input[name="wpep-signup-amount"]').length > 0;
+
+	if (!isNaN(storedBase) && storedBase > 0) {
+		return storedBase;
+	}
+
+	if (!isNaN(selected) && selected > 0) {
+		if (hasSignup && signupAmt > 0 && selected - signupAmt > 0) {
+			return selected - signupAmt;
+		}
+
+		return selected;
+	}
+
+	return 0;
+}
+
+function wpepSetOtrDonationBaseAmount(formId, base) {
+	if (typeof wpep_local_vars === 'undefined' || wpep_local_vars.wpep_square_payment_type !== 'one_time_recurring') {
+		return;
+	}
+
+	if (isNaN(base) || base < 0) {
+		return;
+	}
+
+	var formatted = parseFloat(base).toFixed(2);
+	var $form = jQuery('#theForm-' + formId);
+	var $gross = $form.find('#gross_total-' + formId);
+
+	if (!$gross.length) {
+		$gross = $form.find('input[name="gross_total"]');
+	}
+
+	if ($gross.length) {
+		$gross.val(formatted);
+	}
+}
+
+function wpepGetOtrSignupFeeLabel(formId) {
+	var label = '';
+
+	if (typeof wpep_local_vars !== 'undefined' && wpep_local_vars.wpep_signup_fees_label) {
+		label = String(wpep_local_vars.wpep_signup_fees_label).trim();
+	}
+
+	if (!label) {
+		var $cfg = jQuery('.wpep-otr-choice-wrapper[data-form-id="' + formId + '"] .wpep-otr-signup-config');
+		if ($cfg.length && $cfg.attr('data-label')) {
+			label = String($cfg.attr('data-label')).trim();
+		}
+	}
+
+	return label || 'Signup Fee';
+}
+
+function wpepFormatOtrMoney(amount) {
+	var formatted = parseFloat(amount);
+
+	if (isNaN(formatted)) {
+		formatted = 0;
+	}
+
+	formatted = formatted.toFixed(2);
+
+	if (typeof wpep_local_vars === 'undefined') {
+		return formatted;
+	}
+
+	if (wpep_local_vars.currencySymbolType === 'symbol') {
+		return wpep_local_vars.wpep_currency_symbol + ' ' + formatted;
+	}
+
+	if (wpep_local_vars.currencySymbolType === 'code') {
+		return formatted + ' ' + wpep_local_vars.wpep_square_currency_new;
+	}
+
+	return formatted;
+}
+
+function wpepUpdateOtrSignupPaymentDetails(formId) {
+	if (typeof wpep_local_vars === 'undefined' || wpep_local_vars.wpep_square_payment_type !== 'one_time_recurring') {
+		return;
+	}
+
+	var signupAmt = wpepGetOtrSignupFeeAmount(formId);
+
+	if (signupAmt <= 0) {
+		return;
+	}
+
+	var isRecurring = wpepIsOtrRecurringEnabled(formId);
+	var $form = jQuery('#theForm-' + formId);
+	var $signupOnlyWrapper = $form.find('.wpep-otr-signup-only-details');
+	var $signupLine = $form.find('.wpep-otr-signup-fee-line');
+	var $details = jQuery('#wpep-payment-details-' + formId);
+
+	if (!$details.length) {
+		return;
+	}
+
+	if (isRecurring) {
+		$signupOnlyWrapper.show();
+		$signupLine.show();
+		$signupLine.find('.fee_name').text(wpepGetOtrSignupFeeLabel(formId));
+
+		var extraFees = 0;
+
+		$details.find('li').not('.wpep-fee-subtotal, .wpep-fee-total, .wpep-otr-signup-fee-line, .wpep-fee-discount').each(function () {
+			var feePart = parseFloat(filterNum(jQuery(this).find('.fee_value').text()));
+
+			if (!isNaN(feePart)) {
+				extraFees += feePart;
+			}
+		});
+
+		var base = wpepGetOtrDonationBaseAmount(formId);
+		var total = base + signupAmt + extraFees;
+
+		$details.find('.wpep-fee-subtotal .fee_value').text(wpepFormatOtrMoney(base));
+		$signupLine.find('.fee_value').text(wpepFormatOtrMoney(signupAmt));
+		$details.find('.wpep-fee-total .fee_value').text(wpepFormatOtrMoney(total));
+	} else {
+		$signupOnlyWrapper.hide();
+		$signupLine.hide();
+	}
+}
+
+function wpepSyncOtrSignupFee(formId) {
+	if (typeof wpep_local_vars === 'undefined' || wpep_local_vars.wpep_square_payment_type !== 'one_time_recurring') {
+		return;
+	}
+
+	var signupAmt = wpepGetOtrSignupFeeAmount(formId);
+	var isRecurring = wpepIsOtrRecurringEnabled(formId);
+	var $form = jQuery('#theForm-' + formId);
+
+	if (!$form.length || signupAmt <= 0) {
+		wpepUpdateOtrPaymentSummary(formId);
+		return;
+	}
+
+	var $selected = $form.find('input[name="wpep-selected-amount"]');
+	var $signup = $form.find('input[name="wpep-signup-amount"]');
+	var base = wpepGetOtrDonationBaseAmount(formId);
+
+	if (isRecurring) {
+		if ($signup.length) {
+			$signup.remove();
+		}
+
+		if (base > 0) {
+			wpepSetOtrDonationBaseAmount(formId, base);
+			$selected.val(base.toFixed(2));
+		}
+
+		$form.append(
+			jQuery('<input>', {
+				type: 'hidden',
+				name: 'wpep-signup-amount',
+				value: signupAmt.toFixed(2)
+			})
+		);
+	} else {
+		if ($signup.length) {
+			$signup.remove();
+		}
+
+		if (base > 0) {
+			wpepSetOtrDonationBaseAmount(formId, base);
+			$selected.val(base.toFixed(2));
+		}
+	}
+
+	if ($selected.length && $selected.val() !== '') {
+		$selected.trigger('change');
+		setTimeout(function () {
+			wpepUpdateOtrSignupPaymentDetails(formId);
+		}, 0);
+	} else {
+		wpepUpdateOtrSignupPaymentDetails(formId);
+		wpepUpdateOtrPaymentSummary(formId);
+	}
+}
+
 function wpepUpdateOtrPaymentSummary(formId) {
 	if (typeof wpep_local_vars === 'undefined' || wpep_local_vars.wpep_square_payment_type !== 'one_time_recurring') {
 		return;
@@ -4172,6 +4404,8 @@ function wpepUpdateOtrPaymentSummary(formId) {
 	} else {
 		walletTabs.show();
 	}
+
+	wpepUpdateOtrSignupPaymentDetails(formId);
 }
 
 function wpepBindOtrChoiceEvents() {
@@ -4190,7 +4424,7 @@ function wpepBindOtrChoiceEvents() {
 
 	function setRecurringState(isRecurring) {
 		hiddenField.val(isRecurring ? 'true' : 'false');
-		wpepUpdateOtrPaymentSummary(formId);
+		wpepSyncOtrSignupFee(formId);
 	}
 
 	if (displayMode === 'checkbox') {
@@ -4212,7 +4446,7 @@ function wpepBindOtrChoiceEvents() {
 		});
 	}
 
-	wpepUpdateOtrPaymentSummary(formId);
+	wpepSyncOtrSignupFee(formId);
 }
 
 jQuery(document).ready(function () {

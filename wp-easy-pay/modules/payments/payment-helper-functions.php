@@ -82,6 +82,182 @@ if ( ! function_exists( 'wpep_parse_payment_amount' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wpep_upload_url_to_trusted_path' ) ) {
+	/**
+	 * Map an uploads URL to a readable file path under wp_upload_dir(), or false.
+	 *
+	 * @param string $url Upload URL.
+	 * @return string|false Absolute filesystem path.
+	 */
+	function wpep_upload_url_to_trusted_path( $url ) {
+		$url = esc_url_raw( trim( (string) $url ) );
+		if ( '' === $url ) {
+			return false;
+		}
+
+		$upload_dir = wp_upload_dir();
+		if ( ! empty( $upload_dir['error'] ) ) {
+			return false;
+		}
+
+		$baseurl = untrailingslashit( $upload_dir['baseurl'] );
+		if ( 0 !== strpos( $url, $baseurl ) ) {
+			return false;
+		}
+
+		$url_path   = wp_parse_url( $url, PHP_URL_PATH );
+		$base_path  = wp_parse_url( $baseurl, PHP_URL_PATH );
+		if ( ! is_string( $url_path ) || ! is_string( $base_path ) || 0 !== strpos( $url_path, $base_path ) ) {
+			return false;
+		}
+
+		$relative = ltrim( substr( $url_path, strlen( $base_path ) ), '/' );
+		if ( '' === $relative || false !== strpos( $relative, '..' ) ) {
+			return false;
+		}
+
+		$candidate = wp_normalize_path( $upload_dir['basedir'] . '/' . $relative );
+		$real      = realpath( $candidate );
+		$real_base = realpath( $upload_dir['basedir'] );
+		if ( false === $real || false === $real_base || ! is_file( $real ) || ! is_readable( $real ) ) {
+			return false;
+		}
+
+		$real_norm      = trailingslashit( wp_normalize_path( $real_base ) );
+		$real_file_norm = wp_normalize_path( $real );
+		if ( 0 !== strpos( $real_file_norm, $real_norm ) ) {
+			return false;
+		}
+
+		return $real;
+	}
+}
+
+if ( ! function_exists( 'wpep_sanitize_trusted_upload_url_value' ) ) {
+	/**
+	 * Keep only upload URLs that resolve inside the uploads directory.
+	 *
+	 * @param mixed $value Single URL or comma-separated URLs.
+	 * @return string Sanitized value or empty string.
+	 */
+	function wpep_sanitize_trusted_upload_url_value( $value ) {
+		if ( is_array( $value ) ) {
+			$parts = $value;
+		} else {
+			$parts = preg_split( '/\s*,\s*/', (string) $value );
+		}
+
+		$trusted = array();
+		foreach ( (array) $parts as $part ) {
+			$part = trim( (string) $part );
+			if ( '' === $part ) {
+				continue;
+			}
+			if ( wpep_upload_url_to_trusted_path( $part ) ) {
+				$trusted[] = esc_url_raw( $part );
+			}
+		}
+
+		return implode( ', ', array_unique( $trusted ) );
+	}
+}
+
+if ( ! function_exists( 'wpep_form_has_file_field' ) ) {
+	/**
+	 * Whether the form defines a file upload field.
+	 *
+	 * @param int $form_id Form post ID.
+	 * @return bool
+	 */
+	function wpep_form_has_file_field( $form_id ) {
+		$form_fields_json = json_decode( get_post_meta( $form_id, 'wpep_square_form_builder_fields', true ) );
+		if ( empty( $form_fields_json ) || ! is_array( $form_fields_json ) ) {
+			return false;
+		}
+		foreach ( $form_fields_json as $field ) {
+			if ( isset( $field->type ) && 'file' === $field->type ) {
+				return true;
+			}
+		}
+		return false;
+	}
+}
+
+if ( ! function_exists( 'wpep_sanitize_payment_form_values' ) ) {
+	/**
+	 * Allow only configured form labels; validate upload URLs.
+	 *
+	 * @param int   $form_id     Form post ID.
+	 * @param array $form_values Raw submitted values.
+	 * @return array
+	 */
+	function wpep_sanitize_payment_form_values( $form_id, $form_values ) {
+		if ( ! is_array( $form_values ) ) {
+			return array();
+		}
+
+		$allowed = array(
+			'First Name' => true,
+			'Last Name'  => true,
+			'Email'      => true,
+			'Line Items' => true,
+			'quantity'   => true,
+			'total_amount' => true,
+		);
+
+		$form_fields_json = json_decode( get_post_meta( $form_id, 'wpep_square_form_builder_fields', true ) );
+		if ( is_array( $form_fields_json ) ) {
+			foreach ( $form_fields_json as $field ) {
+				if ( ! empty( $field->label ) ) {
+					$allowed[ (string) $field->label ] = true;
+				}
+			}
+		}
+
+		$has_file_field = wpep_form_has_file_field( $form_id );
+		$sanitized      = array();
+
+		foreach ( $form_values as $row ) {
+			if ( ! is_array( $row ) || ! isset( $row['label'], $row['value'] ) ) {
+				continue;
+			}
+
+			$label = (string) $row['label'];
+
+			if ( in_array( $label, array( 'Uploaded URL', 'Uploaded File URL' ), true ) ) {
+				if ( ! $has_file_field ) {
+					continue;
+				}
+				$value = wpep_sanitize_trusted_upload_url_value( $row['value'] );
+				if ( '' === $value ) {
+					continue;
+				}
+				$sanitized[] = array(
+					'label' => $label,
+					'value' => $value,
+				);
+				continue;
+			}
+
+			if ( empty( $allowed[ $label ] ) ) {
+				continue;
+			}
+
+			$value = $row['value'];
+			if ( is_string( $value ) ) {
+				$value = str_replace( array( '[file_upload]', '[uploaded_url]' ), '', $value );
+			}
+
+			$sanitized[] = array(
+				'label' => $label,
+				'value' => $value,
+			);
+		}
+
+		return $sanitized;
+	}
+}
+
 /**
  * Creates a WordPress user.
  *

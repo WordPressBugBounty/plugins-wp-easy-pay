@@ -61,7 +61,7 @@ function wpep_validate_required_file_upload_submission( $current_form_id, $form_
 		}
 	}
 
-	if ( '' === $uploaded_url_value ) {
+	if ( '' === $uploaded_url_value || '' === wpep_sanitize_trusted_upload_url_value( $uploaded_url_value ) ) {
 		return __( 'File upload is required.', 'wp_easy_pay' );
 	}
 
@@ -188,7 +188,11 @@ function wpep_payment_request() {
 	$current_form_id = $post['current_form_id'];
 	$amount          = $post['amount'];
 	$currency        = $post['currency'];
-	$form_values     = isset( $post['form_values'] ) ? $post['form_values'] : array();
+	$form_values     = wpep_sanitize_payment_form_values(
+		absint( $current_form_id ),
+		isset( $post['form_values'] ) && is_array( $post['form_values'] ) ? $post['form_values'] : array()
+	);
+	$post['form_values'] = $form_values;
 
 	$file_upload_validation = wpep_validate_required_file_upload_submission( absint( $current_form_id ), $form_values );
 	if ( true !== $file_upload_validation ) {
@@ -391,7 +395,10 @@ function wpep_single_square_payment( $square_customer_id = false, $square_custom
 					$to    = $value;
 				}
 				if ( in_array( $label, array( 'Uploaded URL', 'Uploaded File URL' ), true ) ) {
-					$note = str_replace( array( '[uploaded_url]', '[file_upload]' ), $value, $note );
+					$safe_url = wpep_sanitize_trusted_upload_url_value( $value );
+					if ( '' !== $safe_url ) {
+						$note = str_replace( array( '[uploaded_url]', '[file_upload]' ), $safe_url, $note );
+					}
 					continue;
 				}
 				$tag  = '[' . str_replace( ' ', '_', strtolower( $label ) ) . ']';

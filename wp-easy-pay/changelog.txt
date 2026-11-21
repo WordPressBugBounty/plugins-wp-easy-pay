@@ -1,0 +1,304 @@
+# Changelog
+
+All notable changes to this plugin are documented in this file.
+
+= 4.5.6 - 19/11/2026 =
+Fixed - An unauthenticated path traversal vulnerability.
+
+= 4.5.5 - 14/10/2026 =
+Fixed – Security enhancement.
+Updated – Freemius SDK to the latest version.
+
+= 4.5.4 - 31/08/2026 =
+Fixed - Currency symbol mode amount not showing/sending on Pay button.
+Fixed - Square token refresh warnings when expires_at is empty or invalid.
+Fixed - Trashed transactions restore UX.
+Fixed - Duplicate amount parser fatal error after merge.
+Added - Server-side wpep_parse_payment_amount() for formatted amounts.
+Changed - Amount normalized before Square API charge; token refresh guarded.
+
+= 4.5.3 - 22/07/2026 =
+
+Improvement - Reduced plugin package size by removing unused legacy SquareConnect SDK.
+Improvement – Updated Freemius SDK to the latest version.
+Fixed - Composer autoload path so the Square SDK loads correctly from vendor.
+
+= 4.5.2 - 16/07/2026 =
+
+Updated - Square PHP SDK to 46.0.1.20260715 (replaces legacy SquareConnect).
+Changed - Minimum PHP version requirement to 8.1 or higher.
+Fixed - Authorization and capability checks for draft/delete/restore AJAX form actions (CVE-2026-12738).
+Fixed - Plugin Check security and input sanitization warnings.
+Fixed - README Tested up to format and short description length.
+Fixed - Composer platform lock so builds no longer require PHP 8.4.
+Added - Soft PHP version guard so sites below PHP 8.1 do not fatally break on update.
+
+= 4.5.1 - 2/07/2026 =
+
+Added - Support for unlimited recurring subscription cycles.
+Fixed – Security enhancement.
+Fixed - Cloudflare Turnstile validation issue.
+
+= 4.5.0 - 06/18/26 =
+
+Added - Onboarding screen.
+Added - New Transactions page to view, filter, export, and manage payment transactions.
+Added - Transactions column in the All Forms table with clickable transaction counts.
+Added - Organization name and donation goal description display on donation forms.
+Added - Option to display form title and description on the frontend payment form.
+Fixed – Security enhancement.
+Improvement - Optimized code for better performance.
+
+= 4.4.0 - 04/29/2026 = 
+
+Added - Beaver builder block support.
+Added - Elementor block support.
+Fixed – Security enhancement.
+Fixed - Gutenberg block dropdown issue.
+
+= 4.3.0 - 03/24/2026
+
+Added - Square Connection Logs.
+Improvement - plugin settings UI.
+Fixed - Form Email Validation.
+Fixed – Security enhancement.
+
+= 4.2.12 - 02/03/2025
+
+Improvements - Enhanced security measures.
+Fixed - Minor support-related fixes and improvements.
+
+= 4.2.11 - 12/09/2025 =
+Update – Tested with WordPress version 6.9.
+Improvement – Updated Freemius SDK to the latest version.
+Improvement – Optimized code for better performance.
+
+= 4.2.10 - 04/24/2025 =
+Update - Payment OnTokenization Square Update.
+Fixed - Pay button not showing on form issue fixed.
+Improvement - Optimized code for better performance.
+
+= 4.2.9 - 01/27/2025
+Improvement - Updated Freemius SDK to the latest version.
+
+= 4.2.7 - 12/16/2024 =
+Fixed - Resolved console error: "OnTokenization" ACH payment.
+
+= 4.2.6 - 11/13/2024 =
+Improvement - Optimized code for better performance.
+Updated - Integrated SDK for enhanced functionality and improved update handling.
+Fixed - Resolved console error: "Listener added for a 'DOMSubtreeModified' mutation event," which was unsupported and triggered in Edge, Chrome, and Firefox.
+
+= 4.2.5 - 04/09/2024 =
+Improvement - Added a notice for square sandbox authorization.
+Fixed - Live connect Square Oauth issue.
+
+= 4.2.4 - 04/07/2024 =
+Improvement - add a capability check current_user_can( WordFence )
+
+= 4.2.3 - 24/06/2024 =
+Improvement - Added conditional based digital wallet initialization
+Fixed – Security enhancement.
+Fixed - Deprecated warnings in the Square Connect module
+Fixed - After Pay not initializing on default custom payment
+Fixed - After Pay shows the wrong error on the USD currency
+
+= 4.2.2 - 02/04/2024 =
+Improvement - Code Optimization
+
+= 4.2.1 - 07/09/2023 =
+Improvement - Remove extra files
+Improvement - Code Optimization
+
+= 4.2 - 27/07/2023 =
+Fixed - Bug fixes
+Improvement - Code Optimization
+
+= 4.0.4 - 16/11/2022 =
+Updated - New user redirection.
+
+= 4.0.3 - 15/11/2022 =
+Updated - Web Payment SDK
+
+= 4.0.2 - 3/3/2022 =
+Added - Freemius SDK Version Updated
+
+= 4.0.1 - 21/2/2022 =
+Added - License Activation redirection fixed
+
+= 4.0.0 - 16/2/2022 =
+Added - Multiform functionality
+Added - OAuth for test account
+Added - Gutenberg Support
+Added - Form styling
+Improvement - email notification
+Added - Transaction notes
+Added - Currency code/symbol switch
+
+= 3.2.7 - 25/8/2021 =
+Improvement - Live/Test switch glitch fixed
+
+= 3.2.6 - 25/8/2021 =
+Improvement - Security Enhanced
+
+= 3.2.5 - 20/7/2021 =
+Improvement - Get cookie issue resolved.
+
+= 3.2.4 - 28/6/2021 =
+Improvement - More optimized code.
+
+= 3.2.3 - 21/6/2021 =
+Improvement - Sanitized and optimized code.
+
+= 3.2.0 - 21/5/2021 =
+Added - EURO currency support added
+
+= 3.1.9 - 26/4/2021 =
+Fixed - Performance Optimizations
+
+= 3.1.8 - 15/3/2021 =
+Fixed - Update button glitch
+
+= 3.1.7 - 10/3/2021 =
+Fixed - Headers Glitch Resolved
+Added - Ad-hoc order support
+Added - Secure nonce for state in OAuth
+
+3.1.6 - 26/2/2021 =
+Fixed - Freemius Issue Resolved
+
+= 3.1.5 - 26/11/2020 =
+Added - Reports detailed view page
+
+= 3.1.4 - 11/11/2020 =
+Updated - Freemius SDK Version 2.4.1
+
+= 3.1.3 - 10/8/2020 =
+Added - SCA
+Added - Pop up Form
+Added - Page Redirection
+Added - Form Shadow Feature
+Added - Theme Styling Feature
+
+= 3.1.2 - 3/08/2020 =
+Fixed - Live/Test Glitch Fixed
+
+= 3.1.1 - 30/07/2020 =
+Fixed - Activate License Button Disabled
+
+= 3.1.0 - 29/07/2020 =
+Fixed - Global Settings Toggle
+Fixed - Redirection Issue Fixed
+
+= 3.0.9 - 20/07/2020 =
+Fixed - Font conflicts with different page builders
+Fixed - Pay button conflict
+Fixed - Global settings glitch fixed
+
+= 3.0.8 - 29/06/2020 =
+Fixed - Refresh token error fixed
+Fixed - Javascript glitches fixed
+Fixed - Incorrect form title fixed
+Fixed - Form types incorrectly changing in reports on changing current form type
+
+= 3.0.7 11/06/2020 =
+Fixed - location error Fixed.
+
+= 3.0.6 03/04/2020 =
+Fixed - Freemius error message is removed.
+FIxed - Post type quick action hidden bug fixed.
+
+= 3.0.5 12/03/2020 =
+Added Beta push to final release.
+Fixed Critical error in rare cases.
+Fixed Security checks.
+Added Color picker for theme
+Added Basic reports
+Added - Name, Last Name, Email Fields
+
+= 3.0.2 (BETA) 06/03/2020 =
+Added Select predefined amount
+Added Loading within form.
+Fixed form load speed up.
+Fixed code level enhancements.
+Fixed Different theme styles conflict with plugin UI.
+
+= 3.0 (BETA) 21/02/2020 =
+New User friendly and beautiful interface introduced.
+
+= 2.5.7 - 21/02/2020 =
+Added - security checks.
+
+= 2.5.6 - 22/01/2020 =
+Added Widget Form View Functionality
+Update - Tested with Wordpress version 5.3.2
+Update - Tested with version 7.2.3
+
+= 2.5.5 - 25/09/2019 =
+Added Square Sandbox Support
+Added SCA (Strong Customer Authentication)
+Updated Square V2 API and SDK version updated from transactionAPI to PaymentAPI
+
+= 2.5.4 - 13/06/2019 =
+Fix - Guest User Subscription Issue fixed
+Fix - Popup header and background color fixes.
+Fix - Dashboard warning issues resolved
+Improvement - Design and layout changes
+Improvement- Field Labels are now conditional
+Improvement- Sent transaction amount using [wpep_amount] Tag in notification Email Setting
+Improvement - Default field added first name, last name and email
+
+= 2.5.3 - 16/04/2019 =
+Added - Square notice conditions changed.
+Added - Subscription not logged condition.
+
+= 2.5.2 - 10/04/2019 =
+Added - Square Auth notice.
+
+= 2.5.1 - 09/04/2019 =
+Updated Freemius SDK
+Added Square Auth Connection simple way to connect with square.
+Added Square Sandbox Auth Connection Payment process.
+Added Square Auth Connection button css.
+
+= 2.3.0 - 27/02/2019 =
+Updated - Freemius SDK
+
+= 2.2 - 18/12/2018 =
+Enhancement Added compatibility for Wordpress 5.0.1
+Enhancement Added compatibility for WooCommerce 3.5.2
+Added - Action hook for wp_easy_payment_success and wp_easy_payment_failed.
+Added - Redirect page after payment success.
+Added - code quality.
+
+= 2.0 2018-10-26 =
+Added - Multiple payment buttons support on same page.
+Fixed - Form fields issue.
+Added - Subscription activation by default.
+Update - Email body template labelling.
+Update - Decimal amount support according to square API.
+Added - Amount field added inside all field tag.
+Added - Card fields mandatory on subscription button form.
+
+= 1.8 2018-10-16 =
+Add - Dynamic form fields for pro feature.
+Add - Dynamic transaction note for pro feature.
+Add - Admin as well notification email templates for pro feature.
+Update - Popup issues for pro feature.
+Add - Multi Currency support in free version tested upto Version 4.9.8.
+
+= 1.6 2018-08-16 =
+Updated - Freemius SDK
+
+= 1.5 2018-05-28 =
+Added - Custom Pricing for simple and subscription payment
+Added - First name, Last name and email field in all forms i.e donation, simple and subscription form
+
+= 1.3 2018-04-20 =
+Add - Square Transaction Note fields dynamic for Pro plans.
+
+= 1.2 2018-04-18 =
+Add - Support for premium plans
+
+= 1.0 2018-03-01 =
+Initial release

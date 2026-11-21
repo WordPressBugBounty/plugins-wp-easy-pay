@@ -15,9 +15,14 @@
  * @param string $message     Email body.
  * @param string $subject     Email subject.
  * @param array  $form_values Submitted form values.
+ * @param bool   $allow_file_attachment  Stored template contained [file_upload].
+ * @param bool   $allow_uploaded_url_tag Stored template contained [uploaded_url].
  * @return array Message, subject, and attachments.
  */
-function wpep_email_file_upload_bits( $message, $subject, $form_values ) {
+function wpep_email_file_upload_bits( $message, $subject, $form_values, $allow_file_attachment = false, $allow_uploaded_url_tag = false ) {
+	if ( ! function_exists( 'wpep_upload_url_to_trusted_path' ) ) {
+		require_once WPEP_ROOT_PATH . 'modules/payments/payment-helper-functions.php';
+	}
 	$urls = array();
 	foreach ( (array) $form_values as $row ) {
 		if ( empty( $row['label'] ) || ! isset( $row['value'] ) ) {
@@ -36,31 +41,32 @@ function wpep_email_file_upload_bits( $message, $subject, $form_values ) {
 	}
 	$urls        = array_values( array_unique( $urls ) );
 	$attachments = array();
-	$upload_dir  = wp_upload_dir();
 	$combined    = $message . $subject;
 
-	if ( false !== strpos( $combined, '[file_upload]' ) ) {
-		if ( empty( $upload_dir['error'] ) ) {
-			foreach ( $urls as $url ) {
-				if ( 0 === strpos( $url, $upload_dir['baseurl'] ) ) {
-					$path = str_replace( $upload_dir['baseurl'], $upload_dir['basedir'], $url );
-					if ( file_exists( $path ) && is_readable( $path ) ) {
-						$attachments[] = $path;
-					}
-				}
+	if ( $allow_file_attachment ) {
+		foreach ( $urls as $url ) {
+			$path = wpep_upload_url_to_trusted_path( $url );
+			if ( $path ) {
+				$attachments[] = $path;
 			}
 		}
 		$message = str_replace( '[file_upload]', '', $message );
 		$subject = str_replace( '[file_upload]', '', $subject );
 	}
 
-	if ( false !== strpos( $combined, '[uploaded_url]' ) ) {
-		$links = array();
+	if ( $allow_uploaded_url_tag && false !== strpos( $combined, '[uploaded_url]' ) ) {
+		$trusted_urls = array();
 		foreach ( $urls as $url ) {
+			if ( wpep_upload_url_to_trusted_path( $url ) ) {
+				$trusted_urls[] = $url;
+			}
+		}
+		$links = array();
+		foreach ( $trusted_urls as $url ) {
 			$links[] = '<a href="' . esc_url( $url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $url ) . '</a>';
 		}
 		$message = str_replace( '[uploaded_url]', implode( '<br>', $links ), $message );
-		$subject = str_replace( '[uploaded_url]', implode( ', ', $urls ), $subject );
+		$subject = str_replace( '[uploaded_url]', implode( ', ', $trusted_urls ), $subject );
 	}
 
 	return array( $message, $subject, $attachments );
@@ -82,6 +88,10 @@ function wpep_send_admin_email( $current_form_id, $form_values, $transaction_id,
 	$from    = get_post_meta( $current_form_id, 'wpep_square_admin_email_from_field', true );
 	$subject = get_post_meta( $current_form_id, 'wpep_square_admin_email_subject_field', true );
 	$message = get_post_meta( $current_form_id, 'wpep_square_admin_email_content_field', true );
+
+	$template_combined        = (string) $message . (string) $subject;
+	$allow_file_attachment    = ( false !== strpos( $template_combined, '[file_upload]' ) );
+	$allow_uploaded_url_tag   = ( false !== strpos( $template_combined, '[uploaded_url]' ) );
 
 	$img_url = WPEP_ROOT_URL . 'assets/frontend/img/payment.png';
 
@@ -145,6 +155,9 @@ function wpep_send_admin_email( $current_form_id, $form_values, $transaction_id,
 						$value = (string) $line_items;
 					}
 				}
+				if ( is_string( $value ) ) {
+					$value = str_replace( array( '[file_upload]', '[uploaded_url]' ), '', $value );
+				}
 				$message = str_replace( $tag, $value, $message );
 				$subject = str_replace( $tag, $value, $subject );
 
@@ -155,7 +168,7 @@ function wpep_send_admin_email( $current_form_id, $form_values, $transaction_id,
 	$message = str_replace( $transaction_tag, $transaction_id, $message );
 	$subject = str_replace( $transaction_tag, $transaction_id, $subject );
 
-	list( $message, $subject, $attachments ) = wpep_email_file_upload_bits( $message, $subject, $form_values_raw );
+	list( $message, $subject, $attachments ) = wpep_email_file_upload_bits( $message, $subject, $form_values_raw, $allow_file_attachment, $allow_uploaded_url_tag );
 
 	$headers  = 'From: ' . get_bloginfo( 'name' ) . ' <' . wp_strip_all_tags( $from ) . ">\r\n";
 	$headers .= 'Reply-To: ' . wp_strip_all_tags( $from ) . "\r\n";
